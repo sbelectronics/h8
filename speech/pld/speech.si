@@ -1,0 +1,18 @@
+name speech;
+device g16v8;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+ORDER:  !IOSEL,  IOR, IOW, SBY, !LRQ, AR, !VLD, !ALD, !D0, !D1, !D2;
+
+VECTORS:     1     X    X    X     X   X     L     H    Z    Z    Z  /* no iosel = no-op and data bus high imp */
+             0     0    0    X     X   X     L     H    Z    Z    Z  /* iosel, but no read or write = no-op and data bus high imp  */
+             0     0    1    X     X   X     H     L    Z    Z    Z  /* iosel and write = load phoneme  */
+             0     1    0    0     1   0     L     H    H    L    H  /* iosel and read = read status  */
+             0     1    0    1     0   1     L     H    L    H    L  /* iosel and read = read status  */
+

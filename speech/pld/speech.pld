@@ -1,0 +1,42 @@
+name speech;
+device g16v8;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = !O2;
+PIN 2 = IOR;
+PIN 3 = IOW;
+PIN 4 = !IOSEL;
+PIN 5 = !RESET;
+PIN 6 = M1;
+PIN 7 = SBY;
+PIN 8 = !LRQ;
+PIN 9 = AR;
+PIN 10 = GND;
+PIN 11 = !A0;
+PIN 12 = !D2;
+PIN 13 = !D1;
+PIN 14 = !D0;
+PIN 15 = NC1;
+PIN 16 = !INT;
+PIN 17 = !VLD;
+PIN 18 = STB;
+PIN 19 = !ALD;
+PIN 20 = VCC;
+
+/* VLD = 'b'0; /* (IOSEL & IOW); */
+VLD = !(IOSEL & IOW);
+ALD = (IOSEL & IOW);
+
+D0.OE = (IOSEL & IOR);
+D1.OE = (IOSEL & IOR);
+D2.OE = (IOSEL & IOR);
+
+D0 = SBY;
+D1 = !LRQ;
+D2 = AR;
