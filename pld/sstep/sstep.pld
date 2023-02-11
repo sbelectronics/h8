@@ -1,0 +1,51 @@
+name sstep;
+device g16v8;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = !M1;
+PIN 2 = D0;
+PIN 3 = D1;
+PIN 4 = D2;
+PIN 5 = D3;
+PIN 6 = D4;
+PIN 7 = D5;
+PIN 8 = D6;
+PIN 9 = D7;
+PIN 10 = GND;
+PIN 11 = !MR;
+PIN 12 = !CLR;
+PIN 13 = BCLK;
+PIN 14 = ACLK;
+PIN 15 = TDI;        /* move AD from pin 15 to pin 19 */
+PIN 16 = BQ;
+PIN 17 = !INTACK;
+PIN 18 = !RESET;
+PIN 19 = AD;
+PIN 20 = VCC;
+
+/* AQ is 1 if interrupts are enabled
+   BQ is 1 if interrupts are enabled, delayed a clock
+   AD is whether to enable interrupts on this instruct cycle.
+      We set AD on an EI. We reset AD on a DI. Otherwise, we preserve the current AD.
+   ACLK is when we clock. 
+*/
+
+FIELD DATA = [D7..D0] ;
+
+$DEFINE EIOP 'b'11111011
+$DEFINE DIOP 'b'11110011 
+
+TDI = (DATA:DIOP);        /* we need a temporary as !DIOP is expensive to compute */
+AD = (DATA:EIOP) # (!TDI & BQ);  /* enable interrupts on an EI, or if we're already enabled and current instr is not DI */
+
+ACLK = !(M1 & MR);        /* Clock is 1->0 when we enter M1, 0->1 when we leave  */
+BCLK = !ACLK;
+CLR = RESET # INTACK;     /* disable interrupts if reset or intack */
+
+

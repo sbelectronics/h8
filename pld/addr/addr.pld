@@ -1,0 +1,54 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name addr;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = MEM1;
+PIN 2 = A15;
+PIN 3 = A14; 
+PIN 4 = A13;
+PIN 5 = A7;
+PIN 6 = A6;
+PIN 7 = A5;
+PIN 8 = A4;
+PIN 9 = A3;
+PIN 10 = A2;
+PIN 11 = A1;
+PIN 12 = GND;
+PIN 13 = A0;
+PIN 14 = !INTIO;
+PIN 15 = !IOR362;
+PIN 16 = !IOW362;
+PIN 17 = !IOW363;
+PIN 18 = !IOW360;
+PIN 19 = NC1;
+PIN 20 = NC2;
+PIN 21 = !IOR;
+PIN 22 = !IOW;
+PIN 23 = !ROMADDR;
+
+FIELD ALO = [A7..A0];
+
+$DEFINE ADDR360   F0
+$DEFINE ADDR362   F2
+$DEFINE ADDR363   F3
+
+ROMADDR = !A15 & !A14 & !A13;   /* 8K ROM only for now */
+
+INTIO =  (ALO:ADDR362) # (ALO:ADDR363);
+IOR362 = (ALO:ADDR362) & IOR;
+IOW362 = (ALO:ADDR362) & IOW;
+IOW363 = (ALO:ADDR363) & IOW;
+IOW360 = (ALO:ADDR360) & IOW;

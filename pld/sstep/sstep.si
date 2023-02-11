@@ -1,0 +1,21 @@
+name sstep;
+device g16v8;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+ORDER: !M1, D7, D6, D5, D4, D3, D2, D1, D0, !MR, !INTACK, !RESET, BQ, !CLR, ACLK, BCLK, AD, TDI;
+
+VECTORS: X   X   X   X   X   X   X   X   X    X        1       0   X     L     *     *   *    *   /* RESET -- clear */
+         X   X   X   X   X   X   X   X   X    X        0       1   X     L     *     *   *    *   /* INTACK -- clear */
+         0   1   1   1   1   1   0   1   1    0        1       1   0     H     L     H   H    L   /* EI instruction while not enabled -- go enabled CONF */
+         0   1   1   1   1   1   0   1   1    0        1       1   1     H     L     H   H    L   /* EI instruction while enabled -- stay enabled CONF */
+         0   1   1   1   1   1   0   1   1    1        1       1   1     H     H     L   H    L   /* Leave MR -- stay enabled and flip the clocks */
+         0   1   1   1   1   0   0   1   1    0        1       1   1     H     L     H   L    H   /* DI instruction while enabled -- drop enabled CONF */
+         0   1   1   1   1   0   0   1   1    0        1       1   0     H     L     H   L    H   /* DI instruction while not enabled -- stay not enabled CONF */
+         0   1   0   1   1   1   0   1   1    0        1       1   0     H     L     H   L    L   /* some other instruction while not enabled -- stay not enabled */
+         0   1   0   1   1   1   0   1   1    0        1       1   1     H     L     H   H    L   /* some other instruction while enabled -- stay enabled */

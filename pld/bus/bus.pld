@@ -1,0 +1,77 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name bus;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = NC;
+PIN 2 = ST0;
+PIN 3 = ST1; 
+PIN 4 = ST2;   /* aka IO/!M */
+PIN 5 = !RD;
+PIN 6 = !WR;
+PIN 7 = !INTIO;
+PIN 8 = HLDA;
+PIN 9 = DHLDA;
+PIN 10 = !ROMADDR;
+PIN 11 = !ROMDIS;
+PIN 12 = GND;
+PIN 13 = !RAMDIS;
+PIN 14 = !RX;
+PIN 15 = !ROMCS;
+PIN 16 = !RAMCS;
+PIN 17 = !DBUSEN;
+PIN 18 = !ABUSEN;
+PIN 19 = !IOW;
+PIN 20 = !IOR;
+PIN 21 = !MW;
+PIN 22 = !MR;
+PIN 23 = !M1;
+
+IO = ST2;
+
+FIELD STATUS = [ST2..ST0] ;
+
+$DEFINE STATUS_MW 'b'001
+$DEFINE STATUS_MR 'b'010
+$DEFINE STATUS_IOW 'b'101
+$DEFINE STATUS_IOR 'b'110
+$DEFINE STATUS_OPFETCH 'b'011
+$DEFINE STATUS_INTACK 'b'111
+$DEFINE STATUS_HALT1 'b'000
+$DEFINE STATUS_HALT2 'b'100
+
+M1 = STATUS:STATUS_OPFETCH;
+
+IOR = (STATUS:STATUS_IOR) & RD;  /* Read and IO */
+IOW = (STATUS:STATUS_IOW) & WR;  /* Write and IO */
+MR = ((STATUS:STATUS_MR) # (STATUS:STATUS_OPFETCH)) & RD;    /* Read and Memory */
+MW = (STATUS:STATUS_MW) & WR;    /* Write and Memory */
+
+ROMCS = ((STATUS:STATUS_MR) # (STATUS:STATUS_OPFETCH)) & ROMADDR & !ROMDIS;                 /* Memory Read or Fetch while Rom is addressed and Rom is not disabled */
+RAMCS = !RAMDIS & (!ROMADDR # ROMDIS # (STATUS:STATUS_MW));                                 /* Ram is not disabled, and not rom address or rom disabled or memory write operation */
+
+/* RAMCS = !RAMDIS & ((!ROMADDR # ROMDIS) # WR);    not-Ram-Disabled and ((Rom not used) or (Write)) */
+
+/*
+ABUSEN = !DHLDA;
+DBUSEN = !DHLDA;
+*/
+
+ABUSEN = 'b'1;
+DBUSEN = 'b'1;
+
+RX = (STATUS:STATUS_IOR) & RD & !INTIO;
+
+/* RX = RD & ((IO & !INTIO) # (!IO & RAMDIS));     Read and ((external IO) or (external mem)) */
