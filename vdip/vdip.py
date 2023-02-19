@@ -85,6 +85,8 @@ class VDIP:
         IO.output(PIN_RCLR,0)   ## possible race here
         IO.output(PIN_RCLR,1)
 
+        time.sleep(0.001)
+
     def waitWrite(self, b):
         while not self.canWrite():
             pass
