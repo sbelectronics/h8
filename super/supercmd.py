@@ -23,6 +23,34 @@ def load_image(super, addr, fn):
     finally:
         super.mem_write_end()
 
+def load_h8d(super, fn):
+    filebytes = open(fn, "rb").read()
+
+    if filebytes[0] != 0xFF:
+        raise Exception("Not an H8D")
+
+    filebytes = filebytes[2:]
+    startAddr = filebytes[0] | (filebytes[1]<<8)
+
+    filebytes = filebytes[2:]
+    filebytes = filebytes[2:]
+    pc = filebytes[0] | (filebytes[1]<<8)
+    filebytes = filebytes[2:]
+
+    endAddr = startAddr + len(filebytes)
+
+
+    print("start=%03o%03o, end=%03o%03o, pc=%03o%03o" % (startAddr>>8, startAddr&0xFF, endAddr>>8, endAddr&0xFF, pc>>8, pc&0xFF))
+
+    addr = startAddr
+    super.mem_write_start(addr)
+    try:
+        for b in filebytes:
+            super.mem_write_fast(addr, b)
+            addr += 1
+    finally:
+        super.mem_write_end()
+
 def load_h8t(super, fn):
         word = 0
         odd = False
@@ -229,6 +257,26 @@ def main():
             if not options.norelease:
                 super.release_bus()
 
+    elif (cmd=="inp"):
+        try:
+            super.take_bus()
+            if options.octal:
+                print("%03o" % super.port_read(addr))
+            else:
+                print("%02X" % super.port_read(addr))
+
+        finally:
+            if not options.norelease:
+                super.release_bus()
+
+    elif (cmd=="out"):
+        try:
+            super.take_bus()
+            super.port_write(addr, value)
+        finally:
+            if not options.norelease:
+                super.release_bus()
+
     elif (cmd=="showint"):
         last=None
         while True:
@@ -253,6 +301,14 @@ def main():
             if not options.norelease:
                 super.release_bus()
 
+    elif (cmd=="loadh8d"):
+        try:
+            super.take_bus()
+            load_h8d(super, options.filename)
+        finally:
+            if not options.norelease:
+                super.release_bus()
+
     elif (cmd=="saveimg"):
         try:
             super.take_bus()
@@ -266,10 +322,45 @@ def main():
         try:
             super.take_bus()
             fill(super, addr, count, value)
-            super.reset()
         finally:
             if not options.norelease:
                 super.release_bus()
+
+    elif (cmd=="watch"):
+        lastVal = -1
+        count = 0
+        while True:
+            try:
+                super.take_bus()
+                val = super.mem_read(addr)
+                if (val != lastVal):
+                    print("0x%X" % val)
+                    lastVal = val
+            finally:
+                if not options.norelease:
+                    super.release_bus()
+            time.sleep(0.1)
+            count = count + 1
+            if (count % 100) == 0:
+                print("count: %d" % count)
+
+    elif (cmd=="watchinp"):
+        lastVal = -1
+        count = 0
+        while True:
+            try:
+                super.take_bus()
+                val = super.port_read(addr)
+                if (val != lastVal):
+                    print("0x%X" % val)
+                    lastVal = val
+            finally:
+                if not options.norelease:
+                    super.release_bus()
+            time.sleep(0.1)
+            count = count + 1
+            if (count % 100) == 0:
+                print("count: %d" % count)
 
 
 if __name__=="__main__":

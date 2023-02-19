@@ -55,3 +55,9 @@ class SupervisorDirect:
 
     def mem_write_fast(self, addr, val):
         self.ext.mem_write_fast(addr, val)
+
+    def port_read(self, addr):
+        return self.ext.port_read(addr)
+
+    def port_write(self, addr, val):
+        return self.ext.port_write(addr, val)
