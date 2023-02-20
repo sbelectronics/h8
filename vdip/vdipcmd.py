@@ -4,7 +4,10 @@ import sys
 import time
 import os
 from optparse import OptionParser
-from vdip import VDIP
+
+QUIET=0
+NORMAL=1
+VERBOSE=2
 
 CR = chr(0x0D)
 
@@ -20,23 +23,33 @@ def isValidDosFilename(fn):
     if len(parts[0]) > 8:
         return False
 
-    if len(parts[1])> 3:
-        return False
+    if len(parts)==2:
+        # filename has an extension
+        if len(parts[1])> 3:
+            return False
 
     return True
 
 class VDIPServer:
-    def __init__(self, vdip):
+    def __init__(self, vdip, verbosity):
         self.vdip = vdip
         self.cwd = "."
         self.fnMap = {}
+        self.verbosity = verbosity
+
+    def error(self,s):
+        print(s)
+
+    def info(self, s):
+        if self.verbosity >= NORMAL:
+            print(s)
 
     def prompt(self):
-        print("<prompt>")
+        self.info("<prompt>")
         self.vdip.waitWriteStr("D:\>" + CR)
 
     def commandFailed(self):
-        print("<command failed>")
+        self.info("<command failed>")
         self.vdip.waitWriteStr("Command Failed" + CR)
 
     def getDword(self, amount):
@@ -57,12 +70,13 @@ class VDIPServer:
         return fullName
 
     def stat(self, line):
-        print("<stat>")
         fn = line.split(" ")[1]
         fullName = self.getFullName(fn)
 
+        self.info("<stat %s>" % fullName)
+
         if not os.path.exists(fullName):
-            print("<file %s does not exist>" % fullName)
+            self.info("<file %s does not exist>" % fullName)
             self.commandFailed()
             return
 
@@ -71,11 +85,11 @@ class VDIPServer:
 
         self.vdip.waitWriteStr(CR)
         self.vdip.waitWriteStr("%s $%02X $%02X $%02X $%02X " % (fn, size&0xFF, (size>>8)&0xFF, (size>>16)&0xFF, size>>24) + CR)
-        print("<%s $%02X $%02X $%02X $%02X >" % (fn, size&0xFF, (size>>8)&0xFF, (size>>16)&0xFF, size>>24))
+        self.info("<%s $%02X $%02X $%02X $%02X >" % (fn, size&0xFF, (size>>8)&0xFF, (size>>16)&0xFF, size>>24))
         self.prompt()
 
     def dir(self):
-        print("<dir>")
+        self.info("<dir>")
         self.vdip.waitWriteStr(CR)
         self.fnMap = {}
         if self.cwd!=".":
@@ -97,8 +111,10 @@ class VDIPServer:
         fn = line.split()[1]
         fullName = self.getFullName(fn)
 
+        self.info("<ofr %s>" % fullName)
+
         if not os.path.exists(fullName):
-            print("<file %s does not exist>" % fullName)
+            self.info("<file %s does not exist>" % fullName)
             self.commandFailed()
             return
 
@@ -112,6 +128,8 @@ class VDIPServer:
         amount = parts[1]
         amount = self.getDword(amount)
 
+        self.info("<rdf %s %d>" % (fn, amount))
+
         bytes = self.openFile.read(amount)
         for b in bytes:
             self.vdip.waitWrite(ord(b))
@@ -121,17 +139,22 @@ class VDIPServer:
         
     def handleLine(self, line):
         if (line=='E'):
+            self.info("<E>")
             self.vdip.waitWriteStr("E" + CR)
         elif (line=='e'):
+            self.info("<e>")
             self.vdip.waitWriteStr("e" + CR)
         elif (line=="ipa"):
             # ascii mode
+            self.info("<ipa>")
             self.prompt()
         elif (line.startswith("clf")):
             # close file
+            self.info("<clf>")
             self.prompt()
         elif (line==""):
             # check for disk
+            self.info("<checkdisk>")
             self.prompt()
         elif (line=="dir"):
             self.dir()
@@ -141,6 +164,8 @@ class VDIPServer:
             self.openRead(line)
         elif (line.startswith("rdf")):
             self.readFile(line)
+        else:
+            self.error("<unknown command %s>" % line)
 
 
     def serve(self):
@@ -148,8 +173,11 @@ class VDIPServer:
         while True:
             if self.vdip.canRead():
                 v = self.vdip.read()
-                print(hex_escape(chr(v)),end="")
-                sys.stdout.flush()
+
+                if self.verbosity>=VERBOSE:
+                    print(hex_escape(chr(v)),end="")
+                    sys.stdout.flush()
+
                 if v==0x0D:
                     self.handleLine(line)
                     line=""
@@ -191,10 +219,12 @@ def main():
          help="print octal value", action="store_true", default=False)         
     parser.add_option("-v", "--verbose", dest="verbose",
          help="verbose", action="store_true", default=False)
+    parser.add_option("-q", "--quiet", dest="quiet",
+         help="quiet", action="store_true", default=False)
     parser.add_option("-f", "--filename", dest="filename",
          help="filename", default=None)
-    #parser.add_option("-i", "--indirect", dest="direct",
-    #     help="use the python supervisor", action="store_false", default=True)
+    parser.add_option("-p", "--python", dest="useExtension",
+         help="use the python code instead of the c extension", action="store_false", default=True)
 
     (options, args) = parser.parse_args(sys.argv[1:])
 
@@ -205,17 +235,24 @@ def main():
     cmd = args[0]
     args=args[1:]
 
-    #if options.direct:
-    #  super = SupervisorDirect(options.verbose)
-    #else:
-    #  raise "Unsupported"
+    verbosity = NORMAL
+    if options.quiet:
+        verbosity = QUIET
+    elif options.verbose:
+        verbosity = VERBOSE
 
-    vdip = VDIP(options.verbose)
+    if options.useExtension:
+        from smbvdip.vdip_c import VDIP
+        vdip = VDIP(options.verbose)
+    else:
+        from smbvdip.vdip import VDIP
+        vdip = VDIP(options.verbose)
+
     try:
         if (cmd=="talk"):
             talk(vdip)
         elif (cmd=="serve"):
-            VDIPServer(vdip).serve()
+            VDIPServer(vdip,verbosity).serve()
         else:
             raise Exception("Unknown command %s" % cmd)
     finally:
