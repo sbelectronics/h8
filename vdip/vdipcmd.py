@@ -306,8 +306,8 @@ def main():
          help="verbose", action="store_true", default=False)
     parser.add_option("-q", "--quiet", dest="quiet",
          help="quiet", action="store_true", default=False)
-    parser.add_option("-f", "--filename", dest="filename",
-         help="filename", default=None)
+    parser.add_option("-D", "--dir", dest="dir",
+         help="dir", default=None)
     parser.add_option("-p", "--python", dest="useExtension",
          help="use the python code instead of the c extension", action="store_false", default=True)
 
@@ -325,6 +325,9 @@ def main():
         verbosity = QUIET
     elif options.verbose:
         verbosity = VERBOSE
+
+    if options.dir is not None:
+        os.chdir(options.dir)
 
     if options.useExtension:
         from smbvdip.vdip_c import VDIP
