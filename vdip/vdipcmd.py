@@ -36,6 +36,8 @@ class VDIPServer:
         self.cwd = "."
         self.fnMap = {}
         self.verbosity = verbosity
+        self.openFile = None
+        self.openFileWrite = None
 
     def error(self,s):
         print(s)
@@ -122,13 +124,22 @@ class VDIPServer:
 
         self.prompt()
 
+    def openWrite(self, line):
+        fn = line.split()[1]
+        fullName = self.getFullName(fn)
+
+        self.info("<opw %s>" % fullName)
+
+        self.openFileWrite = open(fullName, "wb")
+
+        self.prompt()
+
     def readFile(self, line):
         parts = line.split()
-        fn = parts[0]
         amount = parts[1]
         amount = self.getDword(amount)
 
-        self.info("<rdf %s %d>" % (fn, amount))
+        self.info("<rdf %d>" % amount)
 
         bytes = self.openFile.read(amount)
         for b in bytes:
@@ -136,6 +147,73 @@ class VDIPServer:
         for i in range(0, amount-len(bytes)):
             self.vdip.write(0xFF)
         self.prompt()
+
+    def seekFile(self, line):
+        parts = line.split()
+        offset = parts[1]
+        offset = self.getDword(offset)
+
+        self.info("<seek %d>" % offset)
+
+        if self.openFile is not None:
+            self.openFile.seek(offset)
+
+        if self.openFileWrite is not None:
+            self.openFileWrite.seek(offset)
+
+        self.prompt()
+
+    def writeFile(self, line):
+        parts = line.split()
+        amount = parts[1]
+        amount = self.getDword(amount)
+
+        self.info("<wrf %d>" % amount)
+
+        bytes = bytearray()
+
+        for i in range(0, amount):
+            while not self.vdip.canRead():
+                pass
+            bytes.append(self.vdip.read())
+
+        self.openFileWrite.write(bytes)
+ 
+        self.prompt()
+
+    def cd(self, line):
+        parts = line.split()
+        dirname = parts[1]
+
+        self.info("<cd %s>" % dirname)
+
+        if dirname == "..":
+            newCwd = "/".join(self.cwd.split("/")[:-1])
+        elif dirname == ".":
+            newCwd = self.cwd
+        else:
+            newCwd = os.path.join(self.cwd, dirname)
+            if not os.path.exists(newCwd):
+                newCwd = os.path.join(self.cwd, dirname.lower())
+                if not os.path.exists(newCwd):
+                    self.commandFailed()
+                    return
+
+        self.cwd = newCwd
+        self.info("<new cwd %s>" % self.cwd)
+
+        self.prompt()
+
+    def closeFile(self):
+        self.info("<clf>")
+        if self.openFile:
+            self.openFile.close()
+            self.openFile = None
+        if self.openFileWrite:
+            self.openFileWrite.close()
+            self.openFileWrite = None
+        self.prompt()
+
         
     def handleLine(self, line):
         if (line=='E'):
@@ -150,8 +228,7 @@ class VDIPServer:
             self.prompt()
         elif (line.startswith("clf")):
             # close file
-            self.info("<clf>")
-            self.prompt()
+            self.closeFile()
         elif (line==""):
             # check for disk
             self.info("<checkdisk>")
@@ -162,8 +239,16 @@ class VDIPServer:
             self.stat(line)
         elif (line.startswith("opr")):
             self.openRead(line)
+        elif (line.startswith("opw")):
+            self.openWrite(line)            
         elif (line.startswith("rdf")):
             self.readFile(line)
+        elif (line.startswith("cd")):
+            self.cd(line)
+        elif (line.startswith("sek")):
+            self.seekFile(line)
+        elif (line.startswith("wrf")):
+            self.writeFile(line)
         else:
             self.error("<unknown command %s>" % line)
 
