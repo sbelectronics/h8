@@ -120,7 +120,7 @@ class VDIPServer:
             self.commandFailed()
             return
 
-        self.openFile = open(fullName)
+        self.openFile = open(fullName, "rb")
 
         self.prompt()
 
@@ -143,7 +143,7 @@ class VDIPServer:
 
         bytes = self.openFile.read(amount)
         for b in bytes:
-            self.vdip.waitWrite(ord(b))
+            self.vdip.waitWrite(b)
         for i in range(0, amount-len(bytes)):
             self.vdip.write(0xFF)
         self.prompt()
