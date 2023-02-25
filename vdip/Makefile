@@ -5,3 +5,6 @@ smbvdip:
 
 serve:
 	sudo python3 ./vdipcmd.py serve
+
+talk:
+	sudo python3 ./vdipcmd.py talk

@@ -31,8 +31,8 @@ PIN 13 = !RAMDIS;
 PIN 14 = !RX;
 PIN 15 = !ROMCS;
 PIN 16 = !RAMCS;
-PIN 17 = !DBUSEN;
-PIN 18 = !ABUSEN;
+PIN 17 = !BUSEN;
+PIN 18 = TMP;
 PIN 19 = !IOW;
 PIN 20 = !IOR;
 PIN 21 = !MW;
@@ -52,7 +52,8 @@ $DEFINE STATUS_INTACK 'b'111
 $DEFINE STATUS_HALT1 'b'000
 $DEFINE STATUS_HALT2 'b'100
 
-M1 = STATUS:STATUS_OPFETCH;
+M1 = (STATUS:STATUS_OPFETCH) & (!TMP # (M1 & RD));
+TMP = (TMP & (STATUS:STATUS_OPFETCH)) # (M1 & RD);
 
 IOR = (STATUS:STATUS_IOR) & RD;  /* Read and IO */
 IOW = (STATUS:STATUS_IOW) & WR;  /* Write and IO */
@@ -62,16 +63,6 @@ MW = (STATUS:STATUS_MW) & WR;    /* Write and Memory */
 ROMCS = ((STATUS:STATUS_MR) # (STATUS:STATUS_OPFETCH)) & ROMADDR & !ROMDIS;                 /* Memory Read or Fetch while Rom is addressed and Rom is not disabled */
 RAMCS = !RAMDIS & (!ROMADDR # ROMDIS # (STATUS:STATUS_MW));                                 /* Ram is not disabled, and not rom address or rom disabled or memory write operation */
 
-/* RAMCS = !RAMDIS & ((!ROMADDR # ROMDIS) # WR);    not-Ram-Disabled and ((Rom not used) or (Write)) */
+BUSEN = !DHLDA;
 
-/*
-ABUSEN = !DHLDA;
-DBUSEN = !DHLDA;
-*/
-
-ABUSEN = 'b'1;
-DBUSEN = 'b'1;
-
-RX = (STATUS:STATUS_IOR) & RD & !INTIO;
-
-/* RX = RD & ((IO & !INTIO) # (!IO & RAMDIS));     Read and ((external IO) or (external mem)) */
+RX = ((STATUS:STATUS_IOR) & RD & !INTIO) # (((STATUS:STATUS_MR) # (STATUS:STATUS_OPFETCH)) & RD & (!ROMADDR # ROMDIS) & RAMDIS);

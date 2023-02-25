@@ -155,6 +155,8 @@ def main():
          help="do not release bus", action="store_true", default=False)
     parser.add_option("-i", "--indirect", dest="direct",
          help="use the python supervisor", action="store_false", default=True)
+    parser.add_option("-H", "--inverthold", dest="invert_hold",
+         help="invert hold signal", action="store_true", default=False)
 
     #parser.disable_interspersed_args()
 
@@ -171,6 +173,9 @@ def main():
       super = SupervisorDirect(options.verbose)
     else:
       raise "Unsupported"
+
+    if options.invert_hold:
+        super.invert_hold(1);
     
     addr = None
     if (options.addr):
@@ -334,7 +339,10 @@ def main():
                 super.take_bus()
                 val = super.mem_read(addr)
                 if (val != lastVal):
-                    print("0x%X" % val)
+                    if options.octal:
+                        print("%03o" % val)
+                    else:
+                        print("0x%X" % val)
                     lastVal = val
             finally:
                 if not options.norelease:

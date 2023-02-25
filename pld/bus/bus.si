@@ -10,10 +10,11 @@ location x;
 
 /* !RX==h will send data from CPU to device */
 
-ORDER:          ST2, ST1, ST0, !RD, !WR, !INTIO, HLDA, DHLDA, !ROMADDR, !ROMDIS, !RAMDIS, !RX, !ROMCS, !RAMCS, !DBUSEN, !ABUSEN, !IOW, !IOR, !MW, !MR, !M1;
+ORDER:          ST2, ST1, ST0, !RD, !WR, !INTIO, HLDA, DHLDA, !ROMADDR, !ROMDIS, !RAMDIS, !RX, !ROMCS, !RAMCS, !BUSEN,     TMP, !IOW, !IOR, !MW, !MR, !M1;
 VECTORS:
-                  0    1    1    0    1       1     0      0         0        1        1    H       L       H        L        L     H     H    H    L    L   /* M1 cycle from ROM */
-                  0    1    1    0    1       1     0      0         1        1        1    H       H       L        L        L     H     H    H    L    L   /* M1 cycle from RAM */                  
+                  0    1    0    0    1       1     0      0         1        1        1    H       H       L        L        L     H     H    H    L    H   /* memory read from RAM */
+                  0    1    1    0    1       1     0      0         0        1        1    H       L       H        L        H     H     H    H    L    L   /* M1 cycle from ROM */
+                  0    1    1    0    1       1     0      0         1        1        1    H       H       L        L        H     H     H    H    L    L   /* M1 cycle from RAM */                  
                   0    0    1    1    0       1     0      0         1        1        1    H       H       L        L        L     H     H    L    H    H   /* memory write to RAM */
                   0    1    0    0    1       1     0      0         1        1        1    H       H       L        L        L     H     H    H    L    H   /* memory read from RAM */
                   0    0    1    1    0       1     0      0         0        1        1    H       H       L        L        L     H     H    L    H    H   /* memory write to ROM --> should go to RAM */
@@ -24,3 +25,13 @@ VECTORS:
                   1    0    1    1    0       1     0      0         1        1        1    H       H       L        L        L     L     H    H    H    H   /* IO write to external */
                   1    1    0    0    1       1     0      0         1        1        1    L       H       L        L        L     H     L    H    H    H   /* IO read from external */
                   1    1    1    1    1       1     0      0         1        1        1    H       H       L        L        L     H     H    H    H    H   /* INTACK */
+                  0    1    0    0    1       1     0      0         1        1        0    L       H       H        L        L     H     H    H    L    H   /* memory read from RAM while RAMDIS */
+                  0    1    0    0    1       1     0      0         0        1        0    H       L       H        L        L     H     H    H    L    H   /* memory read from ROM while RAMDIS*/
+                  0    1    0    0    1       1     0      0         0        0        0    L       H       H        L        L     H     H    H    L    H   /* memory read from ROM while disabled while RAMDIS--> should go to external RAM */
+                  0    1    1    0    1       1     0      0         1        1        0    L       H       H        L        H     H     H    H    L    L   /* opfetch from RAM while RAMDIS */
+                  0    1    1    0    1       1     0      0         0        1        0    H       L       H        L        H     H     H    H    L    L   /* opfetch from ROM while RAMDIS*/
+                  0    1    1    0    1       1     0      0         0        0        0    L       H       H        L        H     H     H    H    L    L   /* opfetch from ROM while disabled while RAMDIS--> should go to external RAM */
+                  0    0    1    1    0       1     0      0         1        1        0    H       H       H        L        L     H     H    L    H    H   /* memory write to RAM while RAMDIS */
+                  0    0    0    1    1       1     0      1         1        1        1    H       H       L        H        L     H     H    H    H    H   /* hold cycle */                  
+
+

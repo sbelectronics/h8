@@ -61,3 +61,6 @@ class SupervisorDirect:
 
     def port_write(self, addr, val):
         return self.ext.port_write(addr, val)
+
+    def invert_hold(self, val):
+        self.ext.invert_hold(val)
