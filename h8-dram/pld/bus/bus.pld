@@ -32,10 +32,10 @@ PIN 14 = !IOW362;
 PIN 15 = !IOR362;
 PIN 16 = OLATCH;
 PIN 17 = !LOE;
-PIN 18 = !CS;
-PIN 19 = RDYIN;
+PIN 18 = !CS;    /* Note bodge on board here */
+PIN 19 = !WAIT;
 PIN 20 = !XACK;
-PIN 21 = !MEML;
+PIN 21 = TMP;
 PIN 22 = !MW;
 PIN 23 = !MR;
 
@@ -46,11 +46,26 @@ $DEFINE ADDR362   F2
 IOR362 = (ALO:ADDR362) & BIOR;
 IOW362 = (ALO:ADDR362) & BIOW;
 
-MEML = 'b'1; /* BMEMR # BMEMW; */
-MW = BMEMW;
-MR = BMEMR;
+/* Note that the D8203 expects RD and WR to deassert as soon as
+   it raises XACK.
+*/
+
+MW = BMEMW & !XACK;
+MR = BMEMR & !XACK;
 LOE = BMEMR & CS;
 OLATCH = XACK;
 
-RDYIN.OE = XACK;
-RDYIN = 'b'0;
+/* This fixes reads but not writes 
+WAIT = (WAIT & XACK) # (BMEMR & CS & !TMP);
+TMP = (BMEMR & CS & XACK) # (BMEMR & CS & TMP);
+*/
+
+/* This is a tricky mess. When RD or WR occurs, we need to assert
+   wait until the corresponding !XACK comes along and is asserted (low)
+   and then released (high).
+*/
+
+WAIT = (WAIT & XACK) # ((BMEMR#BMEMW) & CS & !TMP);
+TMP = ((BMEMR#BMEMW) & CS & XACK) # ((BMEMR#BMEMW) & CS & TMP);
+
+/* TO-DO: We should tristate WAIT */
