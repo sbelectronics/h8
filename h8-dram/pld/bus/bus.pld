@@ -1,0 +1,56 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name bus;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = BIOW;
+PIN 2 = A0;
+PIN 3 = A1; 
+PIN 4 = A2;
+PIN 5 = A3;
+PIN 6 = A4;
+PIN 7 = A5;
+PIN 8 = A6;
+PIN 9 = A7;
+PIN 10 = BMEMW;
+PIN 11 = BMEMR;
+PIN 12 = GND;
+PIN 13 = BIOR;
+PIN 14 = !IOW362;
+PIN 15 = !IOR362;
+PIN 16 = OLATCH;
+PIN 17 = !LOE;
+PIN 18 = !CS;
+PIN 19 = RDYIN;
+PIN 20 = !XACK;
+PIN 21 = !MEML;
+PIN 22 = !MW;
+PIN 23 = !MR;
+
+FIELD ALO = [A7..A0];
+
+$DEFINE ADDR362   F2
+
+IOR362 = (ALO:ADDR362) & BIOR;
+IOW362 = (ALO:ADDR362) & BIOW;
+
+MEML = 'b'1; /* BMEMR # BMEMW; */
+MW = BMEMW;
+MR = BMEMR;
+LOE = BMEMR & CS;
+OLATCH = XACK;
+
+RDYIN.OE = XACK;
+RDYIN = 'b'0;

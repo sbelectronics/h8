@@ -1,0 +1,24 @@
+name bus;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+/* !RX==h will send data from CPU to device */
+
+ORDER:          A7, A6, A5, A4, A3, A2, A1, A0, BMEMR, BMEMW, BIOR, BIOW, !CS, !XACK, !IOW362, !IOR362,  OLATCH, !LOE, RDYIN, !MR, !MW, !MEML;
+VECTORS:
+                 X   X   X   X   X   X   X   X      0      0     0     0    0      X        H        H        X    H      X    H    H      L        /* neither read nor write */
+                 X   X   X   X   X   X   X   X      1      0     0     0    0      X        H        H        X    L      X    L    H      L        /* memory read */
+                 X   X   X   X   X   X   X   X      0      1     0     0    0      X        H        H        X    H      X    H    L      L        /* memory write */
+                 1   1   1   1   0   0   1   0      0      0     1     0    0      X        H        L        X    H      X    H    H      L        /* IO read 362 */
+                 1   1   1   1   0   0   1   0      0      0     0     1    0      X        L        H        X    H      X    H    H      L        /* IO write 362 */
+                 X   X   X   X   X   X   X   X      1      0     0     0    0      1        H        H        L    L      Z    L    H      L        /* memory read without XACK */
+                 X   X   X   X   X   X   X   X      1      0     0     0    0      0        H        H        H    L      L    L    H      L        /* memory read with XACK */
+            
+
+
