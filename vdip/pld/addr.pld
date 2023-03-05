@@ -1,0 +1,65 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name addr;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = !VDIPEN;
+PIN 2 = !A7;
+PIN 3 = !A6; 
+PIN 4 = !A5;
+PIN 5 = !A4;
+PIN 6 = !A3;
+PIN 7 = A2;
+PIN 8 = A1;
+PIN 9 = A0;
+PIN 10 = !IOR;
+PIN 11 = !IOW;
+PIN 12 = GND;
+PIN 13 = !SEREN;
+PIN 14 = !SER350;
+PIN 15 = !SERCS;
+PIN 16 = !NC1;
+PIN 17 = !NC2;
+PIN 18 = VDIP_WR2;
+PIN 19 = !VDIP_STATUS;
+PIN 20 = DBTX;
+PIN 21 = !DBEN;
+PIN 22 = !VDIP_RD1;
+PIN 23 = !VDIP_WR1;
+
+FIELD ALO = [A7..A0];
+
+$DEFINE ADDR350   'b'11101XXX
+$DEFINE ADDR340   'b'11100XXX
+
+$DEFINE ADDRVDIP D9
+$DEFINE ADDRVSTAT DA
+
+SERADDR = SEREN & (((ALO:ADDR350) & SER350) # ((ALO:ADDR340) & !SER350));
+VDIP_WR = IOW & VDIPEN & (ALO:ADDRVDIP);
+VDIP_RD = IOR & VDIPEN & (ALO:ADDRVDIP);
+VDIP_RDSTAT = IOR & VDIPEN & (ALO:ADDRVSTAT);
+
+SERCS = SERADDR;
+VDIP_WR1 = VDIP_WR;
+VDIP_WR2 = VDIP_WR;
+VDIP_RD1 = VDIP_RD;
+VDIP_STATUS = VDIP_RDSTAT;
+
+/* DBDIR should be low on a write, high on a read */
+
+DBEN = 'b'1;
+DBTX = (IOR & SERADDR) # VDIP_RD # VDIP_RDSTAT;
+

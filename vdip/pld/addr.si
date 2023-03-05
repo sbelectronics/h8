@@ -1,0 +1,27 @@
+name addr;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+/* !RX==h will send data from CPU to device */
+
+ORDER:            !A7, !A6, !A5, !A4, !A3, A2, A1, A0, !IOR, !IOW, !VDIPEN, !SEREN, !SER350, !SERCS, !VDIP_STATUS, !VDIP_RD1, !VDIP_WR1,  VDIP_WR2, !DBEN, DBTX;
+VECTORS:
+                    0    0    0    1    0   0   0   0     0     1        X       0        0       L             H          H          H          L      L     H     /* read of port 350 with serEN and ser on 350 */
+                    0    0    0    1    0   0   0   0     0     1        X       1        0       H             H          H          H          L      L     L     /* read of port 350 with serDIS and ser on 350 */
+                    0    0    0    1    0   0   0   0     1     0        X       0        0       L             H          H          H          L      L     L     /* write of port 350 with serEN and ser on 350 */
+                    0    0    0    1    0   1   1   1     0     1        X       0        0       L             H          H          H          L      L     H     /* read of port 357 with serEN and ser on 350 */                    
+                    0    0    0    1    1   0   0   0     0     1        X       0        0       H             H          H          H          L      L     L     /* read of port 340 with serEN and ser on 350 */
+                    0    0    0    1    1   0   0   0     0     1        X       0        1       L             H          H          H          L      L     H     /* read of port 340 with serEN and ser on 340 */
+                    0    0    1    0    0   0   0   1     0     1        0       X        X       H             H          L          H          L      L     H     /* read of port 331 with vdipEN */
+                    0    0    1    0    0   0   0   1     1     0        0       X        X       H             H          H          L          H      L     L     /* write of port 331 with vdipEN */
+                    0    0    1    0    0   0   1   0     0     1        0       X        X       H             L          H          H          L      L     H     /* read of port 332 with vdipEN */
+                    0    0    1    0    0   0   1   0     1     0        0       X        X       H             H          H          H          L      L     L     /* write of port 332 with vdipEN */
+                    0    0    1    0    0   0   0   1     0     1        1       X        X       H             H          H          H          L      L     L     /* read of port 331 with vdipDIS */
+                    0    0    1    0    0   0   0   1     1     0        1       X        X       H             H          H          H          L      L     L     /* write of port 331 with vdipDIS */
+                    0    0    1    0    0   0   1   0     0     1        1       X        X       H             H          H          H          L      L     L     /* read of port 332 with vdipDIS */
