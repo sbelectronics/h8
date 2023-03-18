@@ -1,0 +1,57 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name bus;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = BIOW;
+PIN 2 = OPT1;
+PIN 3 = OPT2; 
+PIN 4 = OPT3;
+PIN 5 = BM1;
+PIN 6 = !SACK;
+PIN 7 = !XACK;
+PIN 8 = DEL1;
+PIN 9 = DEL2;
+PIN 10 = BMEMW;
+PIN 11 = BMEMR;
+PIN 12 = GND;
+PIN 13 = BIOR;
+PIN 14 = TMP;
+PIN 15 = REFRQ;
+PIN 16 = OLATCH;
+PIN 17 = !LOE;
+PIN 18 = !CS;
+PIN 19 = !WAIT;
+PIN 20 = D2;
+PIN 21 = D1;
+PIN 22 = !MW;
+PIN 23 = !MR;
+
+/* Note that the D8203 expects RD and WR to deassert as soon as
+   it raises XACK.
+*/
+
+MW = BMEMW & !XACK;
+MR = BMEMR & !XACK;
+LOE = BMEMR & CS;
+OLATCH = XACK;
+
+/* This is a tricky mess. When RD or WR occurs, we need to assert
+   wait until the corresponding !XACK comes along and is asserted (low)
+   and then released (high).
+*/
+
+WAIT = (WAIT & XACK) # ((BMEMR#BMEMW) & CS & !TMP);
+TMP = ((BMEMR#BMEMW) & CS & XACK) # ((BMEMR#BMEMW) & CS & TMP);
