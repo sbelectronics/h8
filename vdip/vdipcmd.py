@@ -9,6 +9,9 @@ QUIET=0
 NORMAL=1
 VERBOSE=2
 
+MODE_BINARY=0
+MODE_ASCII=1
+
 CR = chr(0x0D)
 
 def hex_escape(s):
@@ -32,6 +35,7 @@ def isValidDosFilename(fn):
 
 class VDIPServer:
     def __init__(self, vdip, verbosity):
+        self.mode = MODE_BINARY;
         self.vdip = vdip
         self.cwd = "."
         self.fnMap = {}
@@ -55,6 +59,8 @@ class VDIPServer:
         self.vdip.waitWriteStr("Command Failed" + CR)
 
     def getDword(self, amount):
+        if self.mode == MODE_BINARY:
+            return (ord(amount[0])<<24) | (ord(amount[1])<<16) | (ord(amount[2])<<8) | (ord(amount[3]))
         return int(amount)
 
     def getFullName(self, fn):
@@ -142,8 +148,9 @@ class VDIPServer:
         self.info("<rdf %d>" % amount)
 
         bytes = self.openFile.read(amount)
-        for b in bytes:
-            self.vdip.waitWrite(b)
+        self.vdip.waitWriteBuffer(bytes)
+#        for b in bytes:
+#            self.vdip.waitWrite(b)
         for i in range(0, amount-len(bytes)):
             self.vdip.write(0xFF)
         self.prompt()
@@ -225,6 +232,7 @@ class VDIPServer:
         elif (line=="ipa"):
             # ascii mode
             self.info("<ipa>")
+            self.mode = MODE_ASCII;
             self.prompt()
         elif (line.startswith("clf")):
             # close file
@@ -294,6 +302,12 @@ def talk(vdip):
     finally:
         unRaw()
 
+def writeaz(vdip):
+    while True:
+        for c in "abcdefghijklmnopqrstuvwxyz\r":
+            vdip.waitWrite(ord(c))
+        time.sleep(0.02)
+
 def main():
     parser = OptionParser(usage="supervisor [options] command",
             description="Commands: ...")
@@ -341,6 +355,8 @@ def main():
             talk(vdip)
         elif (cmd=="serve"):
             VDIPServer(vdip,verbosity).serve()
+        elif (cmd=="writeaz"):
+            writeaz(vdip);
         else:
             raise Exception("Unknown command %s" % cmd)
     finally:

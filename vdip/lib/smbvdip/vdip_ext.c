@@ -19,6 +19,8 @@
 #define PIN_WCLR 17
 #define PIN_WRPI 18
 #define PIN_RDPI 19
+#define PIN_RXFD 20
+#define PIN_TXED 21
 
 static int datapins[] = {PIN_D0, PIN_D1, PIN_D2, PIN_D3,
                          PIN_D4, PIN_D5, PIN_D6, PIN_D7};
@@ -28,14 +30,27 @@ void _short_delay(void)
     // Just do nothing for a while.
     int j;
 
-    for (j=0; j<50; j++) {
+    // by experimentation on a pi zero w, 50 NOPs produced intermittent errors.
+    // 20 NOPs produced frequent errors
+    // 100 NOPs seemed safe.
+    // Could go 200 NOPs, which is twice the safe value.
+
+    // on pi zero w
+    //     0 nops = 15ns
+    //    50 nops = 170ns
+    //   100 nops = 320ns
+    //   200 nops = 620ns
+    //   400 nops = 1332ns
+    //   gpioDelay(1) == 2189ns
+
+    for (j=0; j<20; j++) { 
         asm("nop");
     }
 }
 
 void _medium_delay(void)
 {
-    gpioDelay(4); // 4 microsecond delay
+    gpioDelay(1); // 1 microsecond delay
 }
 
 /* unused
@@ -77,7 +92,7 @@ static void _databus_config_write(void)
 static void _write(uint8_t b) {
     uint32_t data = b;
 
-    // in case we just came off of a canRead(). Give H8 enough time to complete cycle.
+    _short_delay(); // in case we just came off of a canWrite(). Give H8 enough time to complete cycle.
 
     _databus_config_write();
     gpioWrite_Bits_0_31_Clear(0x00000FF0);   // bits 4-11
@@ -92,12 +107,14 @@ static void _write(uint8_t b) {
     _short_delay();
     gpioWrite(PIN_RCLR, 1);
     _short_delay();
+
+    _medium_delay(); // this seems to be necessary for correctness. Otherwise we get occasional glitches.
 }
 
 static uint8_t _read(void) {
     uint32_t data;
 
-    _medium_delay(); // in case we just came off of a canRead(). Give H8 enough time to complete cycle.
+    _short_delay(); // in case we just came off of a canRead(). Give H8 enough time to complete cycle.
 
     _databus_config_read();
 
@@ -130,6 +147,43 @@ static void _waitWriteString(char *s) {
     }
 }
 
+// set the transmit empty signal.
+static void _set_txe() {
+    gpioWrite(PIN_WCLR, 0);
+    _short_delay();
+    gpioWrite(PIN_WCLR, 1);
+    _short_delay();
+}
+
+static void _clear_rxf() {
+    // clock a 1 into RXF
+    gpioWrite(PIN_RXFD, 1);
+    gpioWrite(PIN_RCLR, 0);
+    _short_delay();
+    gpioWrite(PIN_RCLR, 1);
+    _short_delay();
+
+    // from now on we always want to clock 0s into RXF
+    gpioWrite(PIN_RXFD, 0);
+}
+
+void timetest(void) {
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+
+    unsigned long t1 = 1000000 * tv.tv_sec + tv.tv_usec;
+
+    for (int i=0; i<1000; i++) {
+        _short_delay();
+    }
+
+    gettimeofday(&tv,NULL);
+    unsigned long t2 = 1000000 * tv.tv_sec + tv.tv_usec;
+
+    printf("%lu\n", t2-t1);
+}
+
+
 static PyObject *vdip_init(PyObject *self, PyObject *args)
 {
     if (gpioInitialise() < 0) {
@@ -143,11 +197,19 @@ static PyObject *vdip_init(PyObject *self, PyObject *args)
     gpioSetMode(PIN_RCLR, PI_OUTPUT);
     gpioSetMode(PIN_WRPI, PI_OUTPUT);
     gpioSetMode(PIN_RDPI, PI_OUTPUT);
+    gpioSetMode(PIN_RXFD, PI_OUTPUT);    
+    gpioSetMode(PIN_TXED, PI_OUTPUT);
 
+    gpioWrite(PIN_RXFD, 0);
+    gpioWrite(PIN_TXED, 0);
     gpioWrite(PIN_WCLR, 1);
     gpioWrite(PIN_RCLR, 1);
     gpioWrite(PIN_WRPI, 1);
     gpioWrite(PIN_RDPI, 1);
+
+    _set_txe();
+
+    _clear_rxf();
 
     Py_RETURN_TRUE;
 }

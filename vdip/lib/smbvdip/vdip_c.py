@@ -28,5 +28,8 @@ class VDIP:
     def waitWriteStr(self, s):
         self.ext.waitWriteStr(s)
 
+    def waitWriteBuffer(self, b):
+        self.ext.waitWriteBuffer(b)
+
     def read(self):
         return self.ext.read()

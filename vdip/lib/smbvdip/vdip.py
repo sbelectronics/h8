@@ -92,6 +92,10 @@ class VDIP:
         for c in s:
             self.waitWrite(ord(c))
 
+    def waitWriteBuffer(self, bytes):
+        for b in bytes:
+            self.vdip.waitWrite(b)
+
     def read(self):
         b = 0
         for datapin in DATAPINS:

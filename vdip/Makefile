@@ -1,6 +1,7 @@
 install: smbvdip
 
-smbvdip:
+.PHONY: lib
+lib:
 	cd lib && sudo python3 ./setup.py install
 
 serve:
