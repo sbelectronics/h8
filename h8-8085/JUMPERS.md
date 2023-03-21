@@ -14,7 +14,7 @@ Bold settings indicate what Scott set for his build.
 | JP6    | HLDA bus source                                              | !DHLDA                                | **DHLDA**       |
 | JP7    | Front Panel interrupt enable                                 | **toggle based on EI/DI instruction** | force always on |
 | JP8    | ROMDIS normal/inverted                                       | normal                                | **inverted**    |
-| JP9    | ROM size                                                     | **32K**                               | 4K              |
+| JP9    | ROM size                                                     | **32K**                               | 4K or 8K        |
 | JP10   | int1 source                                                  | internal                              | **front panel** |
 | JP11   | int1 eliminate dups                                          | eliminate dups (absent)               |                 |
 | JP12   | 2MS clock polarity                                           | Q                                     | **!Q**          |
@@ -28,7 +28,7 @@ Bold settings indicate what Scott set for his build.
 | JP20   | A12/A0 input to adress PLD                                   | A12                                   | **A0**          |
 | JP21   | address bus latch enable                                     | **obey HLDA**                         | always          |
 | JP22   | Normal Clock Source                                          | **OG3/5** (use 20.48MHz OG3)          | OG1 (use 4.096MHz OG1)  |
-| JP23   | Turbo Clock Source                                           | **OG3/2** (use 20.48MHz OG3)          | OG3 (use 10MHz OG2)     |
+| JP23   | Turbo Clock Source                                           | **OG3/2** (use 20.48MHz OG3)          | OG3 (use 10MHz OG3)     |
 | JP24   | 2ms enable address                                           | **363** (nortberto setting)           | 360             |
 | JP25   | HOLD polarity                                                | **inverted**                          | noninverted     |
 | JP26   | 2ms enable data bin                                          | **D1** (norberto setting)             | D6              |
