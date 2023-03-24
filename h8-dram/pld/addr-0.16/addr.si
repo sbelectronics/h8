@@ -23,7 +23,3 @@ VECTORS:
                        X   X   X   X   X   X   X   X   X      0     0      0       1    1    1        H        H        H        H   H   L    /* MEMR */
                        X   X   X   X   X   X   X   X   X      0     0      0       1    0    1        H        H        H        H   H   L    /* MEMR and MR */
                        X   X   X   X   X   X   X   X   X      0     0      1       1    0    1        H        H        H        H   L   L    /* only MR */ 
-
-            
-
-
