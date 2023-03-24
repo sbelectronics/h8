@@ -18,7 +18,7 @@ location x;
 PIN 1 = !RESET;
 PIN 2 = !WAITING;  /* OP1 */
 PIN 3 = OP2;
-PIN 4 = !CSIN;
+PIN 4 = CSIN;
 PIN 5 = BM1;
 PIN 6 = !SACK;
 PIN 7 = !XACK;
