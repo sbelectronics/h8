@@ -10,26 +10,10 @@ location x;
 
 /* !RX==h will send data from CPU to device */
 
-ORDER:      BMEMR, BMEMW, BIOR, BIOW, !CS, !XACK,  !QR, !QW, OLATCH, !LOE, !WAIT, !MR, !MW, !PR, !PW;
+ORDER:      BMEMR, BMEMW, !CSIN, !WAITING, !RESET, !XACK, OLATCH, !LOE, !WAIT, !MR, !MW, STARTWAIT;
 VECTORS:
-                 0      0     0     0    0      1    1    1        L    H      H    H    H    H   H         /* neither read nor write */
-                 1      0     0     0    0      1    1    1        L    L      H    L    H    L   H         /* start of read */
-                 1      0     0     0    0      1    0    1        L    L      L    L    H    L   H         /* flip-flop asserts -> enter wait state */
-                 1      0     0     0    0      0    0    1        H    L      H    L    H    L   H         /* xack asserts -> release wait state */
-                 0      0     0     0    0      0    0    1        H    H      H    H    H    H   H         /* BMEMR releases */
-                 0      0     0     0    0      1    1    1        L    H      H    H    H    H   H         /* xack released */               
-
-                 0      1     0     0    0      1    1    1        L    H      H    H    L    H   L         /* start of write */
-                 0      1     0     0    0      1    1    0        L    H      L    H    L    H   L         /* flip-flop asserts -> enter wait state */
-                 0      1     0     0    0      0    1    0        H    H      H    H    L    H   L         /* xack asserts -> release wait state */
-                 0      0     0     0    0      0    1    0        H    H      H    H    H    H   H         /* BMEMW releases */
-                 0      0     0     0    0      1    1    1        L    H      H    H    H    H   H         /* xack released */
-
-                 0      1     0     0    0      1    1    1        L    H      H    H    L    H   L         /* start of write */
-                 0      1     0     0    0      1    1    0        L    H      L    H    L    H   L         /* flip-flop asserts -> enter wait state */
-                 0      0     0     0    0      1    1    0        L    H      L    H    L    H   H         /* BMEMW releases */
-                 0      0     0     0    0      0    1    0        H    H      H    H    H    H   H         /* xack asserts -> release wait state */
-                 0      0     0     0    0      1    1    1        L    H      H    H    H    H   H         /* xack released */                         
+                 0      0     1         1       0      1       H     H     H     H    H          L    /* reset */
+                 0      0     1         1       1      1       H     H     H     H    H          L    /* neither read nor write */
 
 
 
