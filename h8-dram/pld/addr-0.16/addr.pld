@@ -1,0 +1,54 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name addr;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = BIOW;
+PIN 2 = A0;
+PIN 3 = A1; 
+PIN 4 = A2;
+PIN 5 = A3;
+PIN 6 = A4;
+PIN 7 = A5;
+PIN 8 = A6;
+PIN 9 = A7;
+PIN 10 = !BMEMW;
+PIN 11 = !BMEMR;
+PIN 12 = GND;
+PIN 13 = !BIOR;
+PIN 14 = !IOR362;
+PIN 15 = !IOW362;
+PIN 16 = !IO362;
+PIN 17 = T2;
+PIN 18 = T1;
+PIN 19 = !MW;       /* input */
+PIN 20 = !MR;       /* input */
+PIN 21 = !DLATCH;   /* latches data on low */
+PIN 22 = !ALATCH;
+PIN 23 = !ENABLE;   /* input */
+
+FIELD ALO = [A7..A0];
+
+$DEFINE ADDR362   F2
+
+IOR362 = ENABLE & (ALO:ADDR362) & BIOR;
+IOW362 = ENABLE & (ALO:ADDR362) & BIOW;
+IO362 = ENABLE & (ALO:ADDR362) & (BIOR # BIOW);
+
+ALATCH = !BMEMW & MW;   /* latch if we're holding onto a write. Transparent otherwise. */
+DLATCH = !BMEMW & MW;
+
+T1 = BMEMR;  /* go 0 -> 1 on start of read */
+T2 = BMEMW;  /* go 0 -> 1 on start of write */
