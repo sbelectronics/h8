@@ -15,10 +15,11 @@ revision 1;
 assembly x;
 location x;
 
+
 PIN 1 = BIOW;
-PIN 2 = QR;
-PIN 3 = QW;
-PIN 4 = OPT3;
+PIN 2 = !WAITING;  /* 0 if WAITING, 1 if cleared */
+PIN 3 = OPT2;
+PIN 4 = !RESET;    /* connect this to reset */
 PIN 5 = BM1;
 PIN 6 = !SACK;
 PIN 7 = !XACK;
@@ -28,14 +29,14 @@ PIN 10 = BMEMW;
 PIN 11 = BMEMR;
 PIN 12 = GND;
 PIN 13 = BIOR;
-PIN 14 = !PR;
+PIN 14 = TMP;
 PIN 15 = REFRQ;
 PIN 16 = OLATCH;
 PIN 17 = !LOE;
 PIN 18 = !CS;
 PIN 19 = !WAIT;
-PIN 20 = !PW;
-PIN 21 = TMP;
+PIN 20 = STARTWAIT;
+PIN 21 = LASTWAIT; /* D1; */
 PIN 22 = !MW;
 PIN 23 = !MR;
 
