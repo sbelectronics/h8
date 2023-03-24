@@ -39,35 +39,35 @@ PIN 21 = TMP;
 PIN 22 = !MW;
 PIN 23 = !MR;
 
-PW = CS & BMEMW & (!TMP);
-PR = CS & BMEMR & (!TMP);
-
-MW = QW;
-MR = QR;
-
-/* TMP is used to prevent PW and PR from reasserting. It gets set when QW or QR 
-   are asserted, and it holds itself until BMEMW and BMEMR are released.
+/* connect:
+     STARTWAIT to 1CLK
+     XACK to 1SET
+     +5V to 1CLR
+     GND to 1D
+     WAITING to 1Q
+     -
+     !RESET to !RESET
 */
 
-TMP = (TMP & (BMEMW # BMEMR)) # QW # QR;
+/* START MW on a BMEMW; hold it so long as we're WAITING */
 
-WAIT = QW # QR # XACK;  /* To-Do: Need to invert XACK to flipflop, so it resets on the assert */
+MW = (CS & BMEMW & TMP & !RESET) # (MW & WAITING & !RESET);
+MR = (CS & BMEMR & TMP & !RESET) # (MR & WAITING & !RESET);
+
+/* tmp is our deglitcher. We can use it to get the state of BMEMW and BMEMR a few ns into the past. */
+
+TMP = (BMEMW # BMEMR) & !RESET;
+
+/* STARTWAIT will clock in a 0 to WAITING */
+
+STARTWAIT = CS & (BMEMW # BMEMR);
+
+/* WAITING will clear when XACK is asserted.
+   WAIT follows WAITING, qualified by (MW or MR), since we don't want to wait if we're not doing anything.
+*/
+
+WAIT = LASTWAIT # (WAITING & (MW # MR));
+LASTWAIT = WAITING & (MW # MR);
 
 LOE = CS & BMEMR;
 OLATCH = XACK;
-
-/* attempt 1
-
-PW = CS & BMEMW;
-PR = CS & BMEMR;
-
-MW = CS & BMEMW # (QW & !XACK);
-MR = CS & BMEMR # (QR & !XACK);
-
-WAIT = (QW # QR) & !XACK;
-
-LOE = CS & BMEMR;
-OLATCH = XACK;
-
-*/
-

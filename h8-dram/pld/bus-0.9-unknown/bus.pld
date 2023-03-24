@@ -1,0 +1,73 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name bus;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = BIOW;
+PIN 2 = QR;
+PIN 3 = QW;
+PIN 4 = OPT3;
+PIN 5 = BM1;
+PIN 6 = !SACK;
+PIN 7 = !XACK;
+PIN 8 = DEL1;
+PIN 9 = DEL2;
+PIN 10 = BMEMW;
+PIN 11 = BMEMR;
+PIN 12 = GND;
+PIN 13 = BIOR;
+PIN 14 = !PR;
+PIN 15 = REFRQ;
+PIN 16 = OLATCH;
+PIN 17 = !LOE;
+PIN 18 = !CS;
+PIN 19 = !WAIT;
+PIN 20 = !PW;
+PIN 21 = TMP;
+PIN 22 = !MW;
+PIN 23 = !MR;
+
+PW = CS & BMEMW & (!TMP);
+PR = CS & BMEMR & (!TMP);
+
+MW = QW;
+MR = QR;
+
+/* TMP is used to prevent PW and PR from reasserting. It gets set when QW or QR 
+   are asserted, and it holds itself until BMEMW and BMEMR are released.
+*/
+
+TMP = (TMP & (BMEMW # BMEMR)) # QW # QR;
+
+WAIT = QW # QR # XACK;  /* To-Do: Need to invert XACK to flipflop, so it resets on the assert */
+
+LOE = CS & BMEMR;
+OLATCH = XACK;
+
+/* attempt 1
+
+PW = CS & BMEMW;
+PR = CS & BMEMR;
+
+MW = CS & BMEMW # (QW & !XACK);
+MR = CS & BMEMR # (QR & !XACK);
+
+WAIT = (QW # QR) & !XACK;
+
+LOE = CS & BMEMR;
+OLATCH = XACK;
+
+*/
+
