@@ -1,5 +1,8 @@
 /* NOTE: When programming using XGPRO/MINIPRO make sure
  *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
  */
 
 name bus;
@@ -20,7 +23,7 @@ PIN 5 = BM1;
 PIN 6 = !SACK;
 PIN 7 = !XACK;
 PIN 8 = DEL1;
-PIN 9 = DELAY;
+PIN 9 = DELAY; /* DEL2 */
 PIN 10 = !BMEMW;
 PIN 11 = !BMEMR;
 PIN 12 = GND;
@@ -39,26 +42,39 @@ PIN 23 = !MR;
 /* connect:
      STARTWAIT to 1CLK
      XACK to 1SET
-     +5V to 1CLR
+     +5V (or !RESET) to 1CLR
      GND to 1D
      WAITING to 1Q
      -
-     !RESET to !RESET
+     STARTDELAY to D2
+     DELAY to DEL2
+     -
+     10pF / 5.1K on LS123
+     20MHz crystal on D8203
+     3.3k OR 5.1k resustor same result
+     brutprim 100 on 2 MHz Z80: 43 seconds, vs 34 seconds on SRAM board
+     -
+     10pF / 3.3K on LS123
+     24MHz crystal on D8203
+     brutprim 100 37 seconds
+     unreliable in 8085, probably due to 3.3K resistor
+     -
+     10pF / 3.3K on LS123
+     25 MHz crystal on D8203
+     brutprim 100 36.5 seconds
+     unreliable in 8085, probably due to 3.3K resistor
 */
-
-/* START MW on a BMEMW; hold it so long as we're WAITING */
 
 MW = !RESET & ((CS & BMEMW & !XACK & !MW & !MR & !DELAY) # (MW & BMEMW) # (MW & WAITING));
 MR = !RESET & ((CS & BMEMR & !XACK & !MW & !MR & !DELAY) # (MR & BMEMR) # (MR & WAITING));
 
-STARTDELAY = XACK;
-TMP = !MW & !MR & !XACK;  /* some additional protection in case delay hasn't caught up yet */
+STARTDELAY = !RESET & XACK;
 
-STARTWAIT = MW # MR;
+STARTWAIT = !RESET & (MW # MR);
 
-WAIT = (WAITING & (MW # MR));
+WAIT = !RESET & (WAITING & (MW # MR));
 
 CS = CSIN # WAITING; /* hold CS while we're waiting */
 
-LOE = CSIN & BMEMR;
+LOE = !RESET & CSIN & BMEMR;
 OLATCH = XACK;
