@@ -1,8 +1,5 @@
 /* NOTE: When programming using XGPRO/MINIPRO make sure
  *       to specify ATF22V10C(UES). The "UES" is important.
- *
- * v0.12
- *   - Eliminated !AS on pin 5 and replaced with A7
  */
 
 name bus;
@@ -58,23 +55,6 @@ STARTDELAY = XACK;
 TMP = !MW & !MR & !XACK;  /* some additional protection in case delay hasn't caught up yet */
 
 STARTWAIT = MW # MR;
-
-/*
-MW = (CS & BMEMW & TMP & !RESET & !DELAY) # (MW & WAITING & !RESET);
-MR = (CS & BMEMR & TMP & !RESET & STARTDELAY & !DELAY) # (MR & WAITING & !RESET);
-*/
-
-/* tmp is our deglitcher. We can use it to get the state of BMEMW and BMEMR a few ns into the past. */
-
-/*TMP = (BMEMW # BMEMR) & !RESET;*/
-
-/* STARTWAIT will clock in a 0 to WAITING */
-
-/*STARTWAIT = CS & (BMEMW # BMEMR);*/
-
-/* WAITING will clear when XACK is asserted.
-   WAIT follows WAITING, qualified by (MW or MR), since we don't want to wait if we're not doing anything.
-*/
 
 WAIT = (WAITING & (MW # MR));
 
