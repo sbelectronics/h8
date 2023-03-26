@@ -25,3 +25,5 @@ A few insights were made while implementing Hellboard:
   in a wait state. You have to be careful to not start the RD immediately after the WR has completed,
   or it may get lost. For this reason, I used a delay to insert about 20ns worth of deadtime before
   !RD or !WR can be asserted after an XACK. This prevents the lost-read-after-write syndrome.
+
+Current board was built using ADDR-0.16 PLD and BUS-0.16 PLD.
