@@ -40,21 +40,21 @@ U1
 20
 
 U3
-1 MAYBE-U13-38 (AH6)
-2 DIP2
-3 U1-7
-4 MAYBE-U13-39 (AH5)
-5 U1-9
-6 DIP1
-7 GND
+1 (SUM2) MAYBE-U13-38 (AH6)
+2 (B2) DIP2
+3 (A2) U1-7
+4 (SUM1) MAYBE-U13-39 (AH5)
+5 (A1) U1-9
+6 (B1) DIP1
+7 (C0) GND
 8 GND
-9
+9 (C4)
 10
-11 DIP4
-12 U1-3
-13
-14 U1-5, MAYBE-U8-2
-15 ASSUMED-DIP3
+11 (B4) DIP4
+12 (A4) U1-3
+13 (SUM3)
+14 (A3) U1-5, MAYBE-U8-2
+15 (B3) ASSUMED-DIP3
 16
 
 
@@ -99,10 +99,11 @@ U6
 3 (Y1)
 4 (A2) Jumper to JP1
 5 (B2) U10-2 (Y1)
-6 
-8
-9
-10
+6 (Y2)
+7
+8 (Y3)
+9 (A3)
+10 (B3)
 11 (Y4) U10-11 (A5), MAYBE-U13-33 (PCS)
 12 (A4) U7-3 (Y1), JP3-2
 13 (B4) U6-1
@@ -112,25 +113,25 @@ U7
 1 (A1) MAYBE-U13-33 (CS) 
 2 (B1) MAYBE-U5-9 (2Q)
 3 (Y1) U6-12 (A4), JP3-2
-4
-5
-6
+4 (A2)
+5 (B2)
+6 (Y2)
 7
-8
-9
-10
-11
-12 MAYBE-U11-?
-13 MAYBE-U5-5
+8 (Y3)
+9 (A3)
+10 (B3)
+11 (Y4)
+12 (A4) MAYBE-U11-?
+13 (B4) MAYBE-U5-5
 14
 
 U8
 1 (A) U9-3
 2 (B) U7-12
 3 (C) U7-13, hole-next-to-4switch
-4 JP3-1
-5 JP3-3
-6
+4 (G2A) JP3-1
+5 (G2B) JP3-3
+6 (G1)
 7
 8 U18-1 (C1)
 9 U18-4 (C2)
@@ -146,9 +147,9 @@ U9
 1 (A) MAYBE-U1-12  -> A11
 2 (B) MAYBE-U3
 3 (C) U8-1
-4
-5
-6
+4 (G2A)
+5 (G2B)
+6 (G1)
 7
 8 JP2-4
 9 JP2-8
@@ -164,7 +165,7 @@ U10
 1 (A1) MAYBE-IOW (edge card bottom conn, 4th down)
 2 (Y1) U6-5
 3 (A2) GND
-4
+4 (Y2)
 5 (A3)
 6 (Y3) U15-??
 7
@@ -209,13 +210,45 @@ U12
 14
 
 U13
+1 (AH4)
+2 (AH3)
+3 (AH2)
+4 (AH1)
+5 (AH0)
+6 (AL0)
 7 (OUT0) resistor
+8 (AL1)
 9 (OUT1) resistor
+10 (AL2)
 11 (OUT2) resistor
+12 (AL3)
 13 (OUT3) resistor
+14 (AL4)
 15 (OUT4) resistor
+16 (AL5)
 17 (OUT5) resistor
+18 (AL6)
 19 (OUT6) resistor
+20
+21 (RAS0)
+22 (RAS1)
+23 (RAS2)
+24 (B0)
+25 (B1/OP1)
+26 (RAS3)
+27 (CAS)
+28 (WE)
+29 (XACK)
+30 (SACK)
+31 (WR)
+32 (RD)
+33 (PCS)
+34 (REFRQ)
+35
+36 (X0)
+37 (X1)
+38 (AH6)
+39 (AH5)
 33 (PCS) R3-pullup, MAYBE-U10-11, MAYBE-U12-??
 
 U14
@@ -241,25 +274,25 @@ U14
 20
 
 U15
-1 
-2
-3
-4
-5
-6 U12-2
-7
-8
-9 U12-9
+1 (OC) 
+2 (1Q)
+3 (1D)
+4 (2D)
+5 (2Q)
+6 (3Q) U12-2
+7 (3D)
+8 (4D)
+9 (4Q) U12-9
 10
-11
-12 U12-12
-13
-14
-15
-16
-17
-18
-19
+11 (E)
+12 (5Q) U12-12
+13 (5D)
+14 (6D)
+15 (6Q)
+16 (7Q)
+17 (7D)
+18 (8D)
+19 (8Q)
 20
 
 U18
