@@ -1,0 +1,305 @@
+U1 - 74LS240 - address buffer
+U2 - 74LS240 - address buffer
+U3 - 74S283 - 4 bit adder, possibly used w/ 4-switch to set start addr
+U4 - 74LS138
+U5 - 74LS74 - flipflop
+U6 - 74LS32
+U7 - 74LS08
+U8 - 74LS138
+U9 - 74LS138
+U10 - 74LS14 - schmitt inverter
+U11 - 74S03
+U12 - 74LS125
+U13 - D8202 - DRAM controller
+U14 - 74LS240 - input buffer for dipswitch
+U15 - 74LS373 - another latch?
+U16 - 244 - probably bus-to-dram buffer
+U17 - 373 - probably dram-to-bus latch
+U18 - 74LS125
+
+U1
+1 GND
+2 (1A1) A8 
+3
+4 (1A2) A9 
+5
+6 (1A3) A10 
+7
+8 (1A4) A11 
+9 (2Y1) 
+10
+11 (2A1) A12
+12 (1Y4) MAYBE-U4-4/5, MAYBE-U9-1
+13 (2A2) A13
+14 (1Y3) U4-3
+15 (2A3) A14
+16 (1Y2) U4-2
+17 (2A4) A15
+18 (1Y1) U4-1
+19
+20
+
+U3
+1 MAYBE-U13-38 (AH6)
+2 DIP2
+3 U1-7
+4 MAYBE-U13-39 (AH5)
+5 U1-9
+6 DIP1
+7 GND
+8 GND
+9
+10
+11 DIP4
+12 U1-3
+13
+14 U1-5, MAYBE-U8-2
+15 ASSUMED-DIP3
+16
+
+
+U4
+1 (A) U13-4 (AH0), U1-18 (1Y1)  -> A8
+2 (B) U13-3 (AH1), U1-16 (1Y2)  -> A9
+3 (c) U13-2 (AH2), U1-14 (1Y3)  -> A10
+4 (G2A) U4-5, Jumper J2
+5 (G2B) U4-4
+6 (G1) maybe U1-12 -> A11
+7 JP1-4
+8
+9 JP1-8
+10 JP1-7
+11 JP1-6
+12 JP1-5
+13 JP1-1
+14 JP1-2
+15 JP1-3
+16
+
+U5
+1 (1CLR) U5-4, VCC
+2 (1D) U5-6
+3 (1CLK) MAYBE-M1
+4 (1PRE) U5-1, VCC
+5 (1Q) MAYBE-U7-13
+6 (1!Q) U5-2
+7
+8 (2!Q) U15-1 (OC)
+9 (2Q) MAYBE-U14-1 (1G)
+10 (2PRE) MAYBE-U10-5
+11 (2CLK) MAYBE-RESET, MAYBE-M1
+12 (2D) VCC
+13 (CLR2) MAYBE-RESET, MAYBE-M1
+14
+
+
+U6
+1 (A1) U6-13, MAYBE-near-U10
+2 (B1) R1, U11-3, MAYBE-near-U13
+3 (Y1)
+4 (A2) Jumper to JP1
+5 (B2) U10-2 (Y1)
+6 
+8
+9
+10
+11 (Y4) U10-11 (A5), MAYBE-U13-33 (PCS)
+12 (A4) U7-3 (Y1), JP3-2
+13 (B4) U6-1
+14
+
+U7
+1 (A1) MAYBE-U13-33 (CS) 
+2 (B1) MAYBE-U5-9 (2Q)
+3 (Y1) U6-12 (A4), JP3-2
+4
+5
+6
+7
+8
+9
+10
+11
+12 MAYBE-U11-?
+13 MAYBE-U5-5
+14
+
+U8
+1 (A) U9-3
+2 (B) U7-12
+3 (C) U7-13, hole-next-to-4switch
+4 JP3-1
+5 JP3-3
+6
+7
+8 U18-1 (C1)
+9 U18-4 (C2)
+10 U18-10 (C3)
+11 U18-13 (C4)
+12 U12-1 (C1)
+13 U12-4 (C2)
+14 U12-10 (C3)
+15 U12-13 (C4)
+16
+
+U9
+1 (A) MAYBE-U1-12  -> A11
+2 (B) MAYBE-U3
+3 (C) U8-1
+4
+5
+6
+7
+8 JP2-4
+9 JP2-8
+10 JP2-7
+11 JP2-6
+12 JP2-5
+13 JP2-1
+14 JP2-2
+15 JP2-3
+16
+
+U10
+1 (A1) MAYBE-IOW (edge card bottom conn, 4th down)
+2 (Y1) U6-5
+3 (A2) GND
+4
+5 (A3)
+6 (Y3) U15-??
+7
+8 (Y4) U11-10
+9 (A4) CAP-to-GND, MAYBE-R-to-U13-28-WE-8203
+10 (Y5) U11-4
+11 (A5) U6-11, MAYBE-U13-33 (PCS)
+12 (Y6) U11-9
+13 (A6) MAYBE-U13-29-XACK
+14
+
+U11
+1 (A1) U11-2, MR
+2 (B1) U11-1, MR
+3 (Y1) U6-2, R1-pullup, U13-32 RD
+4 (A2) U10-10
+5 (B2) MAYBE-U13-30-SACK
+6 (Y2) MAYBE-RDY (edge card bottom conn, 5th down)
+7
+8 (Y3) R-pullup, MAYBE-WE-DRAM
+9 (A3) U10-12
+10 (B3) U10-8
+11 (Y4) R2-pullup, U13-31 WR
+12 (A4) U10-13, MW
+13 (B4) U10-12, MW
+14
+
+U12
+1 (C1) U8-12
+2 (A1) U15-6
+3 (Y1) MAYBE-U13-33 (CS) ?
+4 (C2) U8-13
+5 (A2) U14-??
+6 (Y2) U18-??
+7
+8 (Y3)
+9 (A3) U15-9
+10 (C3) U8-14
+11 (Y4)
+12 (A4) U15-12, U14-3
+13 (C4) U8-15
+14
+
+U13
+7 (OUT0) resistor
+9 (OUT1) resistor
+11 (OUT2) resistor
+13 (OUT3) resistor
+15 (OUT4) resistor
+17 (OUT5) resistor
+19 (OUT6) resistor
+33 (PCS) R3-pullup, MAYBE-U10-11, MAYBE-U12-??
+
+U14
+1 (1G) U14-19
+2 (1A1) DIP7
+3 (2Y4) U12-12
+4 (1A2) DIP5
+5 (2Y3)
+6 (1A3) DIP1
+7 (2Y2)
+8 (1A4) DIP3
+9 (2Y1)
+10 
+11 (2A1) DIP2
+12 (1Y4) 
+13 (2A2) DIP4
+14 (1Y3)
+15 (2A3) DIP6
+16 (1Y2)
+17 (2A4) DIP8
+18 (1Y1)
+19 (2G) U14-1
+20
+
+U15
+1 
+2
+3
+4
+5
+6 U12-2
+7
+8
+9 U12-9
+10
+11
+12 U12-12
+13
+14
+15
+16
+17
+18
+19
+20
+
+U18
+1 U8-8
+2 U18-6?
+3 U18-11
+4 U8-9
+5 U14-9, U15-19
+6 U18-8
+7
+8
+9 MAYBE-U14-2
+10 U8-10
+11 U18-3
+12 MAYBE-14-7
+13 U8-11
+14
+
+JP1 (decoded 3 of the upper addr bits)
+1 U4-13
+2 U4-14
+3 U4-15
+4 U4-7
+5 U4-12
+6 U4-11
+7 U4-10
+8 U4-9
+
+JP2 (decoded another 3 of the upper addr bits?)
+1
+2
+3
+4
+5
+6
+7
+8
+
+JP3
+1
+2
+3
+4 possible pulldown?
