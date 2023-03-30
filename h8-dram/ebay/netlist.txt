@@ -40,10 +40,10 @@ U1
 20
 
 U3
-1 (SUM2) MAYBE-U13-38 (AH6)
+1 (SUM2) U13-38 (AH6)
 2 (B2) DIP2
 3 (A2) U1-7
-4 (SUM1) MAYBE-U13-39 (AH5)
+4 (SUM1) U13-39 (AH5)
 5 (A1) U1-9
 6 (B1) DIP1
 7 (C0) GND
@@ -94,7 +94,7 @@ U5
 
 
 U6
-1 (A1) U6-13, MAYBE-U10-12
+1 (A1) U6-13, U13-33 (PCS), U12-3/6/8/11, U18-3/6/8/11
 2 (B1) R1, U11-3, U13-32 RD
 3 (Y1) MAYBE-U17-1
 4 (A2) Jumper to JP1
@@ -104,14 +104,14 @@ U6
 8 (Y3)
 9 (A3) U6-10
 10 (B3) U6-9
-11 (Y4) U10-11 (A5), MAYBE-U13-33 (PCS)
+11 (Y4) U10-11 (A5)
 12 (A4) U7-3 (Y1), JP3-2
-13 (B4) U6-1
+13 (B4) U6-1, U13-33 (PCS), U12-3/6/8/11, U18-3/6/8/11
 14
 
 U7
-1 (A1) MAYBE-U13-33 (CS) 
-2 (B1) MAYBE-U5-9 (2Q)
+1 (A1) U13-32 (RD)
+2 (B1) U13-31 (WR)
 3 (Y1) U6-12 (A4), JP3-2
 4 (A2)
 5 (B2)
@@ -172,9 +172,9 @@ U10
 8 (Y4) U11-10
 9 (A4) CAP-to-GND, MAYBE-R-to-U13-28-WE-8203
 10 (Y5) U11-4
-11 (A5) U6-11, MAYBE-U13-33 (PCS)
-12 (Y6) U11-9, MAYBE-U6-1/13
-13 (A6) MAYBE-U13-29-XACK
+11 (A5) U6-11, UNKNOWN-VERIFY
+12 (Y6) U11-9, UNKNOWN_VERIFY
+13 (A6) UNKNOWN-VERIFY
 14
 
 U11
@@ -182,7 +182,7 @@ U11
 2 (B1) U11-1, MR
 3 (Y1) U6-2, R1-pullup, U13-32 RD
 4 (A2) U10-10
-5 (B2) MAYBE-U13-30-SACK
+5 (B2) U13-30 (SACK)
 6 (Y2) MAYBE-RDY (edge card bottom conn, 5th down)
 7
 8 (Y3) R-pullup, MAYBE-WE-DRAM
@@ -196,15 +196,15 @@ U11
 U12
 1 (C1) U8-12
 2 (A1) U15-6
-3 (Y1) MAYBE-U13-33 (CS) ?
+3 (Y1) U12-6/8/11, U13-33 (CS)   # many others; see U13-33
 4 (C2) U8-13
 5 (A2) U14-??
-6 (Y2) U18-??
+6 (Y2) U12-3/8/11, U13-33 (CS)
 7
-8 (Y3)
+8 (Y3) U12-3/6/11, U13-33 (CS)
 9 (A3) U15-9
 10 (C3) U8-14
-11 (Y4)
+11 (Y4) U12-3/6/8, U13-33 (CS)
 12 (A4) U15-12, U14-3
 13 (C4) U8-15
 14
@@ -247,8 +247,8 @@ U13
 35
 36 (X0)
 37 (X1)
-38 (AH6)
-39 (AH5)
+38 (AH6) U3-1
+39 (AH5) U3-4
 33 (PCS) R3-pullup, MAYBE-U10-11, MAYBE-U12-??
 
 U14
@@ -298,15 +298,15 @@ U15
 U18
 1 (C1) U8-8
 2 (A1) U18-6?
-3 (Y1) U18-11
+3 (Y1) U18-6/8/11, U13-33 (CS)   # many others, see U13-33
 4 (C2) U8-9
 5 (A2) U14-9, U15-19
-6 (Y2) U18-8
+6 (Y2) U18-3/8/11, U13-33 (CS)   # many others, see U13-33
 7
-8 (Y3) U18-6
+8 (Y3) U18-3/6/11, U13-33 (CS)   # many others, see U13-33
 9 (A3) MAYBE-U14-2
 10 (C3) U8-10
-11 (Y4) U18-3
+11 (Y4) U18-3/6/8, U13-33 (CS)   # many others, see U13-33
 12 (A4) MAYBE-14-7
 13 (C4) U8-11
 14
