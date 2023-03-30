@@ -126,9 +126,9 @@ U7
 14
 
 U8
-1 (A) U9-3
-2 (B) U7-12
-3 (C) U7-13, hole-next-to-4switch
+1 (A) U9-3, MAYBE-U1-7 (A13)
+2 (B) U7-12, U1-5 (A14)
+3 (C) U7-13, U1-3 (A15)
 4 (G2A) JP3-1
 5 (G2B) JP3-3
 6 (G1)
@@ -144,9 +144,9 @@ U8
 16
 
 U9
-1 (A) MAYBE-U1-12 (A11)
-2 (B) MAYBE-U3
-3 (C) U8-1
+1 (A) U1-12 (A11), U13-1
+2 (B) MAYBE-U1-9 (A12)
+3 (C) U8-1, MAYBE-U1-7 (A13)
 4 (G2A)
 5 (G2B)
 6 (G1)
@@ -173,7 +173,7 @@ U10
 9 (A4) CAP-to-GND, MAYBE-R-to-U13-28-WE-8203
 10 (Y5) U11-4
 11 (A5) U6-11, UNKNOWN-VERIFY
-12 (Y6) U11-9, UNKNOWN_VERIFY
+12 (Y6) U11-9, UNKNOWN-VERIFY
 13 (A6) U13-28 (WE)
 14
 
@@ -183,7 +183,7 @@ U11
 3 (Y1) U6-2, R1-pullup, U13-32 RD
 4 (A2) U10-10
 5 (B2) U13-30 (SACK)
-6 (Y2) MAYBE-RDY (edge card bottom conn, 5th down)
+6 (Y2) RDYIN (edge card bottom conn, 5th down)
 7
 8 (Y3) R-pullup, MAYBE-WE-DRAM
 9 (A3) U10-12
