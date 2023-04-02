@@ -1,6 +1,23 @@
 H8-64K-DRAM, aka "H8-Hellboard"
 https://www.smbaker.com/
 
+## Hellboard 0.18
+
+With Willis's help, we analyzed the mystery DRAM board (in the ebay folder) and determined a partial netlist. Some insights
+from the mystery board:
+
+* WAIT is initiated when Reading or Writing, but SACK has not yet occurred. This eliminates a lot
+  of the complexity that I had with hellboard 0.16. 
+
+* WE is delayed until after CAS. This is called a "late write" to DRAM as opposed to an "early write"
+  which is what is normally executed. The late write is necessary because the 8080 might not have
+  the data on bus at this time.
+
+* Willis's board shows what we believe to be a 220R/27pF delay via an LS14 on the CAS signal for
+  the delayed write. This was shown to be insufficient. 220R/100pF seemed to at least mostly work.
+
+## Hellboard 0.16
+
 Hellboard was an ill-fated attempt to use a D8203 DRAM controller to build a DRAM board
 for the H8 computer. Hellboard has the following restrictions:
 

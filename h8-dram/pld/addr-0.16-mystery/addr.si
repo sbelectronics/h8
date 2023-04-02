@@ -1,0 +1,19 @@
+name addr;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+
+ORDER:           !ENABLE, A7, A6, A5, A4, A3, A2, A1, A0, BIOR, BIOW, !BMEMR, !BMEMW, !MR, !MW, !IOW362, !IOR362, !ALATCH, !DLATCH, T1, T2;
+VECTORS:
+                       0   1   1   1   1   0   0   1   0      1     0      1       1    1    1        H        L        H        H   L   L    /* IO read 362 */
+                       0   1   1   1   1   0   0   1   0      0     1      1       1    1    1        L        H        H        H   L   L    /* IO write 362 */
+                       0   1   1   1   1   0   0   1   1      1     0      1       1    1    1        H        H        H        H   L   L    /* IO read 363 */
+                       0   1   1   1   1   0   0   1   1      0     1      1       1    1    1        H        H        H        H   L   L    /* IO write 363 */                       
+                       1   1   1   1   1   0   0   1   0      1     0      1       1    1    1        H        H        H        H   L   L    /* IO read 362 while disabled */
+                       1   1   1   1   1   0   0   1   0      0     1      1       1    1    1        H        H        H        H   L   L    /* IO write 362 while disabled */ 

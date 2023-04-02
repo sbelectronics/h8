@@ -1,0 +1,28 @@
+name bus;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+/* !RX==h will send data from CPU to device */
+
+ORDER:      !BMEMR, !BMEMW, !CSIN,  !RESET, !XACK, !SACK, CAS, !WE, !WEDRAM, OLATCH, !LOE, !WAIT, !MR, !MW, !CS;
+VECTORS:
+                 1       1     1         0      1      1     0   1        H       L     H     H     H    H     H   /* reset */
+                 1       1     0         1      1      1     0   1        H       L     H     H     H    H     L   /* chip selected */                 
+                 0       1     0         1      1      1     0   1        H       L     L     L     L    H     L   /* start of read */
+                 0       1     0         1      1      0     0   1        H       L     L     H     L    H     L   /* sack down */
+                 0       1     0         1      0      0     0   1        H       H     L     H     L    H     L   /* xack down */
+                 1       1     0         1      0      0     0   1        H       H     H     H     H    H     L   /* read is released */
+                 1       1     0         1      1      1     0   1        H       L     H     H     H    H     L   /* xack and sack released */
+
+                 X       X     X         0      X      X     0   1        H       *     *     *     *    *     *   /* reset */
+                 X       X     X         X      X      X     0   0        H       *     *     *     *    *     *   /* WE down */
+                 X       X     X         X      X      X     1   0        L       *     *     *     *    *     *   /* WE and CAS down */
+                 X       X     X         X      X      X     1   1        H       *     *     *     *    *     *   /* WE up */
+                 X       X     X         X      X      X     0   1        H       *     *     *     *    *     *   /* CAS up */
+

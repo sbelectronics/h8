@@ -1,4 +1,4 @@
-U1 - 74LS240 - address buffer
+- 74LS240 - address buffer
 U2 - 74LS240 - address buffer
 U3 - 74S283 - 4 bit adder, possibly used w/ 4-switch to set start addr
 U4 - 74LS138
@@ -189,8 +189,8 @@ U11
 9 (A3) U10-12
 10 (B3) U10-8
 11 (Y4) R2-pullup, U13-31 WR
-12 (A4) U10-13, MW
-13 (B4) U10-12, MW
+12 (A4) U11-13, MW
+13 (B4) U11-12, MW
 14
 
 U12
@@ -238,7 +238,7 @@ U13
 26 (RAS3)
 27 (CAS)
 28 (WE)
-29 (XACK) U17-11 NOT-U10-13
+29 (XACK) U17-11
 30 (SACK) U11-5
 31 (WR) U11-1, U7-2
 32 (RD) U6-2, U7-1, U11-3
@@ -332,7 +332,7 @@ JP2 (decoded another 3 of the upper addr bits?)
 8
 
 JP3
-1
+1 U8-4
 2
-3
-4 possible pulldown?
+3 U8-5
+4 GND
