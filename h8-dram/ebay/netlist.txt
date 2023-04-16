@@ -180,7 +180,7 @@ U10
 U11
 1 (A1) U11-2, MR
 2 (B1) U11-1, MR
-3 (Y1) U6-2, R1-pullup, U13-32 RD
+3 (Y1) U6-2, R1-pullup 4.7K, U13-32 RD
 4 (A2) U10-10
 5 (B2) U13-30 (SACK)
 6 (Y2) RDYIN (edge card bottom conn, 5th down)
@@ -188,7 +188,7 @@ U11
 8 (Y3) R-pullup, MAYBE-WE-DRAM
 9 (A3) U10-12
 10 (B3) U10-8
-11 (Y4) R2-pullup, U13-31 WR
+11 (Y4) R2-pullup 4.7K, U13-31 WR
 12 (A4) U11-13, MW
 13 (B4) U11-12, MW
 14

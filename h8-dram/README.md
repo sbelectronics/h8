@@ -1,6 +1,20 @@
 H8-64K-DRAM, aka "H8-Hellboard"
 https://www.smbaker.com/
 
+## Hellboard 0.23
+
+Revision 0.18 had a few bugs, such as CAS and RAS traces being broken. Those are all fixed. Also removed
+some circuits (such as flipflops) that were not needed. Kept one flipflop and the LS123 just in case
+they were needed.
+
+0.23 adds the 74S03 that was used on Willis's board to generate the RD and WR pulses for the D8203, as an
+option. This will produce very low latency on the read and write strobes, but unsude if it's actually
+necessary.
+
+Expectation is that this board will work as-is on 8085 and 8080, and on Z80 if Z80 board has "early write"
+enabled. Board should be configured to use Delayed-WE to the DRAM, and to use SACK to generate wait states.
+It's actually the period where RD or WR is asserted and SACK is not that iw when we assert WAIT.
+
 ## Hellboard 0.18
 
 With Willis's help, we analyzed the mystery DRAM board (in the ebay folder) and determined a partial netlist. Some insights
@@ -14,7 +28,10 @@ from the mystery board:
   the data on bus at this time.
 
 * Willis's board shows what we believe to be a 220R/27pF delay via an LS14 on the CAS signal for
-  the delayed write. This was shown to be insufficient. 220R/100pF seemed to at least mostly work.
+  the delayed write. This was shown to be insufficient. 220R/100pF seemed to at least mostly work. The
+  measured CAS delay with these components is 27ns.
+
+* my 100ohm/10pF filter on MR and MW provides 22ns of delay
 
 ## Hellboard 0.16
 
