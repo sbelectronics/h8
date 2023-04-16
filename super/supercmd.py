@@ -21,7 +21,7 @@ def load_image(super, addr, fn):
             super.mem_write_fast(addr, b)
             addr += 1
     finally:
-        super.mem_write_end()
+        super.mem_write_end()   
 
 def load_h8d(super, fn):
     filebytes = open(fn, "rb").read()
@@ -118,6 +118,21 @@ def save_image(super, addr, size, fn):
     finally:
         super.mem_read_end()
 
+def verify_image(super, addr, size, fn):
+    filebytes = open(fn, "rb").read()
+    if (size==0) or (size is None):
+        size = len(filebytes)
+
+    super.mem_read_start(addr)
+    try:
+        for i in range(0, size):
+            byte = super.mem_read_fast(addr)
+            if byte != filebytes[i]:
+                print("Mismatch Addr=%04X Mem=%02X File=%02X" % (addr, byte, filebytes[i]))
+            addr+=1
+    finally:
+        super.mem_read_end()
+
 def fill(super, addr, size, value):
     super.mem_write_start(addr)    
     try:
@@ -157,6 +172,8 @@ def main():
          help="use the python supervisor", action="store_false", default=True)
     parser.add_option("-H", "--inverthold", dest="invert_hold",
          help="invert hold signal", action="store_true", default=False)
+    parser.add_option("-D", "--delaymult", dest="delay_mult",
+         help="multiplier for delay", type="int", default=None)
 
     #parser.disable_interspersed_args()
 
@@ -175,7 +192,10 @@ def main():
       raise "Unsupported"
 
     if options.invert_hold:
-        super.invert_hold(1);
+        super.invert_hold(1)
+
+    if options.delay_mult:
+        super.delay_mult(options.delay_mult)
     
     addr = None
     if (options.addr):
@@ -297,6 +317,14 @@ def main():
         finally:
             if not options.norelease:
                 super.release_bus()
+
+    elif (cmd=="verifyimg"):
+        try:
+            super.take_bus()
+            verify_image(super, addr, count, options.filename)
+        finally:
+            if not options.norelease:
+                super.release_bus()                
 
     elif (cmd=="loadh8t"):
         try:

@@ -64,3 +64,6 @@ class SupervisorDirect:
 
     def invert_hold(self, val):
         self.ext.invert_hold(val)
+
+    def delay_mult(self, val):
+        self.ext.delay_mult(val)
