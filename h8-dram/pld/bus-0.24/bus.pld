@@ -36,21 +36,13 @@ PIN 18 = !CS;
 PIN 19 = !WAIT;
 PIN 20 = NC4; /* D2 */
 PIN 21 = NC5;  /* D1 */
-PIN 22 = !MW;
-PIN 23 = !MR;
+PIN 22 = DONOTUSE1;  /* !BMEMW is wired directly to !MW */
+PIN 23 = DONOTUSE2;  /* !BMEMR is wired directly to !MR */
 
 /*
- * The 0.16 prototype was modified as follows:
- *    - cut traces to the inverter that followed the HCT30
- *    - connected 220R, and 100pF-to-ground cap from CAS to HCT14 inverter
- *    - connected inverter output to PIN3
- *    - cut WE trace between D8203 and DRAM
- *    - connect WE at D8203 to PIN13
- *    - connect WE at DRAM to pin14
+ * BMEM_TO_MEM solderjumpers are soldered
+ * HCT14 solder jumpers are soldered to !M position
  */
-
-MW = BMEMW;
-MR = BMEMR;
 
 CS = !RESET & CSIN;
 

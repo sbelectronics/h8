@@ -1,7 +1,7 @@
 H8-64K-DRAM, aka "H8-Hellboard"
 https://www.smbaker.com/
 
-## Hellboard 0.23
+## Hellboard 0.23/0.24 - BUILD THIS ONE.
 
 Revision 0.18 had a few bugs, such as CAS and RAS traces being broken. Those are all fixed. Also removed
 some circuits (such as flipflops) that were not needed. Kept one flipflop and the LS123 just in case
@@ -14,6 +14,8 @@ necessary.
 Expectation is that this board will work as-is on 8085 and 8080, and on Z80 if Z80 board has "early write"
 enabled. Board should be configured to use Delayed-WE to the DRAM, and to use SACK to generate wait states.
 It's actually the period where RD or WR is asserted and SACK is not that iw when we assert WAIT.
+
+Use the PLDs in pld/bus/bus-0.24 and pld/addr/addr-0.16.
 
 ## Hellboard 0.18
 
@@ -61,3 +63,13 @@ A few insights were made while implementing Hellboard:
   !RD or !WR can be asserted after an XACK. This prevents the lost-read-after-write syndrome.
 
 Current board was built using ADDR-0.16 PLD and BUS-0.16 PLD.
+
+## When it doesn't boot
+
+Check address 20D7 (aka 040-327). If 0xFF, will not boot. If 0x00, will boot
+
+This is S.CONTY which contains terminal characteristics. This is the problematic bit:
+
+```
+./acm/esval.acm:CTP.HHS EQU     00000100B               ; Terminal uses hdwr handshake  /3.0a/
+```

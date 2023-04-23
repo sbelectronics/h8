@@ -1,0 +1,98 @@
+name ew;
+device g16v8;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = Z80CLK;
+PIN 2 = !RFSH;
+PIN 3 = !RD;
+PIN 4 = !WR;
+PIN 5 = !M1;
+PIN 6 = !MREQ;
+PIN 7 = !RESET;
+PIN 8 = !IOREQ;
+PIN 9 = FFQ;             /* set to LOW if a WRITE */
+PIN 10 = GND;
+PIN 11 = NC1;
+PIN 12 = NC2;
+PIN 13 = NC3;
+PIN 14 = NC4;
+PIN 15 = !EW;
+PIN 16 = !FFCLR;
+PIN 17 = FFCLK;
+PIN 18 = FFD;
+PIN 19 = !FFPRE;
+PIN 20 = VCC;
+
+FFCLK = Z80CLK;
+FFCLR = !MREQ # RFSH;    /* enable the flipflop if mreq is asserted and refresh is not*/
+FFD = !(MREQ & RD);      /* latch 0 if we're in a memory read, 1 otherwise */
+FFPRE = 'b'0;            /* never preset */
+EW = FFQ;                
+
+/*
+   From H8-6 schematic
+    !MREQ  !RD    FFD
+      0     0      0
+      0     1      1
+      1     0      1
+      1     1      1
+
+    Invert the logic           FFD = !(MREQ & RD);
+     MREQ   RD    FFD
+      1     1      0
+      1     0      1
+      0     1      1
+      0     0      1
+
+   From H8-6 schematic
+    !MREQ  !RFSH    !FFCLR
+      0     0        0
+      0     1        1
+      1     0        0
+      1     1        0
+
+   Invert the logic            FFCLR = !MREQ # RFSH;
+    MREQ   RFSH     FFCLR
+      1     1        1
+      1     0        0
+      0     1        1
+      0     0        1    
+*/
+
+/*
+   Possibly wrong -- U25 in doubt
+
+   From H8-6 schematic
+    !MREQ  !RD    FFD
+      0     0      1
+      0     1      0
+      1     0      0
+      1     1      0
+
+    Invert the logic
+     MREQ   RD    FFD
+      1     1      1
+      1     0      0
+      0     1      0
+      0     0      0
+
+   From H8-6 schematic
+    !MREQ  !RFSH    !FCLR
+      0     0        0
+      0     1        1
+      1     0        0
+      1     1        0
+
+   Invert the logic
+    MREQ   RFSH     FCLR
+      1     1        1
+      1     0        0
+      0     1        1
+      0     0        1    
+*/
