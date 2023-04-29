@@ -147,19 +147,117 @@ NDNOP	ANA	A
 
 NDREADR	EQU	*
 	CALL    DREADR
-	MVI	A,EC.EOF
-	STC			EOF ON ALL READS
+	JMP	NDREAD1
 	RET
+
+
+** Address calculation
+**
+**   in: sector number in HL
+**   out: page number in A, offset in HL
+**
+**   secaddr = sector<<8
+**   pgl  = (secaddr >> 14) & 0x7F
+**
+**   pgl = (sector >> 6) & 0xFF
+**   ofs = (sector << 8) & 0x3F00
+**
+**   pgl = (L & 0xC0) >> 6
+**   pgl = pgl | (H & 0x1F) << 2
+
+CALCPG	EQU 	*
+	PUSH	BC
+	MOV 	A,L
+	ANI 	0C0H
+	RRC
+	RRC
+	RRC
+	RRC
+	RRC
+	RRC
+	MOV 	B,A
+	MOV	A,H
+	ANI	01FH
+	RLC
+	RLC
+	ORA 	B
+	POP 	BC
+	PUSH	PSW
+	MOV     A,L
+	ANI	03FH
+	MOV	H,A
+	MVI	L,000H
+	POP	PSW
+	RET
+
+** Read Sector
+** BC = Byte Count
+** DE = Dest Address
+** HL = Block Number
 
 NDREAD	EQU	*
 	CALL    DREAD
-	MVI	A,EC.EOF
-	STC			EOF ON ALL READS
+NDREAD1 EQU     *
+	PUSH    B
+	PUSH	D
+	PUSH	H
+
+	CALL    CALCPG
+	OUT	RD00K,A
+
+	DI
+	MVI	A,083H		BANK 3, page enable
+	OUT     RD00KH,A
+
+RLOOP   MOV     A,M             Load value in memory location HL into A
+	STAX	D               Store value in A into memory location DE
+	INX	D
+	INX	H
+        DCX     B
+	MOV	A,B
+	ORA	C
+	JNZ	RLOOP
+
+	MVI     A,000H		page disable
+	OUT	RD00KH,A
+	EI
+
+	POP	H
+	POP	D
+	POP	B
+	ANA	A
 	RET
 
 NDWRITE	EQU     *
 	CALL	DWRITE
-	ANA     A
+	PUSH    B
+	PUSH	D
+	PUSH	H
+
+	CALL    CALCPG
+	OUT	WR00K,A
+
+	DI
+	MVI	A,083H		BANK 3, page enable
+	OUT     WR00KH,A
+
+WLOOP   LDAX	D               Load value in memory location DE into A
+	MOV     M,A             Store value in A into memory location HL
+	INX	D
+	INX	H
+        DCX     B
+	MOV	A,B
+	ORA	C
+	JNZ	WLOOP
+
+	MVI     A,000H		page disable
+	OUT	WR00KH,A
+	EI
+
+	POP	H
+	POP	D
+	POP	B
+	ANA	A
 	RET
 
 NDLOAD	EQU	*
