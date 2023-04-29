@@ -1,0 +1,27 @@
+** PGINIT initializes all page registers but does not enable paging
+
+PGINIT  EQU     *
+        DI
+        MVI     A,0
+        OUT     RD00KH
+	OUT	RD00KH
+	OUT	WR00KH
+	OUT	RD16KH
+	OUT	WR16KH
+	OUT	RD32KH
+	OUT	WR32KH
+	OUT	RD48KH
+	OUT	WR48KH
+	OUT	RD00K
+	OUT	WR00K
+	INR	A
+	OUT	RD16K
+	OUT	WR16K
+	INR	A
+	OUT	RD32K
+	OUT	WR32K
+	INR	A
+	OUT	RD48K
+	OUT	WR48K
+        EI
+        RET
