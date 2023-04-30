@@ -223,8 +223,10 @@ RLOOP   MOV     A,M             Load value in memory location HL into A
 	ORA	C
 	JNZ	RLOOP
 
-	MVI     A,000H		page disable
+	MVI     A,000H		disable paging and map back to page 0
 	OUT	RD00KH,A
+	OUT     RD00K,A		... and bank 0
+
 	EI
 
 ROUT	POP	H
@@ -260,8 +262,10 @@ WLOOP   LDAX	D               Load value in memory location DE into A
 	ORA	C
 	JNZ	WLOOP
 
-	MVI     A,000H		page disable
+	MVI     A,000H		disable paging and map back to page 0
 	OUT	WR00KH,A
+	OUT	WR00K,A		... and bank 0
+
 	EI
 
 WOUT	POP	H
