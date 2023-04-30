@@ -190,7 +190,7 @@ CALCPG	EQU 	*
 	POP	PSW
 	RET
 
-** Read Sector
+** Read Data
 ** BC = Byte Count
 ** DE = Dest Address
 ** HL = Block Number
@@ -198,95 +198,85 @@ CALCPG	EQU 	*
 NDREAD	EQU	*
 	CALL    DREAD
 NDREAD1 EQU     *
-	PUSH    B
+
+	PUSH	B		Save caller args
 	PUSH	D
 	PUSH	H
-
-RSLOOP	MOV	A,B
-	ORA	C
-	JZ	ROUT		Asking to write 0 bytes
-
-	PUSH    H		Save the real HL
+RNEXT16	MOV     A,B
+	CPI	041H
+	JC	LASTRD		Take the easy path, read is <= 16K+1sector
 	PUSH	B
-	MVI	B,01H		Transfer at most 256 bytes at a time. BC better be a multiple of 256!
-
-	CALL    CALCPG
-	CALL	DPAGE
-	OUT	RD00K,A
-
-	DI
-	MVI	A,083H		BANK 3, page enable
-	OUT     RD00KH,A
-
-RLOOP   MOV     A,M             Load value in memory location HL into A
-	STAX	D               Store value in A into memory location DE
-	INX	D
-	INX	H
-        DCX     B
-	MOV	A,B
-	ORA	C
-	JNZ	RLOOP
-
-	MVI     A,000H		disable paging and map back to page 0
-	OUT	RD00KH,A
-	OUT     RD00K,A		... and bank 0
-	EI
-
-	POP	B
+	PUSH	D
+	PUSH	H
+	LXI	B,04000H	Set count to 16K
+	CALL	SMALLRD		Read 16K
 	POP	H
-	DCR	B		Decrement count by 256 bytes
-	INX	H		Increment block number by 1
-	JMP	RSLOOP
+	POP	D
+	POP	B
 
-ROUT	POP	H
+	MOV	A,D		Increment DE by 0x4000
+	ADI	040H
+	MOV	D,A
+
+	MOV	A,B		Decrement BC by 0x4000
+	SUI	040H
+	MOV	B,A
+
+	MOV	A,L             Increment HL by 0x0040
+	ADI	040H
+	MOV	L,A
+	MOV	A,H
+	ACI	000H		We might have carried...
+	MOV	H,A
+	JMP	RNEXT16
+
+LASTRD	CALL	SMALLRD		We are almost done, less than 16K+1sector remaining
+	POP	H
 	POP	D
 	POP	B
 	ANA	A
 	RET
 
+** Write Data
+** BC = Byte Count
+** DE = Src Address
+** HL = Block Number
+
 NDWRITE	EQU     *
 	CALL	DWRITE
-	PUSH    B
+	PUSH	B		Save caller args
 	PUSH	D
 	PUSH	H
-
-WSLOOP	MOV	A,B
-	ORA	C
-	JZ	WOUT		Asking to write 0 bytes
-
-	PUSH    H		Save the real HL
-	PUSH    B		Save the real BC
-	MVI	B,01H		Transfer at most 256 bytes at a time. BC better be a multiple of 256!
-
-	CALL    CALCPG
-	CALL	DPAGE
-	OUT	WR00K,A
-
-	DI
-	MVI	A,083H		BANK 3, page enable
-	OUT     WR00KH,A
-
-WLOOP   LDAX	D               Load value in memory location DE into A
-	MOV     M,A             Store value in A into memory location HL
-	INX	D
-	INX	H
-        DCX     B
-	MOV	A,B
-	ORA	C
-	JNZ	WLOOP
-
-	MVI     A,000H		disable paging and map back to page 0
-	OUT	WR00KH,A
-	OUT	WR00K,A		... and bank 0
-	EI
-
-	POP	B
+WNEXT16	MOV     A,B
+	CPI	041H
+	JC	LASTWR		Take the easy path, write is <= 16K+1sector
+	PUSH	B
+	PUSH	D
+	PUSH	H
+	LXI	B,04000H	Set count to 16K
+	CALL	SMALLWR		Write 16K
 	POP	H
-	DCR	B		Decrement count by 256 bytes
-	INX	H		Increment block number by 1
-	JMP	WSLOOP
+	POP	D
+	POP	B
 
-WOUT	POP	H
+	MOV	A,D		Increment DE by 0x4000
+	ADI	040H
+	MOV	D,A
+
+	MOV	A,B		Decrement BC by 0x4000
+	SUI	040H
+	MOV	B,A
+
+	MOV	A,L             Increment HL by 0x0040
+	ADI	040H
+	MOV	L,A
+	MOV	A,H
+	ACI	000H		We might have carried...
+	MOV	H,A
+	JMP	WNEXT16
+
+LASTWR	CALL	SMALLWR		We are almost done, less than 16K+1sector remaining
+	POP	H
 	POP	D
 	POP	B
 	ANA	A
@@ -307,6 +297,77 @@ NDMNT	EQU	*
 	CALL	DMNT
 	ANA	A
 	RET
+
+** Read/Write functions
+
+SMALLRD	EQU	*
+	MOV	A,B
+	ORA	C
+	JZ	SROUT		Asking to write 0 bytes
+
+	CALL    CALCPG
+	CALL	DPAGE
+	OUT	RD00K,A		Map page0 to virt-page in ramdisk
+	INR	A
+	OUT	RD16K,A		Always allocate two pages, so we can handle writes that are greater than 16K
+
+	DI
+	MVI	A,083H		Select the proper bank, and turn on paging
+	OUT     RD00KH,A
+	OUT	RD16KH,A
+
+RLOOP   MOV     A,M             Load value in memory location HL into A
+	STAX	D               Store value in A into memory location DE
+	INX	D
+	INX	H
+        DCX     B
+	MOV	A,B
+	ORA	C
+	JNZ	RLOOP
+
+	MVI     A,000H
+	OUT	RD00KH,A        disable paging and map page0 back to virt-page0
+	OUT     RD00K,A		... and bank 0
+	OUT     RD16KH,A        ... and page 1 back to bank 0
+	INR	A
+	OUT	RD16K,A		... and page 1 back to virt-page1
+	EI
+SROUT	RET
+
+SMALLWR	EQU	*
+	MOV	A,B
+	ORA	C
+	JZ	SWOUT		Asking to write 0 bytes
+
+	CALL    CALCPG
+	CALL	DPAGE
+	OUT	WR00K,A		Map page0 to virt-page in ramdisk
+	INR	A
+	OUT	WR16K,A		Always allocate two pages, so we can handle writes that are greater than 16K
+
+	DI
+	MVI	A,083H		BANK 3, page enable
+	OUT     WR00KH,A
+	OUT	WR16KH,A
+
+WLOOP   LDAX	D               Load value in memory location DE into A
+	MOV     M,A             Store value in A into memory location HL
+	INX	D
+	INX	H
+        DCX     B
+	MOV	A,B
+	ORA	C
+	JNZ	WLOOP
+
+	MVI     A,000H		
+	OUT	WR00KH,A        disable paging and map page0 back to virt-page0
+	OUT     WR00K,A		... and bank 0
+	OUT     WR16KH,A        ... and page 1 back to bank 0
+	INR	A
+	OUT	WR16K,A		... and page 1 back to virt-page1
+	EI
+
+SWOUT	RET
 
 ** Library stuff
 
@@ -363,10 +424,50 @@ DREAD	EQU	*
 	POP	PSW
 	RET
 
+DSMALLR	EQU	*
+	PUSH    PSW
+	PUSH	H
+	LXI	H,MSREAD
+	SCALL   .PRINT
+	POP	H
+	CALL	PHEXHL
+	PUSH	H
+	LXI	H,MDEST
+	SCALL	.PRINT
+	CALL    PHEXDE
+	LXI	H,MCOUNT
+	SCALL   .PRINT
+	CALL    PHEXBC
+	MVI	A,012Q
+	SCALL	.SCOUT
+	POP	H
+	POP	PSW
+	RET
+
 DWRITE	EQU	*
 	PUSH    PSW
 	PUSH	H
 	LXI	H,MWRITE
+	SCALL   .PRINT
+	POP	H
+	CALL	PHEXHL
+	PUSH	H
+	LXI	H,MSRC
+	SCALL	.PRINT
+	CALL    PHEXDE
+	LXI	H,MCOUNT
+	SCALL   .PRINT
+	CALL    PHEXBC
+	MVI	A,012Q
+	SCALL	.SCOUT
+	POP	H
+	POP	PSW
+	RET
+
+DSMALLW	EQU	*
+	PUSH    PSW
+	PUSH	H
+	LXI	H,MSWRITE
 	SCALL   .PRINT
 	POP	H
 	CALL	PHEXHL
@@ -396,6 +497,42 @@ DMNT	EQU	*
 	PUSH    PSW
 	PUSH	H
 	LXI	H,MMNT
+	SCALL   .PRINT
+	POP	H
+	POP	PSW
+	RET
+
+DBACK	EQU	*
+	PUSH    PSW
+	PUSH	H
+	LXI	H,MBACK
+	SCALL   .PRINT
+	POP	H
+	POP	PSW
+	RET
+
+DCOPD	EQU	*
+	PUSH    PSW
+	PUSH	H
+	LXI	H,MCOPD
+	SCALL   .PRINT
+	POP	H
+	POP	PSW
+	RET
+
+DBIGR	EQU	*
+	PUSH    PSW
+	PUSH	H
+	LXI	H,MBIGR
+	SCALL   .PRINT
+	POP	H
+	POP	PSW
+	RET
+
+DBIGW	EQU	*
+	PUSH    PSW
+	PUSH	H
+	LXI	H,MBIGW
 	SCALL   .PRINT
 	POP	H
 	POP	PSW
@@ -459,16 +596,22 @@ PHEXBC	PUSH	PSW
 
 MLOAD	DB	12Q,'RD: LOAD',212Q
 MREAD   DB      12Q,'RD: READ BLK','='+200Q
+MSREAD  DB      12Q,'RD: SMALL READ BLK','='+200Q
 MDEST   DB      ' DEST','='+200Q
 MSRC    DB      ' SRC','='+200Q
 MCOUNT	DB	' COUNT','='+200Q
 MREADR  DB      12Q,'RD: READ REGARDLESS BLK','='+200Q
 MWRITE  DB      12Q,'RD: WRITE BLK','='+200Q
+MSWRITE DB      12Q,'RD: WRITE BLK','='+200Q
 MRDY    DB      12Q,'RD: READY',212Q
 MMNT    DB      12Q,'RD: MOUNT',212Q
 MPAGE   DB      '    PAGE','='+200Q
 MADDR   DB      ' ADDR','='+200Q
+MBACK	DB	'BACK',212Q
+MCOPD	DB	'COPIED',212Q
 
+MBIGR	DB	'RD: BIGREAD',212Q
+MBIGW	DB	'RD: BIGWRITE',212Q
 
 	XTEXT	TBRA
 	XTEXT	TYPTX
