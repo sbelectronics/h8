@@ -202,9 +202,13 @@ NDREAD1 EQU     *
 	PUSH	D
 	PUSH	H
 
-	MOV	A,B
+RSLOOP	MOV	A,B
 	ORA	C
 	JZ	ROUT		Asking to write 0 bytes
+
+	PUSH    H		Save the real HL
+	PUSH	B
+	MVI	B,01H		Transfer at most 256 bytes at a time. BC better be a multiple of 256!
 
 	CALL    CALCPG
 	CALL	DPAGE
@@ -226,8 +230,13 @@ RLOOP   MOV     A,M             Load value in memory location HL into A
 	MVI     A,000H		disable paging and map back to page 0
 	OUT	RD00KH,A
 	OUT     RD00K,A		... and bank 0
-
 	EI
+
+	POP	B
+	POP	H
+	DCR	B		Decrement count by 256 bytes
+	INX	H		Increment block number by 1
+	JMP	RSLOOP
 
 ROUT	POP	H
 	POP	D
@@ -241,9 +250,13 @@ NDWRITE	EQU     *
 	PUSH	D
 	PUSH	H
 
-	MOV	A,B
+WSLOOP	MOV	A,B
 	ORA	C
 	JZ	WOUT		Asking to write 0 bytes
+
+	PUSH    H		Save the real HL
+	PUSH    B		Save the real BC
+	MVI	B,01H		Transfer at most 256 bytes at a time. BC better be a multiple of 256!
 
 	CALL    CALCPG
 	CALL	DPAGE
@@ -265,8 +278,13 @@ WLOOP   LDAX	D               Load value in memory location DE into A
 	MVI     A,000H		disable paging and map back to page 0
 	OUT	WR00KH,A
 	OUT	WR00K,A		... and bank 0
-
 	EI
+
+	POP	B
+	POP	H
+	DCR	B		Decrement count by 256 bytes
+	INX	H		Increment block number by 1
+	JMP	WSLOOP
 
 WOUT	POP	H
 	POP	D

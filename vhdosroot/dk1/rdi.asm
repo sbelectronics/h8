@@ -106,17 +106,9 @@ INIT    CPI     INI.MAX
 *
 
 DBI     LXI     H,DBIA
-        LDA     VOLFLG
-        ANI     VFL.80T+VFL.2SD  USE PRIMARY TABLE -
-        RZ                      - YES, RETURN
- 
-        LXI     H,DBIB
         RET
 
-DBIA    DB      1,3,0,2,4
-        DB      6,8,5,7,9
- 
-DBIB    DB      1,0,2,4,3
+DBIA    DB      0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 
         STL     'PAR    - Volume Parameters'
         EJECT
@@ -168,7 +160,7 @@ INITDSK ANA     A
 PARAM   EQU     *
 
         ERRNZ   *-PARAM+LAB.VPR-LAB.SIZ
-VOLSIZ  DW      800            Volume Size (bytes/256)
+VOLSIZ  DW      8190            Volume Size (bytes/256)
 
         ERRNZ   *-PARAM+LAB.VPR-LAB.PSS
 SECSIZ  DW      256             Physical Sector Size (bytes)
