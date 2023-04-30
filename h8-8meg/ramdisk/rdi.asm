@@ -130,7 +130,11 @@ DBIA    DB      0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 
 PAR     EQU     *
         LXI     H,PARAM
-        ANA     A
+        LDA     AIO.UNI
+        ORA     A
+        JNZ     PAROUT          If not unit 0, return with params
+        LXI     H,PARAM0        Load params for unit 0
+PAROUT  ANA     A
         RET
 
         STL     'CMV    - Check Media Validity'
@@ -157,6 +161,8 @@ CMV     CALL    $$DRVR
 INITDSK ANA     A
         RET
 
+** parameters for units 1-7
+
 PARAM   EQU     *
 
         ERRNZ   *-PARAM+LAB.VPR-LAB.SIZ
@@ -176,5 +182,27 @@ PARAM2  EQU     *               Auxiliary Parameters
 SPT     DB      10              Sectors per Track
 
         ERRNZ   *-PARAM2-LAB.AXL        Insure enough Auxiliary Parameters
+
+** parameters for units 0
+
+PARAM0  EQU     *
+
+        ERRNZ   *-PARAM0+LAB.VPR-LAB.SIZ
+VOLSIZ0 DW      1790            Volume Size (bytes/256)
+
+        ERRNZ   *-PARAM0+LAB.VPR-LAB.PSS
+SECSIZ0 DW      256             Physical Sector Size (bytes)
+
+        ERRNZ   *-PARAM0+LAB.VPR-LAB.VFL
+VOLFLG0 DB      0               Device Dependant/Volume Dependant Flags
+
+        ERRNZ   *-PARAM0-LAB.VPL Insure enough parameters are defined
+
+PARAM20 EQU     *               Auxiliary Parameters
+
+        ERRNZ   *-PARAM20-LAB.SPT+LAB.AUX
+SPT0    DB      10              Sectors per Track
+
+        ERRNZ   *-PARAM20-LAB.AXL        Insure enough Auxiliary Parameters
 
         END
