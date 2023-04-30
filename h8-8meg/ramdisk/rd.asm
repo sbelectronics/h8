@@ -14,9 +14,11 @@
 	XTEXT	DDDEF
 	XTEXT	HOSDEF
 	XTEXT	HOSEQU
-	XTEXT	ECDEF
-	XTEXT	ESVAL
 	XTEXT	DEVDEF
+        XTEXT   DIRDEF
+	XTEXT	ECDEF
+	XTEXT	ESINT
+	XTEXT	ESVAL
 	XTEXT	FILDEF
 	XTEXT	PICDEF
 	XTEXT	DVDDEF
@@ -318,7 +320,8 @@ SMALLRD	EQU	*
 	OUT	RD16K,A		Always allocate two pages, so we can handle writes that are greater than 16K
 
 	DI
-	MVI	A,083H		Select the proper bank, and turn on paging
+	LDA	AIO.UNI
+	ORI	080H		Select the proper bank, and turn on paging
 	OUT     RD00KH,A
 	OUT	RD16KH,A
 
@@ -352,7 +355,8 @@ SMALLWR	EQU	*
 	OUT	WR16K,A		Always allocate two pages, so we can handle writes that are greater than 16K
 
 	DI
-	MVI	A,083H		BANK 3, page enable
+	LDA	AIO.UNI
+	ORI	080H		Select the proper bank, and turn on paging
 	OUT     WR00KH,A
 	OUT	WR16KH,A
 
