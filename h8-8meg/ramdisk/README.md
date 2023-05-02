@@ -39,3 +39,14 @@ Two smbaker.com boards (hypothetically) will support drives RD0: through RD7:.
 `SET RD: DEBUG` ... turns on verbose debug messages
 
 `SET RD: NODEBUG` ... [DEFAULT] turns off verbose debug messages
+
+## Building
+
+This driver was built using VirtualHDOS by Douglass Miller.
+
+See https://github.com/durgadas311/virtual-cpm/tree/master/vhdos
+
+You will need to install VirtualHDOS as per Douglass's instructions. Make sure to copy
+the assembler (ASM.ABS) and other necessary binaries to your SD0 volume. On SD1, install
+all of the necessary ACM files from your particular HDOS driver build source. I probably
+used the HDOS 3.02 driver source from the sebhc github.

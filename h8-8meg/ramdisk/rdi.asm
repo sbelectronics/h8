@@ -1,4 +1,4 @@
-        TITLE   'DKH17I - Mini-floppy Initialization Parameters'
+        TITLE   'RDI - RamDisk Initialization Parameters'
         LON     IC
 
 RESIDE  EQU     0               RESIDENT HDOS ASSEMBLER
@@ -55,7 +55,7 @@ VFL.80T EQU     00000010B       ;80-TRACK/SIDE DISK DRIVE/MEDIA
         ERRMI   .+SB.SDB-*
         DS      .+SB.SDB-*
 
-        STL     'DKH17I - Mini-floppy Initialization Parameters'
+        STL     'RDI - Ramdisk Initialization Parameters'
         EJECT
 ***     INIT
 *
@@ -80,29 +80,8 @@ INIT    CPI     INI.MAX
 *       interleave table.  The table is in the form
 *       of offsets.
 *
-*       Link the blocks in the order:
-*
-*       40-track, 1 side:
-*
-*                 23  67
-*               01  45  89
-*                 23' 67'
-*               01' 45'
-*
-*       80-track, 1 side; or 40-track, 2 side:
-*
-*                   4567
-*               0123    89
-*               01'   6789'
-*                 2345'
-*
-*       80-track, 2 side:
-*
-*                       89
-*               012345'
-*               01234567
-*                     6789'
-*               0123"
+*       This is not important to RamDisk and we will just emit
+*       a sequential directory interleave.
 *
 
 DBI     LXI     H,DBIA
@@ -117,18 +96,12 @@ DBIA    DB      0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 *       PAR returns a pointer to the volume parameters as defined
 *       in  *LABDEF*.
 *
-*       NOTE:   These parameters should only be checked after
-*               MFINIT has been called, in case the volume is of
-*               some special type, eg. double sided, etc.
-*
 *       ENTRY:  NONE
 *
 *       EXIT:   HL      = Address of Volume Parameters
 *
 *       USES:   PSW,HL
 *
-
-** TODO: support for TINY option
 
 PAR     EQU     *
         CALL    $$DRVR          call driver READY, this will return RD INFO block in DE
@@ -161,7 +134,7 @@ PAR     EQU     *
         ORA     A
         JNZ     PAROUT          Tiny mode, return with params
         LXI     H,PARAM0        Load params for unit0-regular
-        
+
 PAROUT  ANA     A
         RET
 
@@ -189,11 +162,16 @@ ENOTRD: CALL    PHEXA
 CMV     CALL    $$DRVR
         DB      DC.RDY
         RC                      ERROR, RETURN
+	ANA     A               SUCCESS, RETURN CLEAR CARRY
+	RET
 
-		ANA     A
-		RET
+        STL     'INITDSK   - Initialize Disk'
+        EJECT
+**      INITDSK
+*
+*       INITIALIZE THE DISK SURFACE
 
-INITDSK ANA     A
+INITDSK ANA     A               MOVE ALONG, NOTHING TO SEE HERE...
         RET
 
         XTEXT   PRHEX
@@ -222,7 +200,7 @@ SPT     DB      10              Sectors per Track
 
         ERRNZ   *-PARAM2-LAB.AXL        Insure enough Auxiliary Parameters
 
-** parameters for unit 0, regular mode
+** parameters for unit 0, regular mode (2MB OF RAM)
 
 PARAM0  EQU     *
 
@@ -244,7 +222,7 @@ PAR20   EQU     *               Auxiliary Parameters
 
         ERRNZ   *-PAR20-LAB.AXL        Insure enough Auxiliary Parameters
 
-** parameters for unit 0, tiny mode
+** parameters for unit 0, tiny mode (512K OF RAM)
 
 PARAM0T EQU     *
 
