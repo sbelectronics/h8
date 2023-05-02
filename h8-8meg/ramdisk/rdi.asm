@@ -131,12 +131,45 @@ DBIA    DB      0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 ** TODO: support for TINY option
 
 PAR     EQU     *
-        LXI     H,PARAM
+        CALL    $$DRVR          call driver READY, this will return RD INFO block in DE
+        DB      DC.RDY
+        RC                      return if error
+
+**                              Next we go through some effort to check driver parameters, to
+*                               see if our Unit 0 should be tiny (one 512K chip only, for the
+*                               SEBHC board) or should be in regular mode (all four chips, for
+*                               scott's board). Unit 0 is special because chip0 is shared with
+*                               the 64K of main RAM.
+
+        LDAX    D               Look for FEED at (DE)
+        CPI     0FEH
+        JNZ     ENOTRD
+        INX     D
+        LDAX    D               Skip FE
+        CPI     0EDH
+        JNZ     ENOTRD
+        INX     D               Skip ED
+
+        LXI     H,PARAM         Start by assuming the unit 1-7 params
         LDA     AIO.UNI
         ORA     A
         JNZ     PAROUT          If not unit 0, return with params
-        LXI     H,PARAM0        Load params for unit 0
+
+        LXI     H,PARAM0T       Assume params for unit0-tiny
+        INX     D               Skip DEBUG bit              
+        LDAX    D               Read TINY bit
+        ORA     A
+        JNZ     PAROUT          Tiny mode, return with params
+        LXI     H,PARAM0        Load params for unit0-regular
+        
 PAROUT  ANA     A
+        RET
+
+ENOTRD: CALL    PHEXA
+        CALL    PHEXDE
+        LXI     H,MNOTRD        Error return, we failed to find the RD Info block
+        SCALL   .PRINT
+        STC
         RET
 
         STL     'CMV    - Check Media Validity'
@@ -163,6 +196,10 @@ CMV     CALL    $$DRVR
 INITDSK ANA     A
         RET
 
+        XTEXT   PRHEX
+
+MNOTRD  DB      12Q,'RD: Failed to find RD driver info block',212Q
+
 ** parameters for units 1-7
 
 PARAM   EQU     *
@@ -185,26 +222,48 @@ SPT     DB      10              Sectors per Track
 
         ERRNZ   *-PARAM2-LAB.AXL        Insure enough Auxiliary Parameters
 
-** parameters for units 0
+** parameters for unit 0, regular mode
 
 PARAM0  EQU     *
 
         ERRNZ   *-PARAM0+LAB.VPR-LAB.SIZ
-VOLSIZ0 DW      1790            Volume Size (bytes/256)
+        DW      7936            Volume Size (bytes/256)
 
         ERRNZ   *-PARAM0+LAB.VPR-LAB.PSS
-SECSIZ0 DW      256             Physical Sector Size (bytes)
+        DW      256             Physical Sector Size (bytes)
 
         ERRNZ   *-PARAM0+LAB.VPR-LAB.VFL
-VOLFLG0 DB      0               Device Dependant/Volume Dependant Flags
+        DB      0               Device Dependant/Volume Dependant Flags
 
         ERRNZ   *-PARAM0-LAB.VPL Insure enough parameters are defined
 
-PARAM20 EQU     *               Auxiliary Parameters
+PAR20   EQU     *               Auxiliary Parameters
 
-        ERRNZ   *-PARAM20-LAB.SPT+LAB.AUX
-SPT0    DB      10              Sectors per Track
+        ERRNZ   *-PAR20-LAB.SPT+LAB.AUX
+        DB      10              Sectors per Track
 
-        ERRNZ   *-PARAM20-LAB.AXL        Insure enough Auxiliary Parameters
+        ERRNZ   *-PAR20-LAB.AXL        Insure enough Auxiliary Parameters
+
+** parameters for unit 0, tiny mode
+
+PARAM0T EQU     *
+
+        ERRNZ   *-PARAM0T+LAB.VPR-LAB.SIZ
+        DW      1790            Volume Size (bytes/256)
+
+        ERRNZ   *-PARAM0T+LAB.VPR-LAB.PSS
+        DW      256             Physical Sector Size (bytes)
+
+        ERRNZ   *-PARAM0T+LAB.VPR-LAB.VFL
+        DB      0               Device Dependant/Volume Dependant Flags
+
+        ERRNZ   *-PARAM0T-LAB.VPL Insure enough parameters are defined
+
+PAR20T  EQU     *               Auxiliary Parameters
+
+        ERRNZ   *-PAR20T-LAB.SPT+LAB.AUX
+        DB      10              Sectors per Track
+
+        ERRNZ   *-PAR20T-LAB.AXL        Insure enough Auxiliary Parameters
 
         END

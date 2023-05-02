@@ -106,6 +106,14 @@ HELP	CALL	$TYPTX
 	DB	NL,ENL
 	XRA	A
 	RET
+
+	SPACE	4,10
+**	"what" identification
+
+	DB	'@(#)HDOS 3.0 Ramdisk Driver by Scott Baker.',NL
+	DW	0		Date
+	DW	0		Time
+
 	STL	'SET TABLES'
 	EJECT
 ***	SET TABLES
@@ -153,7 +161,7 @@ HELPI	EQU	*-PRCTAB/2
 	DW	HELP
 
 	SPACE	4,10
-.	SET	001116A		ADJUST THIS TO THE CURRENT ADDRESS AT THIS POINT
+.	SET	001176A		ADJUST THIS TO THE CURRENT ADDRESS AT THIS POINT
 	ERRNZ	*-.
 	DS	DVD.ENT-.
 	STL	'MAIN ENTRY POINT'
@@ -334,6 +342,7 @@ RDLOAD	EQU	*
 
 RDRDY	EQU	*
 	CALL	DRDY
+	LXI	DE,RDINFO
 	ANA	A
 	RET
 
@@ -347,16 +356,20 @@ RDMNT	EQU	*
 SMALLRD	EQU	*
 	MOV	A,B
 	ORA	C
-	JZ	SROUT		Asking to write 0 bytes
+	RZ			Asking to read 0 bytes so just return
 
-	CALL    CALCPG
+	LDA	AIO.UNI		Store a copy of AIO.UNI since we cannot access it inside critical section
+	STA	RDUNIT
+
+	CALL    CALCPG		Calc page and offset
 	CALL	DPAGE
+
+	DI			** Start Critical section: All paging happens inside here **
+	ORI	080H		Turn on paging -- keep in mind the 512K board won't pay attention to RD00KH/RD16KH
 	OUT	RD00K,A		Map page0 to virt-page in ramdisk
 	INR	A
 	OUT	RD16K,A		Always allocate two pages, so we can handle writes that are greater than 16K
-
-	DI
-	LDA	AIO.UNI
+	LDA	RDUNIT
 	ORI	080H		Select the proper bank, and turn on paging
 	OUT     RD00KH,A
 	OUT	RD16KH,A
@@ -376,22 +389,26 @@ RLOOP   MOV     A,M             Load value in memory location HL into A
 	OUT     RD16KH,A        ... and page 1 back to bank 0
 	INR	A
 	OUT	RD16K,A		... and page 1 back to virt-page1
-	EI
-SROUT	RET
+	EI			** End Critical section **
+	RET
 
 SMALLWR	EQU	*
 	MOV	A,B
 	ORA	C
-	JZ	SWOUT		Asking to write 0 bytes
+	RZ			Asking to write 0 bytes so just return
 
-	CALL    CALCPG
+	LDA	AIO.UNI		Store a copy of AIO.UNI since we cannot access it inside critical section
+	STA	RDUNIT
+
+	CALL    CALCPG		Calc page and offset
 	CALL	DPAGE
+
+	DI			** Start Critical section: All paging happens inside here **
+	ORI	080H		Turn on paging -- keep in mind the 512K board won't pay attention to WR00KH/WR16KH
 	OUT	WR00K,A		Map page0 to virt-page in ramdisk
 	INR	A
 	OUT	WR16K,A		Always allocate two pages, so we can handle writes that are greater than 16K
-
-	DI
-	LDA	AIO.UNI
+	LDA	RDUNIT
 	ORI	080H		Select the proper bank, and turn on paging
 	OUT     WR00KH,A
 	OUT	WR16KH,A
@@ -411,9 +428,8 @@ WLOOP   LDAX	D               Load value in memory location DE into A
 	OUT     WR16KH,A        ... and page 1 back to bank 0
 	INR	A
 	OUT	WR16K,A		... and page 1 back to virt-page1
-	EI
-
-SWOUT	RET
+	EI			** End Critical Section **
+	RET
 
 ** Library stuff
 
@@ -426,8 +442,13 @@ SWOUT	RET
 
 ** flags
 
+RDINFO	EQU	*		ITEMS HERE ARE SHARED WITH INIT. DO NOT CHANGE THE ORDER HERE!
+RDMARK	DW	0EDFEH          Sanity check used in our init module
 RDDEBUG	DB	0
-RDTINY	DB	0
+RDTINY	DB	1		Tiny mode (single 512K board) for RD0, assume true by default
+RSVD1	DB	0		RESERVED FLAG 1
+RSVD2	DB	0		RESERVED FLAG 2
+RDUNIT	DB	0		Unit number
 
 ** stuff
 
