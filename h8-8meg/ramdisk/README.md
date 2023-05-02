@@ -3,6 +3,11 @@ Scott Baker, www.smbaker.com
 
 # Usage
 
+Note: Do not use the Ramdisk unless you have the SEBHC 512K MMU board
+or the smbaker.com 8MB MMU board installed. Using the ramdisk without
+an MMU-style board will corrupt the contents of main memory, probably
+inducing a reboot.
+
 Initialize the ramdisk.
 
 ```HDOS
