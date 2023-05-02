@@ -50,3 +50,17 @@ You will need to install VirtualHDOS as per Douglass's instructions. Make sure t
 the assembler (ASM.ABS) and other necessary binaries to your SD0 volume. On SD1, install
 all of the necessary ACM files from your particular HDOS driver build source. I probably
 used the HDOS 3.02 driver source from the sebhc github.
+
+Alternatively, you should be able to perform the build directly on an H8 using something
+similar to the following:
+
+```HDOS
+ASM DK1:RD.REL,DK1:RD=DK1:RD,SY1:/ERR
+ASM DK1:RDI.REL,DK1:RDI=DK1:RDI,SY1:/ERR
+COPY RD.DVD=RD.REL,RDI.REL
+DVDDKGEN SY:
+```
+
+You can find DVDDKGEN.ABS on HUGLibrary disk 885-1095, the HUG SY Driver.
+
+
