@@ -32,10 +32,10 @@ Two smbaker.com boards (hypothetically) will support drives RD0: through RD7:.
 
 ## Options
 
-`SET RD: TINY` ... set the driver to tiny mode, assumes bank0 contains only 512K
+`SET RD: TINY` ... [DEFAULT] set the driver to tiny mode, assumes bank0 contains only 512K
 
 `SET RD: NOTINY` ... set the driver to standard mode, assumes bank0 contains 2MB
 
 `SET RD: DEBUG` ... turns on verbose debug messages
 
-`SET RD: NODEBUG` ... turns off verbose debug messages
+`SET RD: NODEBUG` ... [DEFAULT] turns off verbose debug messages
