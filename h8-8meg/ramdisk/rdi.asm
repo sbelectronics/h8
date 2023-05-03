@@ -62,7 +62,9 @@ VFL.80T EQU     00000010B       ;80-TRACK/SIDE DISK DRIVE/MEDIA
 *       INIT processes the sub-functions required by  *INIT*
 *
 
-INIT    CPI     INI.MAX
+INIT    EQU     *
+*        CALL    DINIT
+        CPI     INI.MAX
         CMC
         RC              Illegal sub-function code
 
@@ -84,7 +86,10 @@ INIT    CPI     INI.MAX
 *       a sequential directory interleave.
 *
 
-DBI     LXI     H,DBIA
+DBI     EQU     *
+*        CALL    DDBI
+        LXI     H,DBIA
+        ANA     A
         RET
 
 DBIA    DB      0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
@@ -104,6 +109,7 @@ DBIA    DB      0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 *
 
 PAR     EQU     *
+*        CALL    DPAR
         CALL    $$DRVR          call driver READY, this will return RD INFO block in DE
         DB      DC.RDY
         RC                      return if error
@@ -159,7 +165,9 @@ ENOTRD: CALL    PHEXA
 *       USES:   ALL
 *
 
-CMV     CALL    $$DRVR
+CMV     EQU     *
+*        CALL    DCMV
+        CALL    $$DRVR
         DB      DC.RDY
         RC                      ERROR, RETURN
 	ANA     A               SUCCESS, RETURN CLEAR CARRY
@@ -171,7 +179,9 @@ CMV     CALL    $$DRVR
 *
 *       INITIALIZE THE DISK SURFACE
 
-INITDSK ANA     A               MOVE ALONG, NOTHING TO SEE HERE...
+INITDSK EQU     *
+*        CALL    DINITDK
+        ANA     A               MOVE ALONG, NOTHING TO SEE HERE...
         RET
 
         XTEXT   PRHEX
@@ -243,5 +253,11 @@ PAR20T  EQU     *               Auxiliary Parameters
         DB      10              Sectors per Track
 
         ERRNZ   *-PAR20T-LAB.AXL        Insure enough Auxiliary Parameters
+
+        DS      1                       Consume some space, to bring us up to > 768 length
+
+*        XTEXT   DEBUGI                 Debug messages
+
+        ERRMI   *-42200A+46-769          Things go bad if less than 4 256-byte blocks in size
 
         END

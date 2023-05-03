@@ -28,7 +28,7 @@
 *	DT.CW  ... Write
 *	DT.CR  ... Read
 *	DT.DD  ... Directory
-*	DR.RN  ... Random
+*	DT.RN  ... Random
 
 RDCAP EQU     DT.CW+DT.CR+DT.DD+DT.RN         Read, Write, Directory, Random
 
@@ -400,6 +400,21 @@ LASTWR	CALL	SMALLWR		We are almost done, less than 16K+1sector remaining
 RDLOAD	EQU	*
         CALL    DLOAD
 	CALL    PGINIT
+
+*	NOTE: UNSURE IF LOCKING THE DRIVER IS NECESSARY!
+
+*       lock the driver into memory
+
+        LHLD    S.SYSM
+        SHLD    S.RFWA                  ; adjust system pointer
+
+        LHLD    AIO.DTA                 ; table address
+        LXI     D,DEV.RES
+        DAD     D
+        MVI     A,DR.PR                 ; permanently resident
+        ORA     M                       ; combine
+        MOV     M,A                     ;  and set
+
 	ANA	A
 	RET
 
