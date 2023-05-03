@@ -40,6 +40,32 @@ Two smbaker.com boards (hypothetically) will support drives RD0: through RD7:.
 
 `SET RD: NODEBUG` ... [DEFAULT] turns off verbose debug messages
 
+## Issues
+
+### Internal device table overflow, device RD: ignored
+
+Remove some storage device drivers (hint: `rename DKOFF.DVD=DK.DVD`, etc). On HDOS 3,
+there should be 4 or fewer storage devices, including the RD device. On HDOS 2,
+the number may be as low as 2 (i.e. SY and RD). Your mileage may vary.
+
+### Illegal format for INIT parameter file, device RD: ignored
+
+This problem happened on HDOS2 and was traced to the driver file being too small and
+failing in the following code:
+
+```assembly
+   073.330  052 372 074 05267           LHLD    FDPE+PIC.LEN
+   073.333  104         05268           MOV     B,H
+   073.334  115         05269           MOV     C,L             BC = byte count
+   073.335  041 341 074 05270           LXI     H,FDPB
+   073.340  315 076 077 05271           CALL    $FREAB.
+   073.343  332 062 074 05272           JC      FDP7            Error
+```
+
+Suspect a possible bug in HDOS2 init where it's trying to read past the end of the
+file, if the end of file is very close to the end of the last block. For this, I
+increased the size of the driver until it allocated an extra block.
+
 ## Building
 
 This driver was built using VirtualHDOS by Douglass Miller.
