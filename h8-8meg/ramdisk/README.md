@@ -89,4 +89,18 @@ DVDDKGEN RD:
 
 You can find DVDDKGEN.ABS on HUGLibrary disk 885-1095, the HUG SY Driver.
 
+## Changelog
 
+### 1.00
+
+* Initial release
+
+### 1.01
+
+* Increase size of driver so prevent HDOS 2.0 read past eof
+
+* Add commented-out debug code in rdi.asm
+
+* Return clear carry on a few init calls
+
+* Add code to lock driver during load
