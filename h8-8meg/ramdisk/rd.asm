@@ -480,12 +480,14 @@ RLOOP   MOV     A,M             Load value in memory location HL into A
 	ORA	C
 	JNZ	RLOOP
 
-	MVI     A,000H
-	OUT	RD00KH,A        disable paging and map page0 back to virt-page0
+	MVI     A,080H		do not disable paging until the last reg (8MHz Bug)
+	OUT	RD00KH,A        map page0 back to virt-page0
 	OUT     RD00K,A		... and bank 0
 	OUT     RD16KH,A        ... and page 1 back to bank 0
 	INR	A
 	OUT	RD16K,A		... and page 1 back to virt-page1
+	MVI	A,001H
+	OUT	RD16K,A		... and disable paging
 	EI			** End Critical section **
 	RET
 
@@ -527,12 +529,14 @@ WLOOP   LDAX	D               Load value in memory location DE into A
 	ORA	C
 	JNZ	WLOOP
 
-	MVI     A,000H		
-	OUT	WR00KH,A        disable paging and map page0 back to virt-page0
+	MVI     A,080H		do not disable paging until the last reg (8MHz Bug)
+	OUT	WR00KH,A        map page0 back to virt-page0
 	OUT     WR00K,A		... and bank 0
 	OUT     WR16KH,A        ... and page 1 back to bank 0
 	INR	A
 	OUT	WR16K,A		... and page 1 back to virt-page1
+	MVI	A,001H
+	OUT	WR16K,A		... and disable paging
 	EI			** End Critical Section **
 	RET
 
