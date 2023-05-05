@@ -104,3 +104,7 @@ You can find DVDDKGEN.ABS on HUGLibrary disk 885-1095, the HUG SY Driver.
 * Return clear carry on a few init calls
 
 * Add code to lock driver during load
+
+### 1.02
+
+* Fix crash on 8MHz
