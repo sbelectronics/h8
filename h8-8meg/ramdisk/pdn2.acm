@@ -1,0 +1,126 @@
+PDN     SPACE   4,10
+**      PDN     - Parse Device Name
+*
+*       PDN parses the device name, with SY0: for the default.
+*
+*       ENTRY:  NONE
+*
+*       EXIT:   PSW     = 'C' set   if    ERROR
+*                          A  = Error code
+*                         'C' clear if NO Error
+*                          DEVICE = device specification
+*                          UNIT   = unit number
+*               To EXIT if CTL-D struck
+*
+
+PDN     CALL    $CCO
+        CALL    $TYPTX
+        DB      NL
+        DB      'Source Device<RD1:>?',' '+200Q
+
+        CALL    $ITL.
+        RC
+
+        LXI     H,ITLA          HL = address of device specification
+        LXI     B,SPDNA         BC = address of decode area
+        LXI     D,SPDNC         DE = default device
+        CALL    DDS
+        MVI     A,EC.IDN
+        JC      ERROR
+
+        LHLD    SPDNA
+        SHLD    SDEVICE
+        LDA     SUNITI
+        ADI     '0'
+        STA     SUNIT
+
+        CALL    $CCO            Now handle the dest device
+        CALL    $TYPTX
+        DB      NL
+        DB      'Dest Device<RD3:>?',' '+200Q
+
+        CALL    $ITL.
+        RC
+
+        LXI     H,ITLA          HL = address of device specification
+        LXI     B,DPDNA          BC = address of decode area
+        LXI     D,DPDNC          DE = default device
+        CALL    DDS
+        MVI     A,EC.IDN
+        JC      ERROR
+
+        LHLD    DPDNA
+        SHLD    DDEVICE
+        LDA     DUNITI
+        ADI     '0'
+        STA     DUNIT
+        RET
+
+* PDN. - do it from the cmdline
+
+PDN.    PUSH    H
+        CALL    $SOB
+        INX     H               Skip 4 characters
+        INX     H
+        INX     H
+        INX     H
+
+        MOV     A,M
+        CPI     '='             Better be at "="
+        JZ      GOTEQ
+
+        CALL    $TYPTX
+        DB      NL
+        DB      'SYNTAX: <COMMAND> <SRCDEV>:=<DESTDEV>',212Q
+        MVI     A,EC.IDN
+        JC      ERROR
+GOTEQ   MVI     A,0
+        MOV     M,A             REPLACE THE WHITESPACE WITH A NULL
+        POP     H
+
+        PUSH    H
+        LXI     B,DPDNA         BC = address of decode area
+        LXI     D,DPDNC         DE = default device
+        CALL    DDS
+        MVI     A,EC.IDN
+        JC      ERROR
+
+        LHLD    DPDNA
+        SHLD    DDEVICE
+        LDA     DUNITI
+        ADI     '0'
+        STA     DUNIT
+        POP     H
+
+        CALL    $SOB
+        INX     H
+        INX     H
+        INX     H
+        INX     H
+        MVI     A,' '
+        MOV     M,A             PUT THE WHITESPACE BACK
+
+        LXI     B,SPDNA          BC = address of decode area
+        LXI     D,SPDNC          DE = default device
+        CALL    DDS
+        MVI     A,EC.IDN
+        JC      ERROR
+
+        LHLD    SPDNA
+        SHLD    SDEVICE
+        LDA     SUNITI
+        ADI     '0'
+        STA     SUNIT
+        RET
+
+DPDNA   DB      'xx'            2-Byte Device
+DUNITI  DB      0               1-Byte Unit, integer format
+DPDNC   DB      'RD3',0,0,0     Default Device
+DDEVICE  DB      'xx'            Device specification
+DUNIT    DB      '0:',0          Ascii unit number
+
+SPDNA   DB      'xx'            2-Byte Device
+SUNITI  DB      0               1-Byte Unit, integer format
+SPDNC   DB      'RD1',0,0,0     Default Device
+SDEVICE  DB      'xx'            Device specification
+SUNIT    DB      '0:',0          Ascii unit number

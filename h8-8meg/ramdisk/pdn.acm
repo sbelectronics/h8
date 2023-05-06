@@ -1,0 +1,44 @@
+PDN     SPACE   4,10
+**      PDN     - Parse Device Name
+*
+*       PDN parses the device name, with SY0: for the default.
+*
+*       ENTRY:  NONE
+*
+*       EXIT:   PSW     = 'C' set   if    ERROR
+*                          A  = Error code
+*                         'C' clear if NO Error
+*                          DEVICE = device specification
+*                          UNIT   = unit number
+*               To EXIT if CTL-D struck
+*
+
+PDN     CALL    $CCO
+        CALL    $TYPTX
+        DB      NL
+        DB      'Device<RD0:>?',' '+200Q
+
+        CALL    $ITL.
+        RC
+
+        LXI     H,ITLA          HL = address of device specification
+PDN.    LXI     B,PDNA          BC = address of decode area
+        LXI     D,PDNC          DE = default device
+        CALL    DDS
+        MVI     A,EC.IDN
+        JC      ERROR
+
+        LHLD    PDNA
+        SHLD    DEVICE
+        LDA     UNITI
+        ADI     '0'
+        STA     UNIT
+        RET
+
+PDNA    DB      'xx'            2-Byte Device
+UNITI   DB      0               1-Byte Unit, integer format
+
+PDNC    DB      'RD0',0,0,0     Default Device
+
+DEVICE  DB      'xx'            Device specification
+UNIT    DB      '0:',0          Ascii unit number
