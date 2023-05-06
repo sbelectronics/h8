@@ -1,13 +1,23 @@
 
-	TITLE	'RD3TEST'
+	TITLE	'RDTEST'
 	EJECT
-***	RD3TEST*
+***	RD3TEST
 *       SMBAKER
+*
+*	THIS TESTS THE SMALLRD/SMALLWR ROUTINES WHEN I WAS DEBUGGING AN ISSUE...
+*
+*	TESTS WRITING AND READING ABOUT 400KB. ADJUST NPASS TO INCREASE.
 
 
 	XTEXT	HOSDEF
 	XTEXT	HOSEQU
 	XTEXT   PGREG
+* stuff below is for cmdline parsing
+	XTEXT	ASCII
+	XTEXT	DIRDEF
+	XTEXT	ESVAL
+	XTEXT	ECDEF
+	XTEXT	IOCDEF
 
 	ORG	08000H		
 
@@ -15,19 +25,38 @@ ENTRY	LXI	HJ,INTRO
 	SCALL	.PRINT
 	CALL	PGINIT
 
-	LXI	H,0
-DOTEST	CALL	DBLK
+        LXI     H,0
+        DAD     SP      
+        LXI     D,STACK
+        CALL    HLCPDE
+        JNZ     CMD1            Command line passed on stack
+        CALL    PDN
+        JMP     CMD2		No Command line passed on stack
+CMD1    CALL    PDN.
+CMD2    CALL	START
+
+*				Note: RD0 start is already compensated for in
+*				SMALLRD/SMALLWR
+
+START	LDA	UNITI
+	STA	AIOUNI		Just where rd.asm would put it...
+
+	LHLD	SBLK		Block address to test
+	LDA	NPASS
+	MOV	B,A		Number of test passes
+DOTEST	PUSH	B
+	CALL	DBLK
 	CALL	PREPBUF		Fill Buf with pattern
 	CALL	TESTBUF		Check buffer Okay
 	LXI	D,BUF
-	LXI	B,01000H
+	LXI	B,01000H	4K
 	PUSH	H	
 	CALL	SMALLWR		Write buffer to disk
 	POP	H
 	CALL	TESTBUF		Check buffer Okay
 	CALL	CLRBUF
 	LXI	D,BUF
-	LXI	B,01000H	
+	LXI	B,01000H	4K
 	PUSH	H
 	CALL	SMALLRD		Read buffer from disk
 	POP	H
@@ -37,19 +66,29 @@ DOTEST	CALL	DBLK
 	INR	A		Increment seed...
 	STA	SEED		... for next pass
 
-	MOV	A,L             Increment HL by 0x0010
+	MOV	A,L             Increment HL by 0x0010 since we're doing 4K at a time
 	ADI	010H
 	MOV	L,A
 	MOV	A,H
 	ACI	000H		We might have carried...
 	MOV	H,A
 
-	MOV	A,H
-	CPI	010H		4096 blocks of 4096 bytes ought to be enough
+	POP	B
+	DCR	B
 	JNZ	DOTEST
 
 	XRA	A
 	SCALL	.EXIT
+
+** ERROR - GENERAL ERROR MESSAGE
+*
+
+ERROR   MVI     H,NL
+        SCALL   .ERROR
+        MVI     A,1
+        SCALL   .EXIT
+
+** PREPBUF - PREPARE BUFFER
 
 PREPBUF	PUSH	PSW
 	PUSH	B
@@ -76,6 +115,8 @@ PBLOOP	MOV	A,H
 	POP	PSW
 	RET
 
+** CLRBUF - CLEAR BUFFER
+
 CLRBUF	PUSH	PSW
 	PUSH	B
 	PUSH	D
@@ -97,6 +138,8 @@ CLOOP	MVI	A,0
 	POP	B
 	POP	PSW
 	RET
+
+** TESTBUF - TEST BUFFER
 
 TESTBUF	PUSH	PSW
 	PUSH	B
@@ -136,6 +179,7 @@ TOK	INR	H		Increment pattern
 	POP	PSW
 	RET
 
+** CODE FROM RD.ASM BELOW
 
 CALCPG	EQU 	*
 	PUSH	B		Pushes both B and C
@@ -265,6 +309,8 @@ WLOOP   LDAX	D               Load value in memory location DE into A
 	EI			** End Critical Section **
 	RET
 
+** END CODE FROM RD.ASM
+
 DPAGE	RET
 
 DBLK	PUSH	PSW
@@ -278,8 +324,23 @@ DBLK	PUSH	PSW
 	POP	PSW
 	RET
 
+** INCLUDE CODE
+
 	XTEXT	PGMAP
-	XTEXT   PRHEX
+	XTEXT	PRHEX
+* Stuff below is for cmdline parsing
+	XTEXT	ITL
+	XTEXT   CCO
+	XTEXT	PDN
+	XTEXT	DDS
+	XTEXT	TYPTX
+	XTEXT   MCU
+	XTEXT	MLU
+	XTEXT	RCHAR
+	XTEXT	RTL
+	XTEXT	SOB
+        XTEXT   SAVALL
+	XTEXT   HLCPDE
 
 INTRO	DB	12Q,'RD3TEST',212Q
 MERROR	DB	12Q,'DANGER, WILL ROBINSON! DANGER! ERROR ADDR','='+200Q
@@ -289,7 +350,19 @@ MBLK	DB	' BLOCK','='+200Q
 AIOUNI	DB	3
 RDUNIT	DB	0
 SEED	DB	033H		Gotta start somewhere
-BUF	DS	4096
+SBLK	DW	0		Starting block number
+
+* Number of passes. Each pass 4K. 100 passes will fit 512K board.
+
+NPASS	DB	100
+
+ITLA    DS      80              Line Buffer
+BUF	DS	4096		Data Buffer
+
+**	"what" identification
+	DB	'@(#)HDOS Ramdisk RW Test Tool by Scott Baker.',NL
+	DW	0		Date
+	DW	0		Time
 
 	LON	G
 	END	ENTRY

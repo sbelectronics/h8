@@ -1,6 +1,6 @@
 export HDOSDrive_dk1 = $(PWD)
 
-all: rd.dvd rddump.abs rddiag.abs rdwrite.abs rd3test.abs burntest.abs rdcopy.abs copyout
+all: rd.dvd rddump.abs rddiag.abs rdwrite.abs rdtest.abs burntest.abs rdcopy.abs copyout
 
 rd.dvd: rd.rel rdi.rel
 	rm -f rd.dvd
@@ -23,7 +23,7 @@ copyout:
 	cp rddump.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/RDDUMP.ABS
 	cp rddiag.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/RDDIAG.ABS
 	cp rdwrite.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/RDWRITE.ABS
-	cp rd3test.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/RD3TEST.ABS
+	cp rdtest.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/RDTEST.ABS
 	cp burntest.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/BURNTEST.ABS
 	cp rdcopy.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/RDCOPY.ABS
 
