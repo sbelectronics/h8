@@ -40,6 +40,20 @@ Two smbaker.com boards (hypothetically) will support drives RD0: through RD7:.
 
 `SET RD: NODEBUG` ... [DEFAULT] turns off verbose debug messages
 
+## Tools
+
+* `RDCOPY` ... This perform an image copy of one ramdisk to another. It supports 39SF040 Flash Memory in addition to RAM. Probably best not to have the destination mounted when you run this. Does not support RD0, since RD0 is a different size than RD1-RD7.
+
+* `RDDIAG` ... Will detect whether 512K or 8MB board is installed, and which banks are populated.
+
+* `RDDUMP` ... This will dump the first 4096 bytes of a ramdisk to the console in hex and ascii.
+
+* `RDWRITE` ... This will write an increasing pattern of hex values to a ramdisk. It is destructive.
+
+* `RDTEST` ... This performs a write/read test of approximately 400KB to the ramdisk. It uses the same code as the driver. It is destructive.
+
+* `BURNTEST` ... Crude test of the flash burning code, to erase sector 0 of RD3 and write 3 bytes to it.
+
 ## Issues
 
 ### Internal device table overflow, device RD: ignored
