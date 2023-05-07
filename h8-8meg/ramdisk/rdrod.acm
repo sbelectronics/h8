@@ -4,6 +4,16 @@
 ***	RDROD - RD READONLY DRIVER.
 *
 *	Written by Scott M Baker, http://www.smbaker.com/
+*
+*	The read-only driver is put into the boot sectors of the disk by
+*	the INIT program. There needs to be just enough in here to be able
+*	to load HDOS, where the real read/write driver will be present.
+*
+*	Note that the boot code is running in the lower 16K of RAM, so
+*	SMALLRD is modified is use the 16K and 32K pages.
+*
+*	Most comments removed from this file. See rd.asm for the real
+*	thing.
 
 RDROD	CALL	$TJMP
 $	DW	RDREAD		READ - READ DATA
@@ -66,7 +76,6 @@ CALCN0	EQU	*
 
 RDREAD	EQU	*
 RDREAD1 EQU     *
-*	CALL    DREAD
 	PUSH	B		Save caller args
 	PUSH	D
 	PUSH	H
@@ -106,7 +115,6 @@ LASTRD	CALL	SMALLRD		We are almost done, less than 16K+1sector remaining
 	RET
 
 RDMNT	EQU	*
-*	CALL	DMNT
 	ANA	A
 	RET
 
@@ -125,8 +133,6 @@ SMALLRD	EQU	*
 	ADI	040H
 	MOV	H,A
 	POP	PSW
-
-*	CALL	DPAGE
 
 	DI			** Start Critical section: All paging happens inside here **
 	ORI	080H		Turn on paging -- keep in mind the 512K board won't pay attention to RD00KH/RD16KH

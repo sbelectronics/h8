@@ -51,7 +51,6 @@ $TJMP   EQU     031061A                 ; IN H17 ROM, (A) = INDEX*2
         DS      .+SB.BPE-*
 
 PBOOT   EQU     *
-*        CALL    DBOOT
         LXI	D,BOOTA 		; Disk constant and vector table
 	LXI	H,D.CON 		; RAM destination
 	LXI	B,BOOTAL		; Length of the mess
@@ -63,17 +62,14 @@ PBOOT   EQU     *
 	SHLD	D.SYDD+1		; Install it
 	LXI	H,RDMNT		; Special mount routine
 	SHLD	D.MOUNT+1		; Set it
-*        CALL    DSDB
         JMP     SB.SDB          GO TO INIT COMMON BOOT CODE
+
+* All the following XTEXT will end up built into the boot loader
 
         XTEXT   PGREG
         XTEXT   RDROD
         XTEXT   PGMAP
-        XTEXT   DEBUGB
         XTEXT   PRHEX
-
-VFL.2SD EQU     00000001B       ;2-SIDED DISK DRIVE/MEDIA
-VFL.80T EQU     00000010B       ;80-TRACK/SIDE DISK DRIVE/MEDIA
 
         ERRMI   .+SB.SDB-*
         DS      .+SB.SDB-*
