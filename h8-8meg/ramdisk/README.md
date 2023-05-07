@@ -54,6 +54,8 @@ Two smbaker.com boards (hypothetically) will support drives RD0: through RD7:.
 
 * `BURNTEST` ... Crude test of the flash burning code, to erase sector 0 of RD3 and write 3 bytes to it.
 
+* `RDFF` ... Writes 0xFF to the entirety of a ramdisk, destructively. Useful for initializing ramdisks to a known value, and especially useful if the end goal is to program a ramdisk to flash (a brand new 39SF040 has 0xFF in all locations)
+
 ## Issues
 
 ### Internal device table overflow, device RD: ignored

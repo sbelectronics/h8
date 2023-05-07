@@ -1,0 +1,131 @@
+
+	TITLE	'RDFF - WRITE FF TO RAMDISK'
+	EJECT
+***	RDFF - WRITE FF TO RAMDISK
+*
+*       SMBAKER
+
+	LON	C
+
+	XTEXT	HOSDEF
+	XTEXT	HOSEQU
+	XTEXT   PGREG
+* stuff below is for cmdline parsing
+	XTEXT	ASCII
+	XTEXT	DIRDEF
+	XTEXT	ESVAL
+	XTEXT	ECDEF
+	XTEXT	IOCDEF
+
+	ORG	08000H		Make sure we have room to map two pages
+
+ENTRY	LXI	H,INTRO
+	SCALL	.PRINT
+	CALL	PGINIT
+
+        LXI     H,0
+        DAD     SP      
+        LXI     D,STACK
+        CALL    HLCPDE
+        JNZ     CMD1            Command line passed on stack
+        CALL    PDN
+        JMP     CMD2		No Command line passed on stack
+CMD1    CALL    PDN.
+CMD2    LDA	UNITI
+	ORA	A
+	JNZ	NOTUNI0
+	LDA	SPAGE
+	ADI	4
+	STA	SPAGE		ADD 4 TO STARTING PAGE
+	LDA	CPAGE
+	SBI	4
+	STA	CPAGE		SUBTRACT 4 FROM PAGE COUNT
+NOTUNI0	EQU	*
+
+	MVI	B,0
+CRLOOP	CALL	DCPAGE
+	PUSH	B
+	DI
+	LDA	UNITI
+	ORI	080H
+	OUT	WR00KH
+	MOV	A,B
+	ORI	080H
+	OUT	WR00K
+	LXI	H,0000H
+	LXI	B,04000H
+CRLOOP1	MVI	A,0FFH
+	MOV	M,A
+	INX	H
+	DCX	B
+	MOV	A,B
+	ORA	C
+	JNZ	CRLOOP1
+	MVI	A,080H
+	OUT	WR00KH
+	OUT	WR00K
+	MVI	A,000H
+	OUT	WR00K
+	EI
+	POP	B
+	INR	B
+	LDA	CPAGE
+	CMP	B
+	JNZ	CRLOOP
+
+	XRA	A
+	SCALL	.EXIT
+
+** ERROR - GENERAL ERROR MESSAGE
+*
+
+ERROR   MVI     H,NL
+        SCALL   .ERROR
+        MVI     A,1
+        SCALL   .EXIT
+
+DCPAGE	PUSH	PSW
+	PUSH	H
+	LXI	H,MDCPG
+	SCALL	.PRINT
+	MOV	A,B
+	CALL	PHEXA
+	MVI	A,12Q
+	SCALL	.SCOUT
+	POP	H
+	POP	PWR
+	RET
+
+	XTEXT	PGMAP
+	XTEXT	FLASH
+	XTEXT	PRHEX
+* Stuff below is for cmdline parsing
+	XTEXT	ITL
+	XTEXT   CCO
+	XTEXT	PDN
+	XTEXT	DDS
+	XTEXT	TYPTX
+	XTEXT   MCU
+	XTEXT	MLU
+	XTEXT	RCHAR
+	XTEXT	RTL
+	XTEXT	SOB
+        XTEXT   SAVALL
+	XTEXT   HLCPDE
+
+INTRO	DB	12Q,'RAMDISK COPY TOOL',212Q
+MDONE	DB	12Q,'DONE',212Q
+MDCPG	DB	'WRITE PAGE',' '+200Q
+
+SPAGE	DB	0		Starting page
+CPAGE	DB	128		Number of pages to write
+
+ITLA    DS      80              Line Buffer
+
+**	"what" identification
+	DB	'@(#)HDOS Ramdisk Fill FF Tool by Scott Baker.',NL
+	DW	0		Date
+	DW	0		Time
+
+	LON	G
+	END	ENTRY
