@@ -1,0 +1,163 @@
+
+	TITLE	'RDROD - RD READONLY DRIVER'
+	EJECT
+***	RDROD - RD READONLY DRIVER.
+*
+*	Written by Scott M Baker, http://www.smbaker.com/
+
+RDROD	CALL	$TJMP
+$	DW	RDREAD		READ - READ DATA
+	DW	RDERR		WRITE - WRITE DATA
+	DW	RDREADR		READR - READ REGARDLESS OF VOLUME PROTECTION
+	DW	RDERR		OPENR - OPEN FOR READ
+	DW	RDERR		OPENW - OPEN FOR WRITE
+	DW	RDERR		OPENU - OPEN FOR UPDATE
+	DW	RDERR		CLOSE - CLOSE
+	DW	RDABT		ABORT - ABORT OPERATION
+	DW	RDMNT		MOUNT - MOUNT VOLUME
+	DW	RDERR		LOAD  - LOAD DRIVER
+	DW      RDERR		READY - REPORT UNIT READY STATUS
+	DW	RDERR		SET
+	DW	RDERR		UNLOAD
+	DW	RDERR		INTERRUPT
+	DW	RDERR		DEVICE SPECIFIC
+
+RDERR	MVI	A,EC.ILR	Illegal request
+	STC
+	RET
+
+RDABT	MVI	A,EC.DDA	DEVICE DRIVER ABORT
+	STC
+	RET
+
+RDREADR	EQU	*
+	JMP	RDREAD1
+	RET
+
+CALCPG	EQU 	*
+	PUSH	B		Pushes both B and C
+	LDA	AIO.UNI
+	ORA	A
+	JNZ	CALCN0		Not unit 0
+	INR	H		Skip the first 256 sectors == 4 pages
+CALCN0	EQU	*
+	MOV 	A,L
+	ANI 	0C0H
+	RRC
+	RRC
+	RRC
+	RRC
+	RRC
+	RRC
+	MOV 	B,A
+	MOV	A,H
+	ANI	01FH
+	RLC
+	RLC
+	ORA 	B
+	POP 	B		Pops both B and C
+	PUSH	PSW
+	MOV     A,L
+	ANI	03FH
+	MOV	H,A
+	MVI	L,000H
+	POP	PSW
+	RET
+
+RDREAD	EQU	*
+RDREAD1 EQU     *
+*	CALL    DREAD
+	PUSH	B		Save caller args
+	PUSH	D
+	PUSH	H
+RNEXT16	MOV     A,B
+	CPI	041H
+	JC	LASTRD		Take the easy path, read is <= 16K+1sector
+	PUSH	B
+	PUSH	D
+	PUSH	H
+	LXI	B,04000H	Set count to 16K
+	CALL	SMALLRD		Read 16K
+	POP	H
+	POP	D
+	POP	B
+
+	MOV	A,D		Increment DE by 0x4000
+	ADI	040H
+	MOV	D,A
+
+	MOV	A,B		Decrement BC by 0x4000
+	SUI	040H
+	MOV	B,A
+
+	MOV	A,L             Increment HL by 0x0040
+	ADI	040H
+	MOV	L,A
+	MOV	A,H
+	ACI	000H		We might have carried...
+	MOV	H,A
+	JMP	RNEXT16
+
+LASTRD	CALL	SMALLRD		We are almost done, less than 16K+1sector remaining
+	POP	H
+	POP	D
+	POP	B
+	ANA	A
+	RET
+
+RDMNT	EQU	*
+*	CALL	DMNT
+	ANA	A
+	RET
+
+SMALLRD	EQU	*
+	MOV	A,B
+	ORA	C
+	RZ			Asking to read 0 bytes so just return
+
+	LDA	AIO.UNI		Store a copy of AIO.UNI since we cannot access it inside critical section
+	STA	RDUNIT
+
+	CALL    CALCPG		Calc page and offset
+
+	PUSH	PSW
+	MOV	A,H		Add 16384 to src offset, because we'll map in at 16K instead of 00K
+	ADI	040H
+	MOV	H,A
+	POP	PSW
+
+*	CALL	DPAGE
+
+	DI			** Start Critical section: All paging happens inside here **
+	ORI	080H		Turn on paging -- keep in mind the 512K board won't pay attention to RD00KH/RD16KH
+	OUT	RD16K,A		Map page0 to virt-page in ramdisk
+	INR	A
+	OUT	RD32K,A		Always allocate two pages, so we can handle writes that are greater than 16K
+	LDA	RDUNIT
+	ORI	080H		Select the proper bank, and turn on paging
+	OUT     RD16KH,A
+	OUT	RD32KH,A
+
+RLOOP   MOV     A,M             Load value in memory location HL into A
+	STAX	D               Store value in A into memory location DE
+	INX	D
+	INX	H
+        DCX     B
+	MOV	A,B
+	ORA	C
+	JNZ	RLOOP
+
+	MVI     A,081H		do not disable paging until the last reg (8MHz Bug)
+	OUT     RD16K,A		... and bank 0
+	MVI	A,080H
+	OUT	RD16KH,A        map page0 back to virt-page0
+	OUT     RD32KH,A        ... and page 1 back to bank 0
+	MVI	A,082H
+	OUT	RD32K,A		... and page 1 back to virt-page1
+	MVI	A,002H
+	OUT	RD32K,A		... and disable paging
+	EI			** End Critical section **
+	RET
+
+RDDEBUG	DB	0
+RDUNIT	DB	0		Unit number

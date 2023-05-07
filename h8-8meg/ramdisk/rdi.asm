@@ -13,7 +13,9 @@ RESIDE  EQU     0               RESIDENT HDOS ASSEMBLER
         XTEXT   DIRDEF
         XTEXT   HOSEQU
         XTEXT   HOSDEF
+        XTEXT   HDSROM
         XTEXT   EDCON
+	XTEXT	EDVEC
         XTEXT   ESVAL
         XTEXT   ESINT
         XTEXT   H17ROM
@@ -25,6 +27,7 @@ RESIDE  EQU     0               RESIDENT HDOS ASSEMBLER
 $UDD    EQU     31157A          ;UNPACK DECIMAL DIGITS
         SPACE   3
 $ZERO   EQU     31212A          ;ZERO AREA SUBROUTINE
+$TJMP   EQU     031061A                 ; IN H17 ROM, (A) = INDEX*2
 
         STL     'Drive Parameters'
         EJECT
@@ -47,7 +50,27 @@ $ZERO   EQU     31212A          ;ZERO AREA SUBROUTINE
         ERRMI   .+SB.BPE-*
         DS      .+SB.BPE-*
 
-PBOOT   JMP     SB.SDB          GO TO INIT COMMON BOOT CODE
+PBOOT   EQU     *
+*        CALL    DBOOT
+        LXI	D,BOOTA 		; Disk constant and vector table
+	LXI	H,D.CON 		; RAM destination
+	LXI	B,BOOTAL		; Length of the mess
+	CALL	$MOVE			; Plug it in
+
+        CALL    PGINIT
+
+        LXI	H,RDROD		; Read-only driver
+	SHLD	D.SYDD+1		; Install it
+	LXI	H,RDMNT		; Special mount routine
+	SHLD	D.MOUNT+1		; Set it
+*        CALL    DSDB
+        JMP     SB.SDB          GO TO INIT COMMON BOOT CODE
+
+        XTEXT   PGREG
+        XTEXT   RDROD
+        XTEXT   PGMAP
+        XTEXT   DEBUGB
+        XTEXT   PRHEX
 
 VFL.2SD EQU     00000001B       ;2-SIDED DISK DRIVE/MEDIA
 VFL.80T EQU     00000010B       ;80-TRACK/SIDE DISK DRIVE/MEDIA
@@ -184,8 +207,6 @@ INITDSK EQU     *
         ANA     A               MOVE ALONG, NOTHING TO SEE HERE...
         RET
 
-        XTEXT   PRHEX
-
 MNOTRD  DB      12Q,'RD: Failed to find RD driver info block',212Q
 
 ** parameters for units 1-7
@@ -254,7 +275,7 @@ PAR20T  EQU     *               Auxiliary Parameters
 
         ERRNZ   *-PAR20T-LAB.AXL        Insure enough Auxiliary Parameters
 
-        DS      1                       Consume some space, to bring us up to > 768 length
+        DS      80                       Consume some space, to bring us up to > 768 length
 
 *        XTEXT   DEBUGI                 Debug messages
 
