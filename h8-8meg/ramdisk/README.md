@@ -82,6 +82,16 @@ Suspect a possible bug in HDOS2 init where it's trying to read past the end of t
 file, if the end of file is very close to the end of the last block. For this, I
 increased the size of the driver until it allocated an extra block.
 
+## Booting
+
+The directory `rom/` contains some ROMs based on Douglass's newmon monitor:
+
+* h8mon2.rom ... for Norberto's SBHC Z80 board
+
+On these ROMS, you can boot the ramdisk by pressing `0-8-<unit>` on the keypad,
+for example `0-8-0` to boot from RD0. The disk must be INITed and SYSGENed. You
+can also boot over serial by pressing `B-R-<unit>`.
+
 ## Building
 
 This driver was built using VirtualHDOS by Douglass Miller.
@@ -124,3 +134,7 @@ You can find DVDDKGEN.ABS on HUGLibrary disk 885-1095, the HUG SY Driver.
 ### 1.02
 
 * Fix crash on 8MHz
+
+### 1.03
+
+* Boot support
