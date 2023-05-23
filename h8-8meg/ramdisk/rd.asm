@@ -487,7 +487,7 @@ RLOOP   MOV     A,M             Load value in memory location HL into A
 	INR	A
 	OUT	RD16K,A		... and page 1 back to virt-page1
 	MVI	A,001H
-	OUT	RD16K,A		... and disable paging on lower
+	OUT	RD16K,A		... and disable paging on lower (upper is not disabled -- do we care?)
 	EI			** End Critical section **
 	RET
 
@@ -536,7 +536,7 @@ WLOOP   LDAX	D               Load value in memory location DE into A
 	INR	A
 	OUT	WR16K,A		... and page 1 back to virt-page1
 	MVI	A,001H
-	OUT	WR16K,A		... and disable paging on lower
+	OUT	WR16K,A		... and disable paging on lower (upper is not disabled -- do we care?)
 	EI			** End Critical Section **
 	RET
 

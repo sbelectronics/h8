@@ -60,7 +60,7 @@ COLLOOP	DI
 	OUT	WR00K,A
 	OUT	WR00KH,A
 	MVI	A,000H
-	OUT	WR00KH,A	Disable mapping	
+	OUT	WR00K,A		Disable mapping	on lower (upper is not disabled -- do we care?)
 	EI
 
 	INR	D		Increment pattern

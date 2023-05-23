@@ -90,7 +90,7 @@ PRNLP	DI
 	OUT	RD00K,A
 	OUT	RD00KH,A
 	MVI	A,000H
-	OUT	RD00KH,A	Disable mapping
+	OUT	RD00K,A		Disable mapping on lower  (upper is not disabled -- do we care?)
 	EI
 
 	MOV	A,D
