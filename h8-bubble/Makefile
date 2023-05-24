@@ -1,9 +1,20 @@
 export HDOSDrive_dk1 = $(PWD)
 
-all: bubble.abs copyout
+all: bubble.abs bd.dvd copyout
 
 %.abs: %.asm
 	vhdos asm dk1:$*.abs,dk1:$*=dk1:$*,sy1:/err
+
+bd.dvd: bd.rel bdi.rel
+	rm -f bd.dvd
+	cat bd.rel bdi.rel > bd.tmp
+	# Note: If you do not have python3 installed, an alternative would be
+	# to copy rd.dvd to vhdosroot/sy0/ and then run "DVDKKGEN.ABS RD:" inside
+	# vhdos
+	python3 ./dvddkgen.py < bd.tmp > bd.dvd
+
+%.rel: %.asm
+	vhdos asm dk1:$*.rel,dk1:$*=dk1:$*,sy1:/err
 
 # Copy files out to scott's Pinculum holding directory. Safe to omit if you
 # are not me.
