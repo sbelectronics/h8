@@ -289,44 +289,43 @@ BDREADR	EQU	*
 	JMP	BDREAD1
 	RET
 
-**	READ DATA
-*
-*	BC = BYTE COUNT
-*	DE = DEST ADDRESS
-*	HL = BLOCK NUMBER
-
-BDREAD	EQU	*
-	CALL    DREAD
+BDREAD	EQU     *
+      	CALL    DREAD
 
 BDREAD1 EQU     *
+	PUSH	B		Save caller args
+	PUSH	D
+	PUSH	H
+RNEXT16	MOV     A,B
+	CPI	041H
+	JC	LASTRD		Take the easy path, read is <= 16K+1sector
 	PUSH	B
 	PUSH	D
 	PUSH	H
-	CALL	STOBLK		Convert HL into BARH/BARL
-BDRLP	MOV	A,C
-	ANI	0C0H
-	ORA	B
-	JZ	BRDL64		Less than 64 bytes left
+	LXI	B,04000H	Set count to 16K
+	CALL	SMALLRD		Read 16K
+	POP	H
+	POP	D
+	POP	B
 
-	LXI	HL,040H
-*	CALL	DREAD64
-	CALL	BBLREAD		HL=ByteCount, DE=Dest, BARH/BARL=blk
+	MOV	A,D		Increment DE by 0x4000
+	ADI	040H
+	MOV	D,A
 
-	CALL	SBC64		Subtract 64 from byte count
-	CALL	IDE64		Add 64 to dest addr
-	CALL	INCBAR		Increment BARH/BARL
-	JMP	BDRLP		Read next 64B
+	MOV	A,B		Decrement BC by 0x4000
+	SUI	040H
+	MOV	B,A
 
-BRDL64	MOV	A,C
-	ORA	A
-	JZ	BDROUT		No remainder
+	MOV	A,L             Increment HL by 0x0040
+	ADI	040H
+	MOV	L,A
+	MOV	A,H
+	ACI	000H		We might have carried...
+	MOV	H,A
+	JMP	RNEXT16
 
-	MVI	H,0
-	MOV	L,C
-*	CALL	DREAD64
-	CALL	BBLREAD		Read the remainder
-
-BDROUT  POP	H
+LASTRD	CALL	SMALLRD		We are almost done, less than 16K+1sector remaining
+	POP	H
 	POP	D
 	POP	B
 	ANA	A
@@ -337,35 +336,44 @@ BDROUT  POP	H
 *	BC = BYTE COUNT
 *	DE = SRC ADDRESS
 *	HL = BLOCK NUMBER
+*
+*	SEE NOTES ON READ REGARDING CHUNKS AND LARGE TRANSFERS.
 
-BDWRITE	EQU	*
-	CALL    DWRITE
+BDWRITE	EQU     *
+	CALL	DWRITE
+	PUSH	B		Save caller args
+	PUSH	D
+	PUSH	H
+WNEXT16	MOV     A,B
+	CPI	041H
+	JC	LASTWR		Take the easy path, write is <= 16K+1sector
 	PUSH	B
 	PUSH	D
 	PUSH	H
-	CALL	STOBLK		Convert HL into BARH/BARL
-BDWLP	MOV	A,C
-	ANI	0C0H
-	ORA	B
-	JZ	BWRL64		Less than 64 bytes left
+	LXI	B,04000H	Set count to 16K
+	CALL	SMALLWR		Write 16K
+	POP	H
+	POP	D
+	POP	B
 
-	LXI	HL,040H
-	CALL	BBLWRIT		HL=ByteCount, DE=Dest, BARH/BARL=blk
+	MOV	A,D		Increment DE by 0x4000
+	ADI	040H
+	MOV	D,A
 
-	CALL	SBC64		Subtract 64 from byte count
-	CALL	IDE64		Add 64 to dest addr
-	CALL	INCBAR		Increment BARH/BARL
-	JMP	BDWLP		Write next 64B
+	MOV	A,B		Decrement BC by 0x4000
+	SUI	040H
+	MOV	B,A
 
-BWRL64	MOV	A,C
-	ORA	A
-	JZ	BDWOUT		No remainder
+	MOV	A,L             Increment HL by 0x0040
+	ADI	040H
+	MOV	L,A
+	MOV	A,H
+	ACI	000H		We might have carried...
+	MOV	H,A
+	JMP	WNEXT16
 
-	MVI	H,0
-	MOV	L,C
-	CALL	BBLWRIT		Write the remainder
-
-BDWOUT  POP	H
+LASTWR	CALL	SMALLWR		We are almost done, less than 16K+1sector remaining
+	POP	H
 	POP	D
 	POP	B
 	ANA	A
@@ -431,6 +439,65 @@ BDMNT	EQU	*
 	CALL	DMNT
 	ANA	A
 	RET
+
+**	SMALLRD
+*
+*	PERFORM A READ OF 16640 BYTES OR LESS. 
+*
+*	BC = BYTE COUNT --> HL
+*	DE = DEST ADDRESS
+*	HL = BLOCK NUMBER --> BARH/BARL
+
+SMALLRD	EQU     *
+	MOV	A,B
+	ORA	C
+	RZ				Asking to read 0 bytes so just return
+
+	PUSH	B			SAVE BC
+	PUSH	H			SAVE HL
+	CALL	STOBLK
+	MOV	H,B			MOVE BYTE COUNT FROM BC ...
+	MOV	L,C			... TO HL
+	CALL	BBLREAD
+	CPI	040H			CHECK RESULT - 0x40 OP COMPLETE
+	JZ	RDOK			
+	CPI	042H			0x42 OP COMPLETE AND PARITY ERROR
+	JZ	RDOK	
+	CALL	DRERR
+RDOK	POP	H			RESTORE HL
+	POP	B			RESTORE BC
+	ANA	A
+	RET
+
+**	SMALLWR
+*
+*	PERFORM A WRITE OF 16640 BYTES OR LESS. 
+*
+*	BC = BYTE COUNT
+*	DE = SRC ADDRESS
+*	HL = BLOCK NUMBER
+
+SMALLWR	EQU     *
+	MOV	A,B
+	ORA	C
+	RZ				Asking to write 0 bytes so just return
+
+	PUSH	B			SAVE BC
+	PUSH	H			SAVE HL
+	CALL	STOBLK
+	MOV	H,B			MOVE BYTE COUNT FROM BC ...
+	MOV	L,C			... TO HL
+	CALL	BBLWRIT
+	CPI	040H			CHECK RESULT - 0x40 OP COMPLETE
+	JZ	WROK			
+	CPI	042H			0x42 OP COMPLETE AND PARITY ERROR
+	JZ	WROK
+	CALL	DWERR
+WROK	POP	H			RESTORE HL
+	POP	B			RESTORE BC
+	ANA	A
+	RET
+
 
 ** 	LIBRARY CODE IS LOADED HERE
 *
