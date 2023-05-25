@@ -20,6 +20,7 @@ bd.dvd: bd.rel bdi.rel
 # are not me.
 copyout:
 	cp bubble.abs /home/smbaker/projects/pi/h8/vdip/FILES/ASM/BUBBLE.ABS
+	cp bd.dvd /home/smbaker/projects/pi/h8/vdip/FILES/ASM/BD.DVD
 
 clean:
 	rm -f *.rel *.dvd *.abs

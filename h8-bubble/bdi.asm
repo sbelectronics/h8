@@ -174,7 +174,7 @@ INITDSK EQU     *
 PARAM   EQU     *
 
         ERRNZ   *-PARAM+LAB.VPR-LAB.SIZ
-VOLSIZ  DW      512            Volume Size (bytes/256)
+VOLSIZ  DW      511             Volume Size (bytes/256)
 
         ERRNZ   *-PARAM+LAB.VPR-LAB.PSS
 SECSIZ  DW      256             Physical Sector Size (bytes)
