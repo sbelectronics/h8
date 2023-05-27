@@ -1,0 +1,45 @@
+
+	TITLE	'BDROD - BD READONLY DRIVER'
+	EJECT
+***	BDROD - BD READONLY DRIVER.
+*
+*	Written by Scott M Baker, http://www.smbaker.com/
+*
+*	The read-only driver is put into the boot sectors of the disk by
+*	the INIT program. There needs to be just enough in here to be able
+*	to load HDOS, where the real read/write driver will be present.
+*
+*	Note that the boot code is running in the lower 16K of RAM, so
+*	SMALLRD is modified is use the 16K and 32K pages.
+*
+*	Most comments removed from this file. See rd.asm for the real
+*	thing.
+
+BDROD	CALL	$TJMP
+$	DW	BDREAD		READ - READ DATA
+	DW	BDERR		WRITE - WRITE DATA
+	DW	BDREAD		READR - READ REGABDLESS OF VOLUME PROTECTION
+	DW	BDERR		OPENR - OPEN FOR READ
+	DW	BDERR		OPENW - OPEN FOR WRITE
+	DW	BDERR		OPENU - OPEN FOR UPDATE
+	DW	BDERR		CLOSE - CLOSE
+	DW	BDABT		ABORT - ABORT OPERATION
+	DW	BDMNT		MOUNT - MOUNT VOLUME
+	DW	BDERR		LOAD  - LOAD DRIVER
+	DW      BDERR		READY - REPORT UNIT READY STATUS
+	DW	BDERR		SET
+	DW	BDERR		UNLOAD
+	DW	BDERR		INTERRUPT
+	DW	BDERR		DEVICE SPECIFIC
+
+BDERR	MVI	A,EC.ILR	Illegal request
+	STC
+	RET
+
+BDABT	MVI	A,EC.DDA	DEVICE DRIVER ABORT
+	STC
+	RET
+
+BDMNT	EQU	*
+	ANA	A
+	RET

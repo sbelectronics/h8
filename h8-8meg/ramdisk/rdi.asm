@@ -64,6 +64,10 @@ PBOOT   EQU     *
 	SHLD	D.MOUNT+1		; Set it
         JMP     SB.SDB          GO TO INIT COMMON BOOT CODE
 
+* NOTE: If it doesn't appear to boot when running BOOT3.ABS, then
+* before you spend time debugging this, remember that a freshly
+* sysgened disk will require you to hit space on boot.
+
 * All the following XTEXT will end up built into the boot loader
 
         XTEXT   PGREG

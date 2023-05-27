@@ -56,7 +56,7 @@ PBOOT   EQU     *
 	LXI	B,BOOTAL		; Length of the mess
 	CALL	$MOVE			; Plug it in
 
-* Perform any initialization here...
+        CALL    BBLINIT
 
         LXI	H,BDROD		; Read-only driver
 	SHLD	D.SYDD+1		; Install it
@@ -64,12 +64,17 @@ PBOOT   EQU     *
 	SHLD	D.MOUNT+1		; Set it
         JMP     SB.SDB          GO TO INIT COMMON BOOT CODE
 
+* NOTE: If it doesn't appear to boot when running BOOT3.ABS, then
+* before you spend time debugging this, remember that a freshly
+* sysgened disk will require you to hit space on boot.
+
 * All the following XTEXT will end up built into the boot loader
 
-        XTEXT   PRHEX
-
-BDROD   EQU     *               * implement me!!
-BDMNT   EQU     *               * implement me!!
+        XTEXT   BUBDEF
+        XTEXT   BDROD
+        XTEXT   BDRORD
+        XTEXT   BBLCOM
+        XTEXT   BBLVAR
 
 * End ROD stuff
 

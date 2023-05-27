@@ -16,6 +16,16 @@ bd.dvd: bd.rel bdi.rel
 %.rel: %.asm
 	vhdos asm dk1:$*.rel,dk1:$*=dk1:$*,sy1:/err
 
+bbl.inc: bubdef.acm bblcom.acm bdrord.acm bblvar.acm 
+	python ./convert.py < bubdef.acm > bbl.inc
+	python ./convert.py < bblcom.acm >> bbl.inc
+	python ./convert.py < bdrord.acm >> bbl.inc
+	python ./convert.py < bblvar.acm >> bbl.inc
+
+bbubble: bbl.inc
+	python ./subst.py < /home/smbaker/projects/pi/h8/MmsCpm3/rom/newmon/src/bbubble.src > /home/smbaker/projects/pi/h8/MmsCpm3/rom/newmon/src/bbubble.asm
+
+
 # Copy files out to scott's Pinculum holding directory. Safe to omit if you
 # are not me.
 copyout:
@@ -23,4 +33,4 @@ copyout:
 	cp bd.dvd /home/smbaker/projects/pi/h8/vdip/FILES/ASM/BD.DVD
 
 clean:
-	rm -f *.rel *.dvd *.abs
+	rm -f *.rel *.dvd *.abs bbl.inc

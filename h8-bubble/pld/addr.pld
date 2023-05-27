@@ -1,0 +1,59 @@
+/* NOTE: When programming using XGPRO/MINIPRO make sure
+ *       to specify ATF22V10C(UES). The "UES" is important.
+ *
+ * v0.12
+ *   - Eliminated !AS on pin 5 and replaced with A7
+ */
+
+name addr;
+device g22v10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = !RESET;
+PIN 2 = !BOARDEN;
+PIN 3 = A7; 
+PIN 4 = A6;
+PIN 5 = A5;
+PIN 6 = A4;
+PIN 7 = A3;
+PIN 8 = A2;
+PIN 9 = A1;
+PIN 10 = A0;
+PIN 11 = !IOR;
+PIN 12 = GND;
+PIN 13 = !IOW;
+PIN 14 = !LEDWR;
+PIN 15 = !LEDRD;
+PIN 16 = NC1;
+PIN 17 = NC2;
+PIN 18 = BBA0;
+PIN 19 = !RX;
+PIN 20 = !BBWR;
+PIN 21 = !BBRD;
+PIN 22 = !BBCS;
+PIN 23 = !BBRESET;
+
+FIELD ALO = [A7..A0];
+
+$DEFINE ADDR0   10
+$DEFINE ADDR1   11
+
+BBSEL = ((ALO:ADDR0) # (ALO:ADDR1)) & BOARDEN;
+
+BBCS = BBSEL;
+
+BBA0 = A0;
+BBWR = IOW;
+BBRD = IOR;
+BBRESET = RESET;
+
+RX = IOR & BBSEL;
+
+LEDWR = IOW & BBSEL;
+LEDRD = IOR & BBSEL; 
