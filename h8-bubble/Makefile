@@ -16,10 +16,10 @@ bd.dvd: bd.rel bdi.rel
 %.rel: %.asm
 	vhdos asm dk1:$*.rel,dk1:$*=dk1:$*,sy1:/err
 
-bbl.inc: bubdef.acm bblcom.acm bdrord.acm bblvar.acm 
+bbl.inc: bubdef.acm bblcom.acm bblrdmin.acm bblvar.acm 
 	python ./convert.py < bubdef.acm > bbl.inc
 	python ./convert.py < bblcom.acm >> bbl.inc
-	python ./convert.py < bdrord.acm >> bbl.inc
+	python ./convert.py < bblrdmin.acm >> bbl.inc
 	python ./convert.py < bblvar.acm >> bbl.inc
 
 bbubble: bbl.inc

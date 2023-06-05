@@ -3,7 +3,7 @@
 
 * COMMON ROUTINES
 *
-* READ/WRITE ROUTINES ARE IN BBLLIB>ACM
+* READ/WRITE ROUTINES ARE IN BBLCOM.ACM
 
 * ********************************************************************
 * **************  BUBBLE ABORT  *******************

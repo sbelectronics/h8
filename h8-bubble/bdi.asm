@@ -72,7 +72,7 @@ PBOOT   EQU     *
 
         XTEXT   BUBDEF
         XTEXT   BDROD
-        XTEXT   BDRORD
+        XTEXT   BBLRDMIN
         XTEXT   BBLCOM
         XTEXT   BBLVAR
 
