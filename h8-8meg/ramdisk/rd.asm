@@ -105,6 +105,7 @@ HELP	CALL	$TYPTX
 	DB	'HELP	Type this message',NL
 	DB	'DEBUG  Enable debug messages',NL
 	DB	'TINY   512K-only board',NL
+	DB	'SECOND Driver for second pair',NL
 	DB	NL
 	DB	TAB,'The above options can be preceded by "NO" to negate their',NL
 	DB	TAB,'Effect. (I.E.  SET RD: NODEBUG )',NL	
@@ -133,14 +134,14 @@ HELP	CALL	$TYPTX
 *	   DEBUG -- sets bit0 in RDDEBUG to 1
 *		Handler = FLAGI
 *		Bitmask = 1
-*		BitBalue = 1
+*		BitValue = 1
 *		Location = RDDEBUG
 *		?unknown = 0
 *
 *	   NODEBUG -- sets bit0 in RDDEBUG to 0
 *		Handler = FLAGI
 *		Bitmask = 1
-*		BitBalue = 0
+*		BitValue = 0
 *		Location = RDDEBUG
 *		?unknown = 0
 
@@ -170,6 +171,16 @@ OPTTAB	DW	OPTTABE		END OF THE TABLE
 	DW	RDTINY
 	DB	0
 
+	DB      'SECON','D'+200Q,FLAGI
+	DB      0FFH,08H
+	DW      RDBASE
+	DB	0
+
+	DB      'NOSECON','D'+200Q,FLAGI
+	DB      0FFH,00H
+	DW      RDBASE
+	DB	0	
+
 OPTTABE	DB	0
 	SPACE	4,10
 **	PRCTAB	-  PROCESSOR TABLE
@@ -187,7 +198,7 @@ HELPI	EQU	*-PRCTAB/2
 *	WE HAVE TO CONSUME SPACE UNTIL WE HIT THAT ADDRESS. WE MUST NOT
 *	GO OVER -- THE SET CODE MUST FIT PRIOR to 002000A.
 
-.	SET	001200A		ADJUST THIS TO THE CURRENT ADDRESS AT THIS POINT
+.	SET	001270A		ADJUST THIS TO THE CURRENT ADDRESS AT THIS POINT
 	ERRNZ	*-.
 	DS	DVD.ENT-.
 	STL	'MAIN ENTRY POINT'
@@ -455,8 +466,13 @@ SMALLRD	EQU	*
 	ORA	C
 	RZ			Asking to read 0 bytes so just return
 
-	LDA	AIO.UNI		Store a copy of AIO.UNI since we cannot access it inside critical section
-	STA	RDUNIT
+	PUSH    B
+	LDA	RDBASE
+	MOV	B,A
+	LDA	AIO.UNI	
+	ADD	B		Add base to AIO.UNI
+	STA	RDUNIT		Store a copy of AIO.UNI since we cannot access it inside critical section
+	POP	B
 
 	CALL    CALCPG		Calc page and offset
 	CALL	DPAGE
@@ -504,8 +520,13 @@ SMALLWR	EQU	*
 	ORA	C
 	RZ			Asking to write 0 bytes so just return
 
-	LDA	AIO.UNI		Store a copy of AIO.UNI since we cannot access it inside critical section
-	STA	RDUNIT
+	PUSH    B
+	LDA	RDBASE
+	MOV	B,A
+	LDA	AIO.UNI
+	ADD	B		Add base to AIO.UNI
+	STA	RDUNIT		Store a copy of AIO.UNI since we cannot access it inside critical section
+	POP	B
 
 	CALL    CALCPG		Calc page and offset
 	CALL	DPAGE
@@ -567,6 +588,7 @@ RDTINY	DB	1		Tiny mode (single 512K board) for RD0, assume true by default
 RSVD1	DB	0		RESERVED FLAG 1
 RSVD2	DB	0		RESERVED FLAG 2
 RDUNIT	DB	0		Unit number
+RDBASE  DB	0		Base device address, 00 or 08
 
 **	STUFF FROM ND.ASM
 
