@@ -35,6 +35,7 @@ bblbas.asm: bubdef.acm bblcom.acm bblrdmin.acm bblvar.acm bbljump.acm bblrw.acm 
 	python ./convert.py < bubdef.acm >> bblbas.asm
 	python ./convert.py < bblcom.acm >> bblbas.asm
 	python ./convert.py < bblrw.acm >> bblbas.asm
+	python ./convert.py < bblchunk.acm >> bblbas.asm
 	echo "SECTION        bubble_vars" >> bblbas.asm
 	python ./convert.py < bblvar.acm >> bblbas.asm
 	cp bblbas.asm /home/smbaker/projects/pi/basic-bubble/basic/

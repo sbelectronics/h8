@@ -1,0 +1,99 @@
+*	CHUNKED READ AND WRITE ROUTINES
+
+BBLCSZ  EQU	020H		* Chunk size times 256
+
+**	NEXT CHUNK
+*
+*	ADJUST DE, HL, AND BAR TO POINT TO NEXT CHUNK
+
+NEXTCNK	MOV	A,D		* Increment DE by one chunk
+	ADI	BBLCSZ
+	MOV	D,A
+
+	MOV	A,H		* Decrement HL by one chunk
+	SUI	BBLCSZ
+	MOV	L,A
+
+	LDA	BARL		* Increment BAR by the chunk size
+	ADI	BBLCSZ*4
+	STA	BARL
+	RNC
+	LDA	BARH
+	INR	A
+	STA	BARH
+	RET
+
+**	READ DATA
+*
+*	BC = BYTE COUNT
+*	DE = SRC ADDRESS
+*	BARL/BARH = BUBBLE BLOCK
+*
+*	MODIFIES BARL/BARH
+
+BREADC  EQU	*
+	PUSH	B		* Save caller args
+	PUSH	D
+	PUSH	H
+	MOV	H,B		* BC INTO HL		
+	MOV	L,C
+
+RNEXT16	MOV     A,H
+	CPI	BBLCSZ+1	* Bigger than a chunk?
+	JC	LASTRD		* Nope.
+	PUSH	D
+	PUSH	H
+	MVI	H,BBLCSZ	* Set size to 1 chunk
+	MVI	L,0
+	CALL	BBLREAD		* Read the chunk
+	POP	H
+	POP	D
+
+	CALL	NEXTCNK		* Point to next Chunk
+
+	JMP	RNEXT16
+
+LASTRD	CALL	BBLREAD		* We are almost done, less than 16K+1sector remaining
+	POP	H
+	POP	D
+	POP	B
+	ANA	A
+	RET
+
+**	WRITE DATA
+*
+*	BC = BYTE COUNT
+*	DE = SRC ADDRESS
+*	BARL/BARH = BUBBLE BLOCK
+*
+*	MODIFIES BC, DE, BARL/BARH
+
+BWRITEC	EQU     *
+	PUSH	B		* Save caller args
+	PUSH	D
+	PUSH	H
+	MOV	H,B		* BC INTO HL		
+	MOV	L,C
+
+WNEXT16	MOV     A,H
+	CPI	BBLCSZ+1	* Bigger thank a chunk?
+	JC	LASTWR		* Nope.
+	PUSH	D
+	PUSH	H
+	MVI	H,BBLCSZ	* Set size to 1 chunk
+	MVI	L,0
+	CALL	BBLWRIT		* Write the chunk
+	POP	H
+	POP	D
+
+	CALL	NEXTCNK		* Point to next Chunk
+
+	JMP	WNEXT16
+
+LASTWR	CALL	BBLWRIT		* We are almost done, less than 16K+1sector remaining
+	POP	H
+	POP	D
+	POP	B
+	ANA	A
+	RET
+
