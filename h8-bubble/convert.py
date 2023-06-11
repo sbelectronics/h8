@@ -23,6 +23,15 @@ def fixcomm(x):
         x = x[1:]
     return d
 
+# JP in 8080 is "JP P," in Z80.
+# The assembler doesn't realize this and assembles it as a "JMP" instead
+def fixjp(x):
+   y = x.split(";")[0].upper()
+   if (" JP " in y) or ("\tJP\t" in y) or (" JP\t" in y) or ("\tJP " in y):
+      if not ("," in y):
+         x = x.replace("JP", "JP P,")
+   return x
+
 for line in data.split("\n"):
     if line.startswith("*"):
        line = ';' + line[1:]
@@ -32,4 +41,5 @@ for line in data.split("\n"):
           if "EQU" not in line.upper():
               line = fixlabel(line)
     line = fixcomm(line)
+    line = fixjp(line)
     print line
