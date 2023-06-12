@@ -12,7 +12,7 @@ NEXTCNK	MOV	A,D		* Increment DE by one chunk
 
 	MOV	A,H		* Decrement HL by one chunk
 	SUI	BBLCSZ
-	MOV	L,A
+	MOV	H,A
 
 	LDA	BARL		* Increment BAR by the chunk size
 	ADI	BBLCSZ*4
@@ -28,6 +28,8 @@ NEXTCNK	MOV	A,D		* Increment DE by one chunk
 *	BC = BYTE COUNT
 *	DE = SRC ADDRESS
 *	BARL/BARH = BUBBLE BLOCK
+*
+*	RETURNS STATUS CODE IN A. 40 or 42 ARE GOOD
 *
 *	MODIFIES BARL/BARH
 
@@ -49,15 +51,19 @@ RNEXT16	MOV     A,H
 	POP	H
 	POP	D
 
-	CALL	NEXTCNK		* Point to next Chunk
+	CPI	040H		* 40 is success
+	JZ	BRDCGD
+	CPI	042H		* 42 is success with parity error
+	JZ	BRDCGD
+	JMP	BRDCOUT		* Not an allowed answer
 
-	JMP	RNEXT16
+BRDCGD	CALL	NEXTCNK		* Point to next Chunk
+	JMP	RNEXT16		* Keep on workin
 
 LASTRD	CALL	BBLREAD		* We are almost done, less than 16K+1sector remaining
-	POP	H
+BRDCOUT	POP	H
 	POP	D
 	POP	B
-	ANA	A
 	RET
 
 **	WRITE DATA
@@ -66,7 +72,9 @@ LASTRD	CALL	BBLREAD		* We are almost done, less than 16K+1sector remaining
 *	DE = SRC ADDRESS
 *	BARL/BARH = BUBBLE BLOCK
 *
-*	MODIFIES BC, DE, BARL/BARH
+*	RETURNS STATUS CODE IN A. 40 or 42 ARE GOOD
+*
+*	MODIFIES BARL/BARH
 
 BWRITEC	EQU     *
 	PUSH	B		* Save caller args
@@ -86,14 +94,18 @@ WNEXT16	MOV     A,H
 	POP	H
 	POP	D
 
-	CALL	NEXTCNK		* Point to next Chunk
+	CPI	040H		* 40 is success
+	JZ	BWRCGD
+	CPI	042H		* 42 is success with parity error
+	JZ	BWRCGD
+	JMP     BWRCOUT		* Not an allowed answer
 
-	JMP	WNEXT16
+BWRCGD	CALL	NEXTCNK		* Point to next Chunk
+	JMP	WNEXT16		* Keep on workin
 
 LASTWR	CALL	BBLWRIT		* We are almost done, less than 16K+1sector remaining
-	POP	H
+BWRCOUT	POP	H
 	POP	D
 	POP	B
-	ANA	A
 	RET
 
