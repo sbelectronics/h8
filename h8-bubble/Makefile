@@ -13,7 +13,7 @@ bd.dvd: bd.rel bdi.rel
 	# vhdos
 	python3 ./dvddkgen.py < bd.tmp > bd.dvd
 
-%.rel: %.asm
+%.rel: %.asm *.acm
 	vhdos asm dk1:$*.rel,dk1:$*=dk1:$*,sy1:/err
 
 # Include file for Newmon
