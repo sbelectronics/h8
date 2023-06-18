@@ -70,7 +70,7 @@ PBOOT   EQU     *
 
 * All the following XTEXT will end up built into the boot loader
 
-        XTEXT   BUBDEF
+        XTEXT   BBLDEF
         XTEXT   BDROD
         XTEXT   BBLRDMIN
         XTEXT   BBLCOM
