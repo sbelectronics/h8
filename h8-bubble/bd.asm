@@ -115,7 +115,7 @@ HELP	CALL	$TYPTX
 	SPACE	4,10
 **	"what" identification
 
-	DB	'@(#)HDOS Bubble Disk Driver v1.00 by Scott Baker.',NL
+	DB	'@(#)HDOS Bubble Disk Driver v1.01 by Scott Baker.',NL
 	DW	0		Date
 	DW	0		Time
 
@@ -252,46 +252,24 @@ BDREADR	EQU	*
 	JMP	BDREAD1
 	RET
 
+**	READ DATA
+*
+*	BC = BYTE COUNT
+*	DE = DEST ADDRESS
+*	HL = BLOCK NUMBER
+
 BDREAD	EQU     *
       	CALL    DREAD
 
 BDREAD1 EQU     *
-	PUSH	B		Save caller args
-	PUSH	D
-	PUSH	H
-RNEXT16	MOV     A,B
-	CPI	041H
-	JC	LASTRD		Take the easy path, read is <= 16K+1sector
-	PUSH	B
-	PUSH	D
-	PUSH	H
-	LXI	B,04000H	Set count to 16K
-	CALL	SMALLRD		Read 16K
-	POP	H
-	POP	D
-	POP	B
-
-	MOV	A,D		Increment DE by 0x4000
-	ADI	040H
-	MOV	D,A
-
-	MOV	A,B		Decrement BC by 0x4000
-	SUI	040H
-	MOV	B,A
-
-	MOV	A,L             Increment HL by 0x0040
-	ADI	040H
-	MOV	L,A
-	MOV	A,H
-	ACI	000H		We might have carried...
-	MOV	H,A
-	JMP	RNEXT16
-
-LASTRD	CALL	SMALLRD		We are almost done, less than 16K+1sector remaining
-	POP	H
-	POP	D
-	POP	B
-	ANA	A
+	CALL	STOBLK			HL SecNo into BAR
+	CALL	BREADC			BC=ByteCount, DE=DestAddr, BAR==BubPage
+	CPI	040H			CHECK RESULT - 0x40 OP COMPLETE
+	JZ	RDOK			
+	CPI	042H			0x42 OP COMPLETE AND PARITY ERROR
+	JZ	RDOK	
+	CALL	DRERR
+RDOK	ANA	A
 	RET
 
 **	WRITE DATA
@@ -299,47 +277,17 @@ LASTRD	CALL	SMALLRD		We are almost done, less than 16K+1sector remaining
 *	BC = BYTE COUNT
 *	DE = SRC ADDRESS
 *	HL = BLOCK NUMBER
-*
-*	SEE NOTES ON READ REGARDING CHUNKS AND LARGE TRANSFERS.
 
 BDWRITE	EQU     *
 	CALL	DWRITE
-	PUSH	B		Save caller args
-	PUSH	D
-	PUSH	H
-WNEXT16	MOV     A,B
-	CPI	041H
-	JC	LASTWR		Take the easy path, write is <= 16K+1sector
-	PUSH	B
-	PUSH	D
-	PUSH	H
-	LXI	B,04000H	Set count to 16K
-	CALL	SMALLWR		Write 16K
-	POP	H
-	POP	D
-	POP	B
-
-	MOV	A,D		Increment DE by 0x4000
-	ADI	040H
-	MOV	D,A
-
-	MOV	A,B		Decrement BC by 0x4000
-	SUI	040H
-	MOV	B,A
-
-	MOV	A,L             Increment HL by 0x0040
-	ADI	040H
-	MOV	L,A
-	MOV	A,H
-	ACI	000H		We might have carried...
-	MOV	H,A
-	JMP	WNEXT16
-
-LASTWR	CALL	SMALLWR		We are almost done, less than 16K+1sector remaining
-	POP	H
-	POP	D
-	POP	B
-	ANA	A
+	CALL	STOBLK			HL SecNo into BAR
+	CALL	BWRITEC			BC=ByteCount, DE=SrcAddr, BAR=BubPage
+	CPI	040H			CHECK RESULT - 0x40 OP COMPLETE
+	JZ	WROK			
+	CPI	042H			0x42 OP COMPLETE AND PARITY ERROR
+	JZ	WROK
+	CALL	DWERR
+WROK	ANA	A
 	RET
 
 **	BDLOAD
@@ -403,65 +351,6 @@ BDMNT	EQU	*
 	ANA	A
 	RET
 
-**	SMALLRD
-*
-*	PERFORM A READ OF 16640 BYTES OR LESS. 
-*
-*	BC = BYTE COUNT --> HL
-*	DE = DEST ADDRESS
-*	HL = BLOCK NUMBER --> BARH/BARL
-
-SMALLRD	EQU     *
-	MOV	A,B
-	ORA	C
-	RZ				Asking to read 0 bytes so just return
-
-	PUSH	B			SAVE BC
-	PUSH	H			SAVE HL
-	CALL	STOBLK
-	MOV	H,B			MOVE BYTE COUNT FROM BC ...
-	MOV	L,C			... TO HL
-	CALL	BBLREAD
-	CPI	040H			CHECK RESULT - 0x40 OP COMPLETE
-	JZ	RDOK			
-	CPI	042H			0x42 OP COMPLETE AND PARITY ERROR
-	JZ	RDOK	
-	CALL	DRERR
-RDOK	POP	H			RESTORE HL
-	POP	B			RESTORE BC
-	ANA	A
-	RET
-
-**	SMALLWR
-*
-*	PERFORM A WRITE OF 16640 BYTES OR LESS. 
-*
-*	BC = BYTE COUNT
-*	DE = SRC ADDRESS
-*	HL = BLOCK NUMBER
-
-SMALLWR	EQU     *
-	MOV	A,B
-	ORA	C
-	RZ				Asking to write 0 bytes so just return
-
-	PUSH	B			SAVE BC
-	PUSH	H			SAVE HL
-	CALL	STOBLK
-	MOV	H,B			MOVE BYTE COUNT FROM BC ...
-	MOV	L,C			... TO HL
-	CALL	BBLWRIT
-	CPI	040H			CHECK RESULT - 0x40 OP COMPLETE
-	JZ	WROK			
-	CPI	042H			0x42 OP COMPLETE AND PARITY ERROR
-	JZ	WROK
-	CALL	DWERR
-WROK	POP	H			RESTORE HL
-	POP	B			RESTORE BC
-	ANA	A
-	RET
-
-
 ** 	LIBRARY CODE IS LOADED HERE
 *
 *	PRHEX - HEX PRITING
@@ -471,6 +360,7 @@ WROK	POP	H			RESTORE HL
 
 	XTEXT	BBLCOM
 	XTEXT	BBLRW
+	XTEXT	BBLCHUNK
 	XTEXT	PRHEX
 	XTEXT	DEBUG
 	XTEXT	STOBLK
