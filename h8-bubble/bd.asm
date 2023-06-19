@@ -115,7 +115,7 @@ HELP	CALL	$TYPTX
 	SPACE	4,10
 **	"what" identification
 
-	DB	'@(#)HDOS Bubble Disk Driver v1.01 by Scott Baker.',NL
+	DB	'@(#)HDOS DubBub Disk Driver v1.01 by Scott Baker.',NL
 	DW	0		Date
 	DW	0		Time
 

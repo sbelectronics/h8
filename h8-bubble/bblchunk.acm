@@ -15,7 +15,7 @@ NEXTCNK	MOV	A,D		* Increment DE by one chunk
 	MOV	H,A
 
 	LDA	BARL		* Increment BAR by the chunk size
-	ADI	BBLCSZ*4
+	ADI	BBLCSZ*2	* Adjust based on 256/BBLBPP
 	STA	BARL
 	RNC
 	LDA	BARH
