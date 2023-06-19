@@ -231,7 +231,6 @@ BBLPUTD EQU *
 * 	CALL BBLREAD
 * * ********************************************************************
 BBLREAD EQU 	*
-	CALL	DBRW
 	DI			* DISABLE INTERRUPTS
 	PUSH	D		* SAVE DE
 	PUSH	H		* SAVE HL
@@ -280,7 +279,6 @@ BBLRDDN EQU	*
 * 	CALL BBLWRIT
 * * ********************************************************************
 BBLWRIT EQU	*
-	CALL	DBRW
 	DI			* DISABLE INTERRUPTS
 	PUSH	H		* SAVE HL
 	CALL	BBLABRT		* ABORT ANY COMMANDS BEING PROCESSED

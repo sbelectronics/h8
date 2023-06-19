@@ -58,10 +58,10 @@ PBOOT   EQU     *
 
         CALL    BBLINIT
 
-*        LXI	H,BDROD		; Read-only driver
-*	SHLD	D.SYDD+1		; Install it
-*	LXI	H,BDMNT		; Special mount routine
-*	SHLD	D.MOUNT+1		; Set it
+        LXI	H,BDROD		; Read-only driver
+	SHLD	D.SYDD+1		; Install it
+	LXI	H,BDMNT		; Special mount routine
+	SHLD	D.MOUNT+1		; Set it
         JMP     SB.SDB          GO TO INIT COMMON BOOT CODE
 
 * NOTE: If it doesn't appear to boot when running BOOT3.ABS, then
@@ -71,12 +71,10 @@ PBOOT   EQU     *
 * All the following XTEXT will end up built into the boot loader
 
         XTEXT   BBLDEF
-*        XTEXT   BDROD
-*        XTEXT   BBLRDMIN
+        XTEXT   BDROD
+        XTEXT   BBLRDMIN
         XTEXT   BBLCOM
         XTEXT   BBLVAR
-        XTEXT   BBLDEBUG
-        XTEXT   PRHEX
 
 * End ROD stuff
 
