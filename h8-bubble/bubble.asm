@@ -31,7 +31,7 @@ INPBUF 	DS	68D		* INPUT BUFFER
 	XTEXT	BBLVAR
 
 *			          SOME TEXT STRINGS TO USE AS INPUT FOR INTERACTIVE READ/WRITE
-	DS	179		* PUT IT AT 0x5100
+	DS	178		* PUT IT AT 0x5100
 	ERRNZ	*-121000A
 	DB	'Space, the final frontier.'
 	DB	'These are the voyages of the Starship Enterprise.'
