@@ -34,6 +34,11 @@ NEXTCNK	MOV	A,D		* Increment DE by one chunk
 *	MODIFIES BARL/BARH
 
 BREADC  EQU	*
+	MOV	A,B
+	ORA	C
+	MVI	A,040H		* Preload success return code; does not set flags
+	RZ			* Asking to read 0 bytes so just return
+
 	PUSH	B		* Save caller args
 	PUSH	D
 	PUSH	H
@@ -77,6 +82,11 @@ BRDCOUT	POP	H
 *	MODIFIES BARL/BARH
 
 BWRITEC	EQU     *
+	MOV	A,B
+	ORA	C
+	MVI	A,040H		* Preload success return code; does not set flags
+	RZ			* Asking to write 0 bytes so just return
+
 	PUSH	B		* Save caller args
 	PUSH	D
 	PUSH	H
