@@ -28,11 +28,10 @@ bbubble: bbl.inc
 	python ./subst.py < /home/smbaker/projects/pi/h8/MmsCpm3/rom/newmon/src/bbubble.src > /home/smbaker/projects/pi/h8/MmsCpm3/rom/newmon/src/bbubble.asm
 
 # for bubble-basic board
-bblbas.asm: bubdef.acm bblcom.acm bblrdmin.acm bblvar.acm bbljump.acm bblrw.acm Makefile
+bblbas.asm: bbldef.acm bblcom.acm bblrdmin.acm bblvar.acm bbljump.acm bblrw.acm Makefile
 	echo "SECTION        bubble_lib" > bblbas.asm
-	#python ./convert.py < bbljump.acm >> bblbas.asm
 	python ./convert.py < bblpub.acm >> bblbas.asm
-	python ./convert.py < bubdef.acm >> bblbas.asm
+	python ./convert.py < bbldef.acm >> bblbas.asm
 	python ./convert.py < bblcom.acm >> bblbas.asm
 	python ./convert.py < bblrw.acm >> bblbas.asm
 	python ./convert.py < bblchunk.acm >> bblbas.asm
