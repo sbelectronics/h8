@@ -1,0 +1,25 @@
+    .ORG 07DB
+    DI             ; F3
+    MVI A,08H      ; 3E 08
+    OUT 0F2H       ; D3 F2
+    LXI B,02A3EH   ; 01 3E 2A
+    LXI H,02040H   ; 21 40 20
+    JMP 07F00H     ; C3 00 7F
+    LDA 02036H     ; 3A 36 20
+    OUT 0F2H       ; D3 F2
+    EI             ; FB
+    JMP 02040H     ; C3 40 20
+
+    .ORG 7F00
+    MOV A,M        ; 7E
+    MOV M,A        ; 77
+    INX D          ; 13
+    INX H          ; 23
+    DCX B          ; 0B
+    MOV A,B        ; 78
+    ORA C          ; B1
+    JNZ 07F00H     ; C2 00 7F
+    JMP 07E9H      ; C3 E9 07
+
+    .ORG 07F4
+    JMP 07DB       ; C3 DB 07
