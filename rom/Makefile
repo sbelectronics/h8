@@ -29,4 +29,4 @@ quad8080.rom: exbasic32k-patched.rom 2732_444-70_XCON8.ROM ../MmsCpm3/rom/newmon
 	dd if=h8demo.rom bs=1024 seek=96 conv=notrunc of=quad8080.rom
 
 clean:
-	rm -f exbasic32k.rom exbasic32k-patched.rom quad8080.rom
+	rm -f exbasic32k.rom exbasic32k-patched.rom quad8080.rom h8demo.rom
