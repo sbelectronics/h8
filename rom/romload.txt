@@ -21,5 +21,8 @@
     JNZ 07F00H     ; C2 00 7F
     JMP 07E9H      ; C3 E9 07
 
+    .ORG 07B8
+    JMP 07DB       ; C3 DB 07
+
     .ORG 07F4
     JMP 07DB       ; C3 DB 07
