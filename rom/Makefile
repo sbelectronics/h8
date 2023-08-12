@@ -12,8 +12,7 @@ exbasic32k-patched.rom: EXBASIC2-PATCHED-FIXCRC.H8T h8t-to-rom.py romload.txt
 
 h8demo.rom: H8DEMO.H8T h8t-to-rom.py romload.txt
 	# H8Demo
-	# Press "GO" to run H8Demo
-	# Note: autoboot doesn't seem to work with H8demo...
+	# Press "GO" to run H8Demo, or use primary autoboot (set SW1-7)
 	python ./h8t-to-rom.py H8DEMO.H8T h8demo.rom
 
 quad8080.rom: exbasic32k-patched.rom 2732_444-70_XCON8.ROM ../MmsCpm3/rom/newmon-80/src/h8amon2.rom h8demo.rom

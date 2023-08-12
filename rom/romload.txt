@@ -7,11 +7,14 @@
     ;; not everything fits here, so more at 0x7F00
     .ORG 07DB
     DI             ; F3
+    ;; enable 32K rom on 362H
     MVI A,08H      ; 3E 08
     OUT 0F2H       ; D3 F2
     LXI B,02A3EH   ; 01 3E 2A
     LXI H,02040H   ; 21 40 20
+    ;; call helper
     JMP 07F00H     ; C3 00 7F
+    ;; restore default settings on 362H
     LDA 02036H     ; 3A 36 20
     OUT 0F2H       ; D3 F2
     EI             ; FB
