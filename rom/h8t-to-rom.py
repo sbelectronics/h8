@@ -84,6 +84,8 @@ def load_h8t(fn, rom):
 def patch(fn, rom):
     lines = open(fn).readlines()
     for line in lines:
+        if ";;" in line:
+            line = line.split(";;")[0]
         line = line.strip()
         if not line:
             continue

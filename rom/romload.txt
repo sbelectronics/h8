@@ -1,3 +1,10 @@
+    ;; patch XCON8
+    ;; double-semicolon is a comment
+    ;; single semicolon separate hex bytes from instructions
+    
+    ;; entrypoint to copy and exec the image
+    ;; some room at the end of XCON8
+    ;; not everything fits here, so more at 0x7F00
     .ORG 07DB
     DI             ; F3
     MVI A,08H      ; 3E 08
@@ -10,6 +17,8 @@
     EI             ; FB
     JMP 02040H     ; C3 40 20
 
+    ;; helper
+    ;; copy the tape program to ROM
     .ORG 7F00
     MOV A,M        ; 7E
     MOV M,A        ; 77
@@ -19,10 +28,20 @@
     MOV A,B        ; 78
     ORA C          ; B1
     JNZ 07F00H     ; C2 00 7F
+    ;; setup front panel, needed for autoboot
+    LXI H,02008H   ; 21 08 20
+    MOV A,M        ; 7E
+    ANI 08DH       ; E6 8D
+    MOV M,A        ; 77
+    INX H          ; 23
+    MVI M,0F0H     ; 36 F0
+    ;; jump back to ROM
     JMP 07E9H      ; C3 E9 07
 
+    ;; Patch the initial PC register
     .ORG 07B8
     JMP 07DB       ; C3 DB 07
 
+    ;; Patch auto-boot
     .ORG 07F4
     JMP 07DB       ; C3 DB 07

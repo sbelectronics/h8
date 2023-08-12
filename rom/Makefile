@@ -1,16 +1,16 @@
 all: exbasic32k.rom exbasic32k-patched.rom h8demo.rom
 
-exbasic32k.rom: EXBASIC2.H8T h8t-to-rom.py
+exbasic32k.rom: EXBASIC2.H8T h8t-to-rom.py romload.txt
 	# Extended Benton Harbor Basic 2
 	# Press "GO" to run EXBasic, or use primary autoboot (set SW1-7)
 	python ./h8t-to-rom.py EXBASIC2-PATCHED-FIXCRC.H8T exbasic32k.rom
 
-exbasic32k-patched.rom: EXBASIC2-PATCHED-FIXCRC.H8T h8t-to-rom.py
+exbasic32k-patched.rom: EXBASIC2-PATCHED-FIXCRC.H8T h8t-to-rom.py romload.txt
     # Extended Benton Harbor Basic 2 with Scott's patch for paper tape
 	# Press "GO" to run EXBasic, or use primary autoboot (set SW1-7)
 	python ./h8t-to-rom.py EXBASIC2-PATCHED-FIXCRC.H8T exbasic32k-patched.rom
 
-h8demo.rom: H8DEMO.H8T h8t-to-rom.py
+h8demo.rom: H8DEMO.H8T h8t-to-rom.py romload.txt
 	# H8Demo
 	# Press "GO" to run H8Demo
 	# Note: autoboot doesn't seem to work with H8demo...
