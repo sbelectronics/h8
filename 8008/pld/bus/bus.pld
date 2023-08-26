@@ -20,7 +20,7 @@ Pin 8 = FF_Q;       /* 500 KHz flip-flop Q                  */
 Pin 9 = FF_QNOT;    /* 500 KHz flip-flop /Q                 */
 Pin 10 = NC1;
 Pin 11 = NC2;
-Pin 12 = NC3;
+Pin 13 = NC3;
 
 /* Outputs:   */
 Pin 23 = !RUNNING;   /* Output to "Running" LED              */ 
