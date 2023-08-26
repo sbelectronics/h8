@@ -1,4 +1,4 @@
-Name 8008SBC_1;
+Name bus;
 Partno G22V10#1;
 Revision;
 Date 09/17/2021;
@@ -20,13 +20,13 @@ Pin 8 = FF_Q;       /* 500 KHz flip-flop Q                  */
 Pin 9 = FF_QNOT;    /* 500 KHz flip-flop /Q                 */
 
 /* Outputs:   */
-Pin 23 = RUNNING;   /* Output to "Running" LED              */ 
+Pin 23 = !RUNNING;   /* Output to "Running" LED              */ 
 Pin 22 = ALL;       /* 74LS273 #1 Address Latch Low strobe  */
 Pin 21 = ALH;       /* 74LS273 #2 Address Latch High strobe */
-Pin 20 = MEMRD;     /* Memory Read strobe to 27256 and 6264 */
-Pin 19 = MEMWR;     /* Memory Write strobe to 6264          */
-Pin 18 = IORD;      /* IO Read to G22V10 #2                 */
-Pin 17 = IOWR;      /* IO Write to G22V10 #2                */
+Pin 20 = !MEMRD;     /* Memory Read strobe to 27256 and 6264 */
+Pin 19 = !MEMWR;     /* Memory Write strobe to 6264          */
+Pin 18 = !IORD;      /* IO Read to G22V10 #2                 */
+Pin 17 = !IOWR;      /* IO Write to G22V10 #2                */
 Pin 16 = PHASE1;    /* Phase 1 clock to 8008 pin 15         */
 Pin 15 = PHASE2;    /* Phase 2 clock to 8008 pin 16         */
 Pin 14 = DBD;       /* 74LS245 Data Bus Direction control   */
@@ -47,7 +47,7 @@ stopped = !S2 &  S1 &  S0;      /* halt instruction received by CPU         */
 t4      =  S2 &  S1 &  S0;      /* execution of instruction                 */
 t5      =  S2 & !S1 &  S0;      /* execution of instruction                 */
 
-!RUNNING = !stopped;
+RUNNING = !stopped;
 
 /* cycle types... */
 pci = !CC1 & !CC2;            /* Memory Read Instruction */
@@ -65,10 +65,10 @@ ALL  = (t1 # t1i) & !SYNC & PHASE2;
 ALH  = t2 & !SYNC & PHASE2;
 
 /* memory and I/O strobes */
-!MEMRD = t3 & (pci # pcr) & SYNC;
-!MEMWR = t3 & pcw & !SYNC & PHASE2;
+MEMRD = t3 & (pci # pcr) & SYNC;
+MEMWR = t3 & pcw & !SYNC & PHASE2;
 
-!IORD  = t3 & pcc & SYNC;
-!IOWR = t3 & pcc & !SYNC & PHASE1;
+IORD  = t3 & pcc & SYNC;
+IOWR = t3 & pcc & !SYNC & PHASE1;
 
 ST3 = t3 & PHASE2 & !SYNC;
