@@ -1,0 +1,30 @@
+0 RHR/THR - rx and tx
+1 IER - detaults to no interrupts
+2 ISR - not needed
+3 LCR - sets word length, enables baud gen, etc
+  xxxxxx11 - 8 bit
+  xxxxx0xx - 1 stop bit
+  xxxx0xxx - no parity
+  x0xxxxxx - no break condition
+  1xxxxxxx - enable baud latch
+
+  0x80 to set baud rate
+  0x03 otherwise
+4 MCR - not needed
+5 LSR - use to poll tx and rx ready
+  0x01 - rx ready
+  0x20 - tx ready
+6 MSR - not needed
+7 SPR - not needed
+
+To use the uart, we need
+  RHR/THR
+  IER - when setting baud
+  LCR - when setting baud and params
+
+
+
+set LCR to 0x83 to set the baud rate
+  write 0x00 to DLM on addr 1
+  write 0x30 to DLL on addr 0
+then reset LCR to 0x03
