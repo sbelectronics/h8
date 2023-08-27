@@ -21,47 +21,6 @@
             
             include "bitfuncs.inc" 
 
-h8_in2:     equ 02H
-h8_in3:     equ 03H
-h8_in4:     equ 04H
-h8_in5:     equ 05H
-h8_in6:     equ 06H
-h8_in7:     equ 07H
-
-h8_out0:    equ 10H
-h8_out1:    equ 11H
-h8_out2:    equ 12H
-h8_out3:    equ 13H
-h8_out4:    equ 14H
-h8_out5:    equ 15H
-h8_out6:    equ 16H
-h8_out7:    equ 17H
-
-mm_io0:    equ 18H
-mm_io1:    equ 19H
-mm_io2:    equ 1AH
-mm_io3:    equ 1BH
-mm_io4:    equ 1CH
-mm_io5:    equ 1DH
-mm_io6:    equ 1EH
-mm_io7:    equ 1FH
-
-h8_thr:    equ 0E8H
-h8_rhr:    equ 0E8H
-h8_ier:    equ 0E9H
-h8_lcr:    equ 0EBH
-h8_lsr:    equ 0EDH
-
-ser_thr:   equ h8_out2
-ser_lcr:   equ h8_out4
-ser_ier:   equ h8_out5
-
-ser_dll:   equ ser_thr
-ser_dlm:   equ ser_ier
-
-ser_rhr:   equ h8_in2
-ser_lsr:   equ h8_in3
-
             cpu 8008new             ; use "new" 8008 mnemonics
             radix 10                ; use base 10 for numbers
 
@@ -77,29 +36,11 @@ ser_lsr:   equ h8_in3
             
 start:      in 1                    ; reset the bootstrap flip-flop internal to GAL22V10 #2
 
-            mvi a,h8_thr            ; configure IO mapper
-            out mm_io2
-            mvi a,h8_lsr
-            out mm_io3
-            mvi a,h8_lcr
-            out mm_io4
-            mvi a,h8_ier
-            out mm_io5
-
-            mvi a,083H              ; enable the baud rate regs
-            out ser_lcr
-            mvi a,000H
-            out ser_dlm             ; set baud msb
-            mvi a,030H
-            out ser_dll             ; set baud lsb
-            mvi a,003H
-            out ser_lcr             ; set no parity, 1 stop bit
+            call SINIT
 
             ;mvi a, 41H
             ;out ser_thr
 
-            ;mvi a,1
-            ;out 08h                 ; set serial output high (mark)
             ;xra a
             ;out 09h                 ; turn off the red LED
             
@@ -145,134 +86,11 @@ mv_oldpg27: mvi h,hi(page27)        ; source: OLDPG27 constants in EPROM at page
 ; the character in the accumulator.
 ;-----------------------------------------------------------------------------------------
 
-CINP:       in ser_lsr
-            ani 01H
-            jz  CINP                ; loop while waiting for character
-            in ser_rhr
-            mov b,a                 ; save received character in B
-TXWAIT0:    in ser_lsr
-            ani 20H
-            jz TXWAIT0              ; loop while waiting for TX free for echo.
-            mov a,b                 ; restore received character bak to A
-            out ser_thr             ; echo it.
-            ori 80h                 ; SCELBAL needs to have the most significant bit set
-            ret
+            include "16450.inc"
 
-CPRINT:     ani 7fh                 ; mask off the most significant bit of the character
-            mov b,a                 ; save the character from A to B
-TXWAIT1:    in ser_lsr
-            ani 20H
-            jz  TXWAIT1
-            mov a,b
-            out ser_thr
-            ret
-
-
-INPORT      equ 0                   ; serial input port address
-OUTPORT     equ 08h                 ; serial output port address
-;-----------------------------------------------------------------------------------------
-; 2400 bps character input subroutine for SCELBAL
-; wait for a character from the serial port. 
-; echo the character. return the character in A.
-; uses A and B.
-;-----------------------------------------------------------------------------------------
-OLDCINP:   in INPORT               ; get input from serial port
-            rar                     ; rotate the received serial bit right into carry
-            jc CINP                 ; jump back if start bit was not detected (input was high)
-
-            ; start bit detected. 1/2 bit time then send start bit
-            mvi b,0                 ; initialize B
-            mvi b,0                 ; timing adjustment
-            xra a                   ; clear the accumulator
-            out OUTPORT             ; send the start bit
-            call delay1             ; timing adjustment
-            mvi b,0                 ; timing adjustment            
-            
-            ; receive and echo bits 0 through 7
-            call getbitecho         ; receive/echo bit 0
-            call getbitecho         ; receive/echo bit 1
-            call getbitecho         ; receive/echo bit 2
-            call getbitecho         ; receive/echo bit 3
-            call getbitecho         ; receive/echo bit 4
-            call getbitecho         ; receive/echo bit 5
-            call getbitecho         ; receive/echo bit 6
-            call getbitecho         ; receive/echo bit 7
-            
-            ; wait 1 bit time, then send the stop bit
-            mov a,b                 ; save the character from B to A
-            mvi b,0feh              ; timing adjustment
-            call delay              ; timing adjustment
-            mov b,a                 ; restore the chararacter from A to B
-            mvi a,1                 ; '1' for stop bit
-            out OUTPORT             ; send the stop bit
-            ; wait 1 bit time
-            mov a,b                 ; restore the character from B to A
-            mvi b,0feh              ; timing adjustment
-            call delay              ; timing adjustment
-            ori 80h                 ; SCELBAL needs to have the most significant bit set
-            ret                     ; return to caller
-
-getbitecho: mov a,b                 ; save the received bits from B to A
-            mvi b,0ffh              ; timing adjustment
-            call delay              ; timing adjustment
-            mov b,a                 ; restore the received bits from A to B
-            ana a                   ; timing adjustment
-            in INPORT               ; get input from the serial port
-            out OUTPORT             ; echo the received bit
-            rar                     ; rotate the received bit right into carry
-            mov a,b                 ; restore the previously received bits from B to A
-            rar                     ; rotate the newly received bit in carry right into the MSB of A
-            mov b,a                 ; save the received bits in B
-            ret
-            
-;------------------------------------------------------------------------        
-; 2400 bps character output subroutine for SCELBAL
-; uses A and B.
-; returns with the original character in A
-;------------------------------------------------------------------------
-OLDCPRINT:  ani 7fh                 ; mask off the most significant bit of the character
-            mov b,a                 ; save the character from A to B
-            xra a                   ; clear A for the start bit
-            out 08h                 ; send the start bit
-            mov a,b                 ; restore the character from B to A 
-            mov a,b                 ; timing adjustment
-            mvi b,0fdh              ; timing adjustment
-            mvi b,0fdh              ; timing adjustment        
-            call delay              ; timing adjustment
-            
-            ; send bits 0 through 7
-            call putbit             ; transmit bit 0
-            call putbit             ; transmit bit 1
-            call putbit             ; transmit bit 2
-            call putbit             ; transmit bit 3
-            call putbit             ; transmit bit 4
-            call putbit             ; transmit bit 5
-            call putbit             ; transmit bit 6
-            call putbit             ; transmit bit 7            
-
-            ; send the stop bit 
-            mov b,a                 ; save the character from A to B
-            mvi a,1                 ; '1' for the stop bit
-            out 08h                 ; send the stop bit 
-            mov a,b                 ; restore the original character from B to A
-            ori 80h                 ; restore the most significant bit of the character
-            mvi b,0fch              ; timing adjustment
-            call delay              ; timing adjustment
-            ret                     ; return to caller
-
-putbit:     out 08h                 ; output the least significant bit of the character in A
-            mvi b,0fdh              ; timing adjustment
-            mvi b,0fdh              ; timing adjustment
-            call delay              ; timing adjustment
-            rrc                     ; shift the character in A right
-            ret
-            
-;------------------------------------------------------------------------        
-; delay in microseconds = (((255-value in B)*16)+19) * 4 microseconds
-;------------------------------------------------------------------------        
-delay:      inr b
-            jnz delay
-delay1:     ret
+SINIT:      equ SINIT450
+CINP:       equ CINP450
+CPRINT      equ CPRINT450
             
             cpu 8008                ; use "old" mneumonics for SCELBAL
             RADIX 8                 ; use octal for numbers
