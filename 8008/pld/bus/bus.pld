@@ -18,7 +18,7 @@ Pin 6 = CC2;        /* control code from 74LS273 #2 pin 2   */
 Pin 7 = FF_CLK;     /* 1MHz clock to flip-flop              */
 Pin 8 = FF_Q;       /* 500 KHz flip-flop Q                  */
 Pin 9 = FF_QNOT;    /* 500 KHz flip-flop /Q                 */
-Pin 10 = NC1;
+Pin 10 = PHASE2;
 Pin 11 = NC2;
 Pin 13 = NC3;
 
@@ -45,7 +45,7 @@ t1      = !S2 &  S1 & !S0;      /* lower 8 bits of address out              */
 t1i     =  S2 &  S1 & !S0;      /* CPU interrupted                          */
 t2      =  S2 & !S1 & !S0;      /* higher 6 bits address, 2 bits control out*/    
 wait    = !S2 & !S1 & !S0;      /* external memory not ready                */
-t3      = !S1 & !S1 &  S0;      /* instruction or data fetch or data out    */
+t3      = !S2 & !S1 &  S0;      /* instruction or data fetch or data out    */
 stopped = !S2 &  S1 &  S0;      /* halt instruction received by CPU         */
 t4      =  S2 &  S1 &  S0;      /* execution of instruction                 */
 t5      =  S2 & !S1 &  S0;      /* execution of instruction                 */
@@ -63,9 +63,12 @@ pcw =  CC1 &  CC2;            /* Memory Write */
  *   They're still needed for computing ALL, ALH, MEMRD, MEMWR
  *   if it becomes an issue, could connect them to some of the NC
  *   inputs.
+ *
+ *   I manually wired Pin 10 to phase2.
  */
-PHASE1 = !FF_CLK & !FF_Q;
-PHASE2 = !FF_CLK & !FF_QNOT;
+/* PHASE1 = !FF_CLK & !FF_Q;
+   PHASE2 = !FF_CLK & !FF_QNOT;
+*/
 
 /* address and data bus */
 DBD = (t1 # t1i # t2 # t3) & !SYNC;
@@ -76,8 +79,8 @@ ALH  = t2 & !SYNC & PHASE2;
 MEMRD = t3 & (pci # pcr) & SYNC;
 MEMWR = t3 & pcw & !SYNC & PHASE2;
 
-IORD  = t3 & pcc & SYNC;
-IOWR = t3 & pcc & !SYNC & PHASE1;
+IORD = t3 & pcc & SYNC;
+IOWR = t3 & pcc & !SYNC & PHASE2;
 
 INTACK = t1i & !SYNC & PHASE2;
 M1 = t3 & pci & SYNC;
