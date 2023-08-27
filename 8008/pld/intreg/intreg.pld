@@ -1,0 +1,91 @@
+Name intreg;
+Partno G22V10#1;
+Revision;
+Date 09/17/2021;
+Designer Jim Loos;
+Company ;
+Location ;
+Assembly 8008 SBC;
+Device G22V10;
+
+/* Inputs: */
+Pin 1 = NC1;
+Pin 2 = !INT0;  /* 000 - jumps to 0x00 - not implemented here */
+Pin 3 = !INT1;  /* 001 - jumps to 0x08 */
+Pin 4 = !INT2;  /* 010 - jumps to 0x10 */
+Pin 5 = !INT3;  /* 011 - jumps to 0x18 */
+Pin 6 = !INT4;  /* 100 - jumps to 0x20 */
+Pin 7 = !INT5;  /* 101 - jumps to 0x28 */
+Pin 8 = !INT6;  /* 110 - jumps to 0x30 */
+Pin 9 = !INT7;  /* 111 - jumps to 0x38*/
+Pin 10 = SIMFPINT;
+Pin 11 = POR;
+Pin 13 = !INTJAM;
+
+/* Outputs:   */
+Pin 23 = D0;
+Pin 22 = D1;
+Pin 21 = D2;
+Pin 20 = D3;
+Pin 19 = D4;
+Pin 18 = D5;
+Pin 17 = D6;
+Pin 16 = D7;
+Pin 15 = !INTREQ;
+Pin 14 = NC2;
+
+FIELD DATA = [D7..D0];
+
+INTREQ = INT1; /* for now, only pay attention to int1 */
+
+/* only put the instruction on the data bus if intjam is true */
+
+D0.OE = INTJAM;
+D1.OE = INTJAM;
+D2.OE = INTJAM;
+D3.OE = INTJAM;
+D4.OE = INTJAM;
+D5.OE = INTJAM;
+D6.OE = INTJAM;
+D7.OE = INTJAM;
+
+/* D7..D0 always holds an RST instruction, and applies the highest
+   numbered interrupt as priority over lesser numbered interrupts.
+
+   Note that the equations below can be simplified, and are automatically
+   optimized by wincupl.
+*/
+
+D0 = 'b'1;
+D1 = 'b'0;
+D2 = 'b'1;
+D3 = (INT7) #
+     (INT5 & !INT6 & !INT7) #
+     (INT3 & !INT4 & !INT5 & !INT6 & !INT7) #
+     (INT1 & !INT2 & !INT3 & !INT4 & !INT5 & !INT6 & !INT7);
+D4 = (INT7) #
+     (INT6 & !INT7) #
+     (INT3 & !INT4 & !INT5 & !INT6 & !INT7) #
+     (INT2 & !INT3 & !INT4 & !INT5 & !INT6 & !INT7);
+D5 = (INT7) #
+     (INT6 & !INT7) #
+     (INT5 & !INT6 & !INT7) #
+     (INT4 & !INT5 & !INT6 & !INT7);
+D6 = 'b'0;
+D7 = 'b'0;
+
+
+/* this was when I had the priority backwards...
+D3 = INT1 # 
+     (INT3 & !INT2 & !INT1) #
+     (INT5 & !INT4 & !INT3 & !INT2 & !INT1) #
+     (INT7 & !INT6 & !INT5 & !INT4 & !INT3 & !INT2 & !INT1);
+D4 = (INT2 & !INT1) # 
+     (INT3 & !INT2 & !INT1) # 
+     (INT6 & !INT5 & !INT4 & !INT3 & !INT2 & !INT1) #
+     (INT7 & !INT6 & !INT5 & !INT4 & !INT3 & !INT2 & !INT1);
+D5 = (INT4 & !INT3 & !INT2 & !INT1) #
+     (INT5 & !INT4 & !INT3 & !INT2 & !INT1) #
+     (INT6 & !INT5 & !INT4 & !INT3 & !INT2 & !INT1) #
+     (INT7 & !INT6 & !INT5 & !INT4 & !INT3 & !INT2 & !INT1);
+*/

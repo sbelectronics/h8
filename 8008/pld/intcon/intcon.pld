@@ -1,0 +1,49 @@
+Name intcon;
+Partno G22V10#1;
+Revision;
+Date 09/17/2021;
+Designer Jim Loos;
+Company ;
+Location ;
+Assembly 8008 SBC;
+Device G22V10;
+
+/* Inputs: */
+Pin 1 = SYNC;
+Pin 2 = !INTREQ;
+Pin 3 = !INTACK;
+Pin 4 = NC2;
+Pin 5 = POR;
+Pin 6 = !RESET;
+Pin 7 = !CMEMRD;
+Pin 8 = !OUTEI;
+Pin 9 = !OUTDI;
+Pin 10 = !OUTFPEI;
+Pin 11 = !OUTFPDI;
+Pin 13 = !M1;
+
+/* Outputs:   */
+Pin 23 = CPUINT;
+Pin 22 = !MEMRD;
+Pin 21 = !INTJAM;
+Pin 20 = !FPIE;
+Pin 19 = NC10;
+Pin 18 = NC11;
+Pin 17 = NC12;
+Pin 16 = WAITMEM;  /* temporary */
+Pin 15 = ISERV;    /* temporary */
+Pin 14 = IES;      /* temporary */
+
+IES = (IES & !RESET & !OUTDI & !INTACK) # (OUTEI & !RESET);     /* interrupts are disabled on reset, during intack, and on OUTDI. interrupts are enabled on OUTEI. */
+
+ISERV = IES & (INTACK # (ISERV & WAITMEM) # (ISERV & CMEMRD));  /* servicing interrupt during intack, while waiting for MEMRD, or during MEMRD */
+
+WAITMEM = INTACK # (WAITMEM & !CMEMRD);                         /* wait for mem starts on intack, and continues until MEMRD */
+
+CPUINT = POR # (IES & INTREQ);                                  /* interrupt CPU on POR or Interrupt Request */
+
+MEMRD = CMEMRD & !ISERV;                                        /* MEMRD when commanded and not servicing */
+
+INTJAM = CMEMRD & ISERV;                                        /* INTJAM when commanded and servicing */
+
+FPIE = IES;
