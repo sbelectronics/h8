@@ -23,7 +23,7 @@ Pin 11 = NC2;
 Pin 13 = NC3;
 
 /* Outputs:  */
-Pin 23 = OUTP0;
+Pin 23 = !H8IOW;
 Pin 22 = !INP0;
 Pin 21 = !OUTMUX;
 Pin 20 = !INP1;
@@ -32,7 +32,7 @@ Pin 18 = !OUTIOMM;
 Pin 17 = !ROMCS;
 Pin 16 = !RAMCS;
 Pin 15 = !H8OUT;
-Pin 14 = !H8IN;
+Pin 14 = !H8IOR;
 
 /* Input/Output logic: */
 in0  = !A13 & !A12;
@@ -52,11 +52,13 @@ device7 =  A11 &  A10 &  A9;
 INP0 = in0  & device0 & IORD;          /* Input port 0         */
 INP1 = in0  & device1 & IORD;          /* Input port 1         */
 INPIR = in0 & device2 & IORD;
-OUTP0 = out0 & device0 & IOWR;         /* Output port 8        */
+/* OUTP0 = out0 & device0 & IOWR;         /* Output port 8        */
 OUTMUX = out0 & (!device0) & IOWR;     /* Output ports 9-15        */
 OUTIOMM = out2 & IOWR;
 
-H8IN = in0 & (!device0) & (!device1) & IORD; XXX gate there with START. Use H8IN as h8 IORD. Use OUTP0 for now as an H8 IOWR. 
+H8IOR = in0 & (!device0) & (!device1) & IORD;
+H8IOW = out1 & IOWR;
+
 H8OUT = !IORD; /* out1 & IOWR; */
 
 /* simulated SR flip-flop made up of cross-connected NAND gates.        */
