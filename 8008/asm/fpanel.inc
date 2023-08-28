@@ -10,7 +10,17 @@ FPANINIT:
            mvi a,hi(mcounter)
            mov m,a
 
-           mvi h,hi(mdigindex)  ; Set digit index to 9
+           mvi h,hi(mcounter)    ; zero the counter
+           mvi l,lo(mcounter)
+           mvi m,0
+           inr l
+           mvi m,0
+           inr l
+           mvi m,0
+           inr l
+           mvi m,0
+
+           mvi h,hi(mdigindex)   ; Set digit index to 9
            mvi l,lo(mdigindex)
            mvi a,9H
            mov m,a
@@ -58,19 +68,40 @@ FPANPOLL:
            mov m,a                ; save A (entry value of H) in memory
            inr l                  ; advance pointer
            mov m,b                ; save B (entry value of L) in memory
-           inr l
-           ;mov m,b               ; no need to store b since we've destroyed it already
-           inr l
-           mov m,c
-           inr l
-           mov m,d
-           inr l
-           mov m,e
 
-           mvi h,hi(mdigindex)  ; get the digit index into a
-           mvi l,lo(mdigindex)
+           mvi h,hi(mcounter)     ; get the address of the counter B0
+           mvi l,lo(mcounter)
            mov a,m
-           mov d,a              ; save a copy of mdigindex in d
+           adi 1                  ; increment low byte
+           mov m,a                ; and store it
+           jnz nocarry1
+           inr l                  ; point to B1
+           mov a,m
+           adi 1
+           mov m,a
+           jnz nocarry2
+           inr l                  ; point to B2
+           mov a,m
+           adi 1
+           mov m,a
+           jnz nocarry3
+           inr l                  ; point to B3
+           mov a,m
+           adi 1
+           jmp doneadd
+nocarry1:
+           inr l                 ; point to B1
+nocarry2:
+           inr l                 ; point to B2
+nocarry3:
+           inr l                 ; point to B3
+doneadd:
+           inr l                 ; now pointing at mdigindex
+
+           ;mvi h,hi(mdigindex)  ; get the digit index into a
+           ;mvi l,lo(mdigindex)
+           mov a,m
+           mov b,a              ; save a copy of mdigindex in d
 
            ; bit7 0 should turn on speaker
            ; bit6 1 should turn on int10 refresh
@@ -79,7 +110,7 @@ FPANPOLL:
            ori 0F0H
            out fp_digsel
 
-           mov a,d              ; d still holds mdigindex; m is still pointing at mdigindex
+           mov a,b              ; d still holds mdigindex; m is still pointing at mdigindex
            sui 1H               ; subtract for next digit
            jnz nowrap
            mvi a,9H             ; wrap back up to 9
@@ -89,7 +120,7 @@ nowrap:
            mvi h,hi(m_dig)
            mvi l,lo(m_dig)
            mov a,l
-           add d
+           add b
            mov l,a                ; hl has address of value
            mov a,m                ; a now has value
            out fp_digval
@@ -100,15 +131,9 @@ FPANOUT:
            mov a,m
            inr l
            mov b,m
-           inr l
-           ;mov b,m                ; don't restore b as we're using it to hold e
-           inr l
-           mov c,m
-           inr l
-           mov d,m
            mov h,a
            mov l,b
-           ret
+           jmp CINPNE             ; this is the only place we're allowed to come from
 
 digit_7seg:
            db 081H  ;  0b10000001  ! 0

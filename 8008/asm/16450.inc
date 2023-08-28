@@ -90,20 +90,12 @@ SINIT450:   mvi a,h8_thr            ; configure IO mapper
             ret
 
 ;-----------------------------------------------------------------------------------------       
-; CINP450: wait for and read character
+; CINP450: wait for and read character, with echo
 ;-----------------------------------------------------------------------------------------
-
-CINP450P:   ifdef fpanelinc
-            in ipoll                ; entrypoint that includes a poll of the front panel ISR
-            out ledport
-            ani 02H                 ; int1 == 0x02 is the front panel asking for service
-            cnz FPANPOLL
-            endif ; fpanelinc
-            ; fall through
 
 CINP450:    in ser_lsr              ; normal entrypoint
             ani 01H
-            jz  CINP450P            ; loop while waiting for character. Check fpanel if idle
+            jz  CINP450             ; loop while waiting for character. Check fpanel if idle
             in ser_rhr
             mov b,a                 ; save received character in B
 TXWAIT450:  in ser_lsr
@@ -118,15 +110,12 @@ TXWAIT450:  in ser_lsr
 
 ;-----------------------------------------------------------------------------------------       
 ; CINP450NE: wait for and read character, without echo
-;            also, does not set bit 7.
-;            used for binary inputs, for example monitor.asm
 ;-----------------------------------------------------------------------------------------
 
 CINP450NEP: ifdef fpanelinc
             in ipoll                ; entrypoint that includes a poll of the front panel ISR
-            out ledport
             ani 02H                 ; int1 == 0x02 is the front panel asking for service
-            cnz FPANPOLL
+            jnz FPANPOLL
             endif ; fpanelinc
             ; fall through
 

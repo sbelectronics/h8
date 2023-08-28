@@ -28,9 +28,9 @@ msave_B:    equ 1FE2H
 msave_C:    equ 1FE3H
 msave_D:    equ 1FE4H
 msave_E:    equ 1FE5H
-mcounter:   equ 1FE8H
-maddr:      equ 1FEAH
-mdigindex:  equ 1FECH
+maddr:      equ 1FE8H
+mcounter:   equ 1FEAH    ; bytes, MSB-first
+mdigindex:  equ 1FEEH
             
 ; temporary storage for registers;            
 save_H:     equ 1FF0H
@@ -1128,7 +1128,6 @@ puts:       mov a,m
             include "16450.inc"
 
 SINIT:      equ SINIT450
-CINP:       equ CINP450
 CINPNE:     equ CINP450NE
 CPRINT:     equ CPRINT450
 CRDY:       equ CRDY450
@@ -1150,7 +1149,8 @@ putch:      mov e,b                 ; save B
 ;-----------------------------------------------------------------------------------------
 
 getche:     mov e,b            ; save B
-            call CINP
+            call CINPNE
+            call CPRINT
             mov b,e
             ret
 
