@@ -14,6 +14,23 @@
             include "bitfuncs.inc" 
 
             cpu 8008new             ; use "new" 8008 mnemonics
+
+;
+
+m_dig:      equ 1FD0H                  ; since digits are 1-based, one empty slot
+m_dig_l:    equ 1FD1H
+m_dig_m:    equ 1FD4H
+m_dig_r:    equ 1FD7H
+
+msave_H:    equ 1FE0H
+msave_L:    equ 1FE1H
+msave_B:    equ 1FE2H
+msave_C:    equ 1FE3H
+msave_D:    equ 1FE4H
+msave_E:    equ 1FE5H
+mcounter:   equ 1FE8H
+maddr:      equ 1FEAH
+mdigindex:  equ 1FECH
             
 ; temporary storage for registers;            
 save_H:     equ 1FF0H
@@ -40,6 +57,7 @@ RETURN      equ 0DH
             
 start:      in 1                        ; reset the bootstrap flip-flop internal to GAL22V10 #2
             call SINIT
+            call FPANINIT
             xra a
             out 09H                     ; turn off orange LEDs
             
@@ -1106,6 +1124,7 @@ puts:       mov a,m
 ; include serial library
 ;------------------------------------------------------------------------
 
+            include "fpanel.inc"
             include "16450.inc"
 
 SINIT:      equ SINIT450
@@ -1133,7 +1152,6 @@ putch:      mov e,b                 ; save B
 getche:     mov e,b            ; save B
             call CINP
             mov b,e
-            ani 7FH            ; mask off the 0x80 set by CINP
             ret
 
 ;-----------------------------------------------------------------------------------------
