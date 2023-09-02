@@ -112,16 +112,9 @@ TXWAIT450:  in ser_lsr
 ; CINP450NE: wait for and read character, without echo
 ;-----------------------------------------------------------------------------------------
 
-CINP450NEP: ifdef fpanelinc
-            in ipoll                ; entrypoint that includes a poll of the front panel ISR
-            ani 02H                 ; int1 == 0x02 is the front panel asking for service
-            jnz FPANPOLL
-            endif ; fpanelinc
-            ; fall through
-
 CINP450NE:  in ser_lsr              ; normal entrypoint
             ani 01H
-            jz CINP450NEP           ; loop while waiting for character
+            jz CINP450NE            ; loop while waiting for character
             in ser_rhr
             ifndef nocinp80
             ori 80h                 ; SCELBAL needs to have the most significant bit set

@@ -15,22 +15,9 @@
 
             cpu 8008new             ; use "new" 8008 mnemonics
 
-;
+; front panel vars from 1FB0 to 1FEF
 
-m_dig:      equ 1FD0H                  ; since digits are 1-based, one empty slot
-m_dig_l:    equ 1FD1H
-m_dig_m:    equ 1FD4H
-m_dig_r:    equ 1FD7H
-
-msave_H:    equ 1FE0H
-msave_L:    equ 1FE1H
-msave_B:    equ 1FE2H
-msave_C:    equ 1FE3H
-msave_D:    equ 1FE4H
-msave_E:    equ 1FE5H
-maddr:      equ 1FE8H
-mcounter:   equ 1FEAH    ; bytes, MSB-first
-mdigindex:  equ 1FEEH
+            include "fpanelvar.inc"
             
 ; temporary storage for registers;            
 save_H:     equ 1FF0H
@@ -309,6 +296,8 @@ bindl:      mvi h,hi(binloadtxt)
             mvi h,hi(dnldtxt)
             mvi l,lo(dnldtxt)
             call puts                   ; prompt for download
+
+            call FPDISABLE
            
             mvi h,hi(save_H)
             mvi l,lo(save_H)
@@ -326,20 +315,27 @@ bindl:      mvi h,hi(binloadtxt)
 
 bindl0:     mvi b,40H                   ; initialize "idle" counter (BC) to 16284
             mvi c,0
-bindl1:     call CRDY                   ; XXXXXXXXXXXXXXXX UNTESTED XXXXXXXXXXXXXXXXXXX SMBAKER
+bindl1:     call CRDY                   ; wait for character
             jnz bindl2                  ; jump if start bit has been detected
             dcr c                       ; else decrement the low byte of the "idle" counter
             jnz bindl1
             dcr b                       ; secrement the high byte of the "idle" counter
             jnz bindl1
-            jmp finished                ; the "idle" counter has reached zero (no characters for 3 seconds)
+            jmp bfinished               ; the "idle" counter has reached zero (no characters for 3 seconds)
 
-bindl2:     call getche                 ; start bit has been detected, get the byte from the serial port
+bindl2:     call getch                  ; start bit has been detected, get the byte from the serial port
             mov m,a                     ; write the byte to memory
             inr l                       ; increment the low byte of the address pointer
             jnz bindl0                  ; go back for the next byte
             inr h                       ; increment the high byte of the address pointer 
             jmp bindl0                  ; go back for the next byte
+
+bfinished:  call FPENABLE
+            mvi h,hi(loadedtxt)
+            mvi l,lo(loadedtxt)
+            call puts                   ; print "File loaded."
+            call restore_HL
+            jmp prompt
             
 ;------------------------------------------------------------------------
 ; load an Intel HEX file into memory using the Tera Term "Send file" function.
@@ -356,6 +352,8 @@ hexdl:      mvi h,hi(hexloadtxt)
             mvi h,hi(waittxt)
             mvi l,lo(waittxt)
             call puts                   ; prompt for download
+
+            call FPDISABLE
             
 hexdl1:     call getche                 ; get the first character of the record and echo it
             cpi ':'                     ; start of record character?
@@ -413,16 +411,18 @@ waitend:    call hexbyte                ; get the last address hi byte
             call hexbyte                ; get the last record type
             call hexbyte                ; get the last checksum
 
-finished:   mvi h,hi(loadedtxt)
+finished:   call FPENABLE
+            mvi h,hi(loadedtxt)
             mvi l,lo(loadedtxt)
             call puts                   ; print "File loaded."
             call restore_HL
             jmp jump1                   ; jump to the address in the last record
 
-cksumerr:   mvi h,hi(errortxt)
+cksumerr:   call FPENABLE
+            mvi h,hi(errortxt)
             mvi l,lo(errortxt)
             call puts                   ; print "Checksum error."
-            hlt
+            jmp prompt
 
 ;------------------------------------------------------------------------
 ; get two hex digits from the serial port during the hex download and 
@@ -442,6 +442,7 @@ hexbyte:    call getche             ; get the first character and echo it
             call ascii2hex          ; convert to hex nibble
             ani 0FH                 ; mask out the most significant bits
             ora c                   ; combine the two nibbles
+            out ledport
             ret
             
 ;------------------------------------------------------------------------
@@ -1128,7 +1129,7 @@ puts:       mov a,m
             include "16450.inc"
 
 SINIT:      equ SINIT450
-CINPNE:     equ CINP450NE
+CINPNE:     equ FCINP450
 CPRINT:     equ CPRINT450
 CRDY:       equ CRDY450
 
@@ -1174,7 +1175,9 @@ delay:      inr e
 delay1:     ret        
             
 titletxt:   db  "\r\n\r\n"
-            db  "Serial Monitor for Intel 8008 SBC V1.7\r\n"
+            db  "Serial Monitor for Intel 8008 H8 CPU Board V2.0\r\n"
+            db  "Original by Jim Loos\r\n"
+            db  "Modified by Scott Baker, https://www.smbaker.com/ for h8 project\r\n"
             db  "Assembled on ",DATE," at ",TIME,"\r\n",0
 menutxt:    db  "\r\n"
             db  "B - Binary file download\r\n"
