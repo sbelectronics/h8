@@ -34,8 +34,6 @@ Pin 16 = D7;
 Pin 15 = !INTREQ;
 Pin 14 = NC2;
 
-FIELD DATA = [D7..D0];
-
 INTREQ = INT1; /* for now, only pay attention to int1 */
 
 /* only put the instruction on the data bus if intjam is true */
