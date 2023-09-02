@@ -1,0 +1,59 @@
+Name intpoll;
+Partno G22V10#1;
+Revision;
+Date 09/17/2021;
+Designer Jim Loos;
+Company ;
+Location ;
+Assembly 8008 SBC;
+Device G22V10;
+
+/* Inputs: */
+Pin 1 = !INTPOLL;
+Pin 2 = !INT0;  /* 000 - jumps to 0x00 - not implemented here */
+Pin 3 = !INT1;  /* 001 - jumps to 0x08 */
+Pin 4 = !INT2;  /* 010 - jumps to 0x10 */
+Pin 5 = !INT3;  /* 011 - jumps to 0x18 */
+Pin 6 = !INT4;  /* 100 - jumps to 0x20 */
+Pin 7 = !INT5;  /* 101 - jumps to 0x28 */
+Pin 8 = !INT6;  /* 110 - jumps to 0x30 */
+Pin 9 = !INT7;  /* 111 - jumps to 0x38*/
+Pin 10 = SIMFPINT;
+Pin 11 = POR;
+Pin 13 = !INTJAM;
+
+/* Outputs:   */
+Pin 23 = D0;
+Pin 22 = D1;
+Pin 21 = D2;
+Pin 20 = D3;
+Pin 19 = D4;
+Pin 18 = D5;
+Pin 17 = D6;
+Pin 16 = D7;
+Pin 15 = !INTREQ;
+Pin 14 = NC2;
+
+FIELD DATA = [D7..D0];
+
+INTREQ = INT1; /* for now, only pay attention to int1 */
+
+/* only put the instruction on the data bus if intjam is true */
+
+D0.OE = INTPOLL;
+D1.OE = INTPOLL;
+D2.OE = INTPOLL;
+D3.OE = INTPOLL;
+D4.OE = INTPOLL;
+D5.OE = INTPOLL;
+D6.OE = INTPOLL;
+D7.OE = INTPOLL;
+
+D0 = INT0;
+D1 = INT1;
+D2 = INT2;
+D3 = INT3;
+D4 = INT4;
+D5 = INT5;
+D6 = INT6;
+D7 = INT7;
