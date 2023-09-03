@@ -3,7 +3,7 @@
 
 This project is an 8008 CPU board for the Heathkit H8 computer. It is not software-compatible with the H8 CPO Board. You cannot run HDOS. You cannot run CP/M. The instruction sets for the 8008 and 8080 are entirely different. What you can run is a custom monitor, which includes H8 front panel support, and Scelbi BASIC.
 
-# Credits
+## Credits
 
 This project was heavily influenced by the following:
 
@@ -11,7 +11,7 @@ This project was heavily influenced by the following:
 
 * [8008 Clock by Len Bayles](https://www.8008chron.com/)
 
-# Manual ROM bank selection
+## Manual ROM bank selection
 
 If Software-Controlled bank switching is not used, then 8K banks in ROM may be chosen by using S3. Switch S3 has four switches, which are a simple binary input to address bits A13 .. A16 on the ROM.
 
@@ -19,7 +19,7 @@ To use manual ROM bank selection, be sure that jumpers JP15, JP16, and JP17 are 
 
 The pre-build ROMs will put the monitor in the first bank, and Scelbi basic in the second bank.
 
-# Software-Controlled Bank Switching
+## Software-Controlled Bank Switching
 
 Switches 3 and 4 of S3 should not be used when using software bank switching.
 
@@ -54,11 +54,11 @@ Bank switching is done by writing the desired values to ports 0C, 0D, 0E, and 0F
   8K RAM + Fourth 8K ROM: 08, 09, 06, 07
 ```
 
-# H8 Front Panel Support
+## H8 Front Panel Support
 
 The H8 front panel is implemented as part of the monitor while the CINP (get character from serial port) subroutine is running. It does not use interrupts. It uses simple polling to wait for the signal from the H8 front panel that a display refresh is due. Because of this, the front panel pretty much only works when running the monitor, and only works while the monitor is waiting for keypresses. If the monitor is printing something to serial, the screen will blank.
 
-# Serial Port support
+## Serial Port support
 
 The following ROM images are created:
 
@@ -66,3 +66,19 @@ The following ROM images are created:
 
 * h8-bb.rom. Bitbangs IO to a 9-pin header on the CPU board. Use this if you don't have a serial board.
 
+## Programming PLDs
+
+Several gal22v10d programmable logic devices are used. The associated PLD files are there and can be recompiled win WINCUPL. The compiled JED files should also be there and may be burned directly
+using a TL866II+ or similar programmer.
+
+* pld/bus. required. goes in the BUS socket.
+
+* pld/io. required. goes in the IO socket.
+
+* pld/intpoll. required. goes in the INTREG socket.
+
+* pld/intreg. not used.
+
+* pld/intcon. not used.
+
+Make sure to place the INTPOLL PLD into the INTREG socket on the board. Do not use the INTREG PLD. Leave the INTCON socket empty.
