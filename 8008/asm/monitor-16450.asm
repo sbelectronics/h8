@@ -445,7 +445,6 @@ hexbyte:    call getche             ; get the first character and echo it
             call ascii2hex          ; convert to hex nibble
             ani 0FH                 ; mask out the most significant bits
             ora c                   ; combine the two nibbles
-            out ledport
             ret
 
 ;------------------------------------------------------------------------

@@ -277,6 +277,8 @@ MSG:        LAM
 SINIT   equ SINIT450
 INPUT   equ CINP450
 PRINT   equ CPRINT450
+
+        radix 8
         
         ORG (5*400)+000
         

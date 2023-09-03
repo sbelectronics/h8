@@ -1626,14 +1626,6 @@ GL2:        LAM
             CAL SWITCH
             JMP GL1
 
-; sets sign flag if character coming in
-INPCK:      CAL CRDY450
-            JTZ INPCK2
-            CAL CINP450             ; finish character so we don't get garbage next call
-            XRA                     ; clear sign, next instruction will complement it before returning
-INPCK2:     XRI 200                 ; complement MSB to set sign 0= character not coming in
-            RET
-
             ;ORG (17*400)+000
             org 0F00H
             DB    000,001,004,043,012,003,007,000
@@ -1653,6 +1645,13 @@ INPCK2:     XRI 200                 ; complement MSB to set sign 0= character no
             DB    000,023,025,000,000,004,006,002
             DB    003,025,000,000,026,000,047,000
 
+; sets sign flag if character coming in
+INPCK:      CAL CRDY450
+            JTZ INPCK2
+            CAL CINP450             ; finish character so we don't get garbage next call
+            XRA                     ; clear sign, next instruction will complement it before returning
+INPCK2:     XRI 200                 ; complement MSB to set sign 0= character not coming in
+            RET
 
             cpu 8008new             ; use "new" 8008 mnemonics
             radix 10
