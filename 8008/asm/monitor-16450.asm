@@ -40,10 +40,11 @@ RETURN      equ 0DH
             rst 1
 
             org 2008H                   ; rst 1 jumps here
-            jmp start
+            jmp go_rom0
+
+            include "go-rom.inc"
             
-start:      in 1                        ; reset the bootstrap flip-flop internal to GAL22V10 #2
-            call SINIT
+rom_start:  call SINIT
             call FPANINIT
             xra a
             out 09H                     ; turn off orange LEDs
@@ -95,7 +96,7 @@ prompt2:    mvi h,hi(esccount)
             sui 20H                     ; else, convert to the character to upper case
             call putch                  ; echo the character
             cpi 'B'
-            jz bindl                    ; binary file download
+            jz rombasic                 ; call subroutine
             cpi 'C'
             jz callsub                  ; call subroutine
             cpi 'D'
@@ -110,10 +111,12 @@ prompt2:    mvi h,hi(esccount)
             jz hexdl                    ; Intel hex file download
             cpi 'I'
             jz input                    ; input from port
-            cpi 'J'
-            jz jump                     ; jump to address
             cpi 'O'
             jz output                   ; output to port
+            cpi 'R'
+            jz bindl                    ; binary file download
+            cpi 'S'
+            jz switch                   ; binary file download
             cpi 0DH
             jz menu                     ; display the menu
             mvi a,'?'
@@ -444,6 +447,41 @@ hexbyte:    call getche             ; get the first character and echo it
             ora c                   ; combine the two nibbles
             out ledport
             ret
+
+;------------------------------------------------------------------------
+; switch banks and load rom basic
+;------------------------------------------------------------------------      
+
+rombasic:   mvi h,hi(rombastxt)
+            mvi l,lo(rombastxt)
+            call puts
+            jmp go_rom1
+
+;------------------------------------------------------------------------
+; switch banks to arbitrary bank number and load rom basic
+;------------------------------------------------------------------------      
+
+switch:     mvi h,hi(switchtxt)
+            mvi l,lo(switchtxt)
+            call puts
+            call get_hex
+            jc prompt                   ; exit if escape  
+            mov b,a                     ; save character in B
+            call crlf
+            mov a,b                     ; restore character
+            call ascii2hex              ; convert character to number
+            cpi 00H
+            jz go_rom0
+            cpi 01H
+            jz go_rom1
+            cpi 02H
+            jz go_rom2
+            cpi 03H
+            jz go_rom3
+            mvi h,hi(badbanktxt)
+            mvi l,lo(badbanktxt)
+            call puts
+            jmp prompt
             
 ;------------------------------------------------------------------------
 ; go to a memory address
@@ -458,11 +496,7 @@ goto:       mvi h,hi(gototxt)
 ;------------------------------------------------------------------------
 ; jump to a memory address
 ;------------------------------------------------------------------------           
-jump:       mvi h,hi(jumptxt)
-            mvi l,lo(jumptxt)
-            call puts
-            call get_four               ; get the four digit address into HL
-            jc prompt                   ; exit if escape
+
 jump1:      mov d,h                     ; save the high byte of the address in D
             mov e,l                     ; save the low byte of the address in E
             mvi h,hi(jmp_addr)
@@ -1180,7 +1214,7 @@ titletxt:   db  "\r\n\r\n"
             db  "Modified by Scott Baker, https://www.smbaker.com/ for h8 project\r\n"
             db  "Assembled on ",DATE," at ",TIME,"\r\n",0
 menutxt:    db  "\r\n"
-            db  "B - Binary file download\r\n"
+            db  "B - Basic\r\n"
             db  "C - Call subroutine\r\n"
             db  "D - Dump RAM\r\n"
             db  "E - Examine/Modify RAM\r\n"            
@@ -1188,8 +1222,9 @@ menutxt:    db  "\r\n"
             db  "H - Hex file download\r\n"
             db  "G - Go to address\r\n"
             db  "I - Input byte from port\r\n"
-            db  "J - Jump to address\r\n"
-            db  "O - Output byte to port\r\n",0
+            db  "O - Output byte to port\r\n"
+            db  "R - Raw binary file download\r\n"
+            db  "S - Switch bank and load rom\r\n",0
 
 prompttxt:  db  "\r\n>>",0
 dumptxt:    db  "ump memory\r\n",0
@@ -1200,7 +1235,7 @@ calltxt:    db  "all subroutine at address: ",0
 gototxt:    db  "o to address: (in hex) ",0
 inputtxt    db  "nput byte from port",0
 outputtxt   db  "utput byte to port",0 
-binloadtxt: db  "inary file download\r\n",0 
+binloadtxt: db  "aw binary file download\r\n",0 
 hexloadtxt: db  "ex file download\r\n",0
 addresstxt: db  "\r\nAddress: (in hex) ",0 
 hcounttxt:  db  "  Count: (in hex) ",0
@@ -1215,3 +1250,6 @@ newvaluetxt:db  "  New: ",0
 porttxt     db  "\r\nPort address: (in hex) ",0
 bytetxt     db  "\r\nOutput byte:  (in hex) ",0
 copytxt     db  "\r\nIntel 8008 SBC Monitor � Copyright 2022 by Jim Loos\r\n",0
+rombastxt   db  "asic\r\n",0
+switchtxt   db  "witch and load bank (one digit): ",0
+badbanktxt  db  "Invalid bank number\r\n",0

@@ -1,7 +1,9 @@
+/* Original by Jim Loos. Modified by smbaker for H8 project */
+
 Name io;
 Partno G22V10#2;
 Revision;
-Date 09/17/2021;
+Date 09/1/2023;
 Designer Jim Loos;
 Company ;
 Location ;
@@ -50,22 +52,29 @@ device6 =  A11 &  A10 & !A9;
 device7 =  A11 &  A10 &  A9;
 
 INPMUX = in0 & (device0 # device1) & IORD;           /* Input ports 0-1            */
-OUTMUX = out0 & IOWR;                                /* Output ports 9-15 (group0) */
+OUTMUX = out0 & IOWR;                                /* Output ports 8-15 (group0) */
 OUTMMAP = out0 & 
           (device4 # device5 # device6 # device7) &
           IOWR;                                      /* these overlap with outmux ports 4-7 */
 OUTIOMMMUX = out2 & IOWR;                            /* all of Output ports 24-31 (group 2) go here */
 
-H8IOR = in0 & (!device0) & (!device1) & IORD;
-H8IOW = out1 & IOWR;
+H8IOR = in0 & (!device0) & (!device1) & IORD;        /* IORD to H8 bus: all ports except 0 and 1 */
+H8IOW = out1 & IOWR;                                 /* IOW to H8 bus: ports 16-23 (group 1) */
 
-H8OUT = !IORD; /* out1 & IOWR; */
+H8OUT = !IORD;                                       /* H8 direction - always OUT unless we're doing IORD */
 
-/* simulated SR flip-flop made up of cross-connected NAND gates.        */
-/* the flip-flop is set when the reset signal from the DS1233 goes low  */
-/* (power-on-reset) and cleared when input ports 0 or 1 are accessed.   */
-/* when set, the flip-flop forces all memory accesses to select the     */
-/* EPROM. when reset, the flip-flop permits the normal memory map.      */
+/* simulated SR flip-flop made up of cross-connected NAND gates.
+ * the flip-flop is set when the reset signal from the DS1233 goes low
+ * (power-on-reset) and cleared when input ports 0 or 1 are accessed.
+ * when set, the flip-flop forces all memory accesses to select the 
+ * EPROM. when reset, the flip-flop permits the normal memory map.
+ *
+ * This is also used to enable the bank switcher if it is present. If
+ * START is high, the bank switcher is disabled and ROM 0x0000-0x0FFF
+ * will be present in all four banks. If START is low, then the bank
+ * switcher will select ROM or RAM is appropriate. Do NOT enable the
+ * bank switcher until you've set the bank registers.
+ */
 
 START = RESET # (START & !INPMUX);
 

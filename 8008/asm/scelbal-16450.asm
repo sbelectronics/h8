@@ -32,11 +32,11 @@
             rst 1
 
             org 2008h	            ; rst 1 jumps here
-            jmp start            
-            
-start:      in 1                    ; reset the bootstrap flip-flop internal to GAL22V10 #2
+            jmp go_rom1       
 
-            call SINIT
+            include "go-rom.inc"
+            
+rom_start:  call SINIT
 
             ;mvi a, 41H
             ;out ser_thr

@@ -1,7 +1,9 @@
+/* Original by Jim Loos. Modified by smbaker for H8 project */
+
 Name bus;
 Partno G22V10#1;
 Revision;
-Date 09/17/2021;
+Date 09/1/2023;
 Designer Jim Loos;
 Company ;
 Location ;
@@ -18,21 +20,21 @@ Pin 6 = CC2;        /* control code from 74LS273 #2 pin 2   */
 Pin 7 = FF_CLK;     /* 1MHz clock to flip-flop              */
 Pin 8 = NC0;
 Pin 9 = NC1;
-Pin 10 = PHASE2;
+Pin 10 = PHASE2;    /* PHASE2 clock input                   */
 Pin 11 = NC2;
 Pin 13 = NC3;
 
 /* Outputs:   */
 Pin 23 = !RUNNING;   /* Output to "Running" LED              */ 
-Pin 22 = ALL;       /* 74LS273 #1 Address Latch Low strobe  */
-Pin 21 = ALH;       /* 74LS273 #2 Address Latch High strobe */
-Pin 20 = !MEMRD;     /* Memory Read strobe to 27256 and 6264 */
-Pin 19 = !MEMWR;     /* Memory Write strobe to 6264          */
-Pin 18 = !IORD;      /* IO Read to G22V10 #2                 */
-Pin 17 = !IOWR;      /* IO Write to G22V10 #2                */
-Pin 16 = !INTACK;    /* Phase 1 clock to 8008 pin 15         */
-Pin 15 = !M1;    /* Phase 2 clock to 8008 pin 16         */
-Pin 14 = DBD;       /* 74LS245 Data Bus Direction control   */
+Pin 22 = ALL;        /* 74LS273 #1 Address Latch Low strobe  */
+Pin 21 = ALH;        /* 74LS273 #2 Address Latch High strobe */
+Pin 20 = !MEMRD;     /* Memory Read strobe                   */
+Pin 19 = !MEMWR;     /* Memory Write strobe                  */
+Pin 18 = !IORD;      /* IO Read to IO PLD                    */
+Pin 17 = !IOWR;      /* IO Write to IO PLD                   */
+Pin 16 = !INTACK;    /* Interrupt Ack to int controller PLD  */
+Pin 15 = !M1;        /* Simulated M1 signal                  */
+Pin 14 = DBD;        /* 74LS245 Data Bus Direction control   */
 
 /*  just a reminder for me (Jim)... */
 /*  ! = NOT                         */
@@ -57,18 +59,6 @@ pci = !CC1 & !CC2;            /* Memory Read Instruction */
 pcr = !CC1 &  CC2;            /* Memory Read Additional */
 pcc =  CC1 & !CC2;            /* I/O Operation */
 pcw =  CC1 &  CC2;            /* Memory Write */
-
-/* 2 phase clock */
-/* SMBAKER: I moved the clock generation out to separate gates.
- *   They're still needed for computing ALL, ALH, MEMRD, MEMWR
- *   if it becomes an issue, could connect them to some of the NC
- *   inputs.
- *
- *   I manually wired Pin 10 to phase2.
- */
-/* PHASE1 = !FF_CLK & !FF_Q;
-   PHASE2 = !FF_CLK & !FF_QNOT;
-*/
 
 /* address and data bus */
 DBD = (t1 # t1i # t2 # t3) & !SYNC;
