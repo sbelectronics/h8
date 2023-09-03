@@ -4,10 +4,10 @@ Name io;
 Partno G22V10#2;
 Revision;
 Date 09/1/2023;
-Designer Jim Loos;
+Designer Jim Loos and Scott Baker;
 Company ;
 Location ;
-Assembly 8008 SBC;
+Assembly 8008 H8 CPU BOARD;
 Device G22V10;
 
 /* Inputs: */

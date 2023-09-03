@@ -113,12 +113,10 @@ prompt2:    mvi h,hi(esccount)
             jz input                    ; input from port
             cpi 'O'
             jz output                   ; output to port
-            cpi 'P'
-            jz program
             cpi 'R'
             jz bindl                    ; binary file download
             cpi 'S'
-            jz switch                   ; binary file download
+            jz switch                   ; switch to rom bank and jump
             cpi 0DH
             jz menu                     ; display the menu
             mvi a,'?'
@@ -459,87 +457,7 @@ rombasic:   mvi h,hi(rombastxt)
             jmp go_rom1
 
 ;------------------------------------------------------------------------
-; load program from bank into RAM, and start it
-;------------------------------------------------------------------------
-
-program:    mvi h,hi(progtxt)
-            mvi l,lo(progtxt)
-            call puts
-            call get_hex
-            jc prompt                   ; exit if escape  
-            mov b,a                     ; save character in B
-            call crlf
-            mov a,b                     ; restore character
-            call ascii2hex              ; convert character to number
-            rlc                         ; multiply by 2
-            ani 0FH
-            mov d,a
-            call rom2ram
-            jmp 1FFDH                   ; require the caller to put a jump at the end of the program
-
-;------------------------------------------------------------------------
-; copy program from rom to ram
-;
-; a = first bank to copy from
-;------------------------------------------------------------------------      
-
-rom2ram:    mov d,a                  ; save bank number in d
-            mvi a,08H                ; ram first 4K
-            out MMAP0
-            mov a,d                  ; ROM bank from d
-            out MMAP1
-
-            mvi l,0H
-            mvi b,10H                ; src MSB at 4k
-            mvi c,0                  ; dest MSB at 0
-r2rmore1:
-            mov h,b                  ; from src
-            mov a,m                  ; read it
-            mov h,c                  ; to dest
-            mov m,a                  ; write it
-            inr l                    ; increment LSB
-            jz r2rnowrap1
-            inr b                    ; wrapped... incremenb MSB src
-            inr c                    ; ... and MSB dest
-r2rnowrap1:
-            mov a,c
-            cpi 10H                  ; are we there yet?
-            jnz r2rmore1             ; nope
-
-            ;; now repeat for second page
-
-            mvi a,09H                ; ram second 4K
-            out MMAP0
-            mov a,d                  ; ROM bank from d
-            adi 1H                   ; +1 for second 4K
-            out MMAP1
-
-            mvi l,0H
-            mvi b,10H                ; src MSB at 4k
-            mvi c,0                  ; dest MSB at 0
-r2rmore2:
-            mov h,b                  ; from src
-            mov a,m                  ; read it
-            mov h,c                  ; to dest
-            mov m,a                  ; write it
-            inr l                    ; increment LSB
-            jz r2rnowrap2
-            inr b                    ; wrapped... incremenb MSB src
-            inr c                    ; ... and MSB dest
-r2rnowrap2:
-            mov a,c
-            cpi 10H                  ; are we there yet?
-            jnz r2rmore2             ; nope
-
-            mov a,d                  ; point RAM back to banks 0 and 1
-            out MMAP0
-            mov a,d
-            adi 1
-            out MMAP1
-            ret
-
-;------------------------------------------------------------------------
-; switch banks to arbitrary bank number and load rom basic
+; switch banks to arbitrary bank number and jump to rom
 ;------------------------------------------------------------------------      
 
 switch:     mvi h,hi(switchtxt)
@@ -1337,4 +1255,4 @@ rombastxt   db  "asic\r\n",0
 switchtxt   db  "witch and load bank (one digit): ",0
 badbanktxt  db  "Invalid bank number\r\n",0
 progtxt     db  "rogram to RAM from bank (one digit): ",0
-loadingtxt  db  "\r\nLoading program, may take a few moments...\r\n",0
+loadingtxt  db  "\r\nSwitching banks and jumping...\r\n",0

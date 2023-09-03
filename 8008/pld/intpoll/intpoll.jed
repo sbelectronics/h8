@@ -1,14 +1,14 @@
 
 CUPL(WM)        5.0a  Serial# 60008009
 Device          g22v10  Library DLIB-h-40-1
-Created         Sun Aug 27 20:07:56 2023
+Created         Sun Sep 03 11:14:49 2023
 Name            intpoll
 Partno          G22V10#1
 Revision        
-Date            09/17/2021
-Designer        Jim Loos
+Date            09/1/2023
+Designer        Scott Baker
 Company         
-Assembly        8008 SBC
+Assembly        8008 H8 CPU BOARD
 Location        
 *QP24 
 *QF5892 
@@ -54,4 +54,4 @@ Location
 *L05856 01100011000100110000001000110011
 *L05888 0001
 *C680B
-*7805
+*7B42

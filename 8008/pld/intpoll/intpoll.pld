@@ -1,11 +1,11 @@
 Name intpoll;
 Partno G22V10#1;
 Revision;
-Date 09/17/2021;
-Designer Jim Loos;
+Date 09/1/2023;
+Designer Scott Baker;
 Company ;
 Location ;
-Assembly 8008 SBC;
+Assembly 8008 H8 CPU BOARD;
 Device G22V10;
 
 /* Inputs: */

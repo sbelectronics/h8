@@ -4,10 +4,10 @@ Name bus;
 Partno G22V10#1;
 Revision;
 Date 09/1/2023;
-Designer Jim Loos;
+Designer Jim Loos and Scott Baker;
 Company ;
 Location ;
-Assembly 8008 SBC;
+Assembly 8008 H8 CPU BOARD;
 Device G22V10;
 
 /* Inputs: */
@@ -35,12 +35,6 @@ Pin 17 = !IOWR;      /* IO Write to IO PLD                   */
 Pin 16 = !INTACK;    /* Interrupt Ack to int controller PLD  */
 Pin 15 = !M1;        /* Simulated M1 signal                  */
 Pin 14 = DBD;        /* 74LS245 Data Bus Direction control   */
-
-/*  just a reminder for me (Jim)... */
-/*  ! = NOT                         */
-/*  & = AND                         */
-/*  # = OR                          */
-/*  $ = XOR                         */
 
 /* states */
 t1      = !S2 &  S1 & !S0;      /* lower 8 bits of address out              */

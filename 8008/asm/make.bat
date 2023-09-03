@@ -25,3 +25,6 @@ y:\projects\pi\h8\8008\as\bin\p2bin scelbal-in-eprom.p scelbal-in-eprom.bin || e
 
 y:\projects\pi\h8\8008\as\bin\asw -i y:\projects\pi\h8\8008\as\include -cpu 8008 -L monitor.asm || exit /b
 y:\projects\pi\h8\8008\as\bin\p2bin monitor.p monitor.bin || exit /b
+
+y:\projects\pi\h8\8008\as\bin\asw -i y:\projects\pi\h8\8008\as\include -cpu 8008 -L trekload.asm || exit /b
+y:\projects\pi\h8\8008\as\bin\p2bin trekload.p trekload.bin || exit /b
