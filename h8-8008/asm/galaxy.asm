@@ -1646,9 +1646,9 @@ GL2:        LAM
             DB    003,025,000,000,026,000,047,000
 
 ; sets sign flag if character coming in
-INPCK:      CAL CRDY450
+INPCK:      CAL CRDY
             JTZ INPCK2
-            CAL CINP450             ; finish character so we don't get garbage next call
+            CAL CINP                ; finish character so we don't get garbage next call
             XRA                     ; clear sign, next instruction will complement it before returning
 INPCK2:     XRI 200                 ; complement MSB to set sign 0= character not coming in
             RET
@@ -1656,11 +1656,10 @@ INPCK2:     XRI 200                 ; complement MSB to set sign 0= character no
             cpu 8008new             ; use "new" 8008 mnemonics
             radix 10
 
-            include "16450.inc"
+            include "serial.inc"
 
-SINIT       equ SINIT450
-INPUT       equ CINP450
-PRINT       equ CPRINT450
+PRINT       equ CPRINT
+INPUT       equ CINP
 
             end 0A00H
             
