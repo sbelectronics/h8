@@ -86,11 +86,14 @@ mv_oldpg27: mvi h,hi(page27)        ; source: OLDPG27 constants in EPROM at page
 ; the character in the accumulator.
 ;-----------------------------------------------------------------------------------------
 
-            include "16450.inc"
+;------------------------------------------------------------------------        
+; Includes the right serial library, depending on defines
+;------------------------------------------------------------------------
 
-SINIT:      equ SINIT450
-CINP:       equ CINP450
-CPRINT      equ CPRINT450
+            include "serial.inc"
+
+;------------------------------------------------------------------------        
+
             
             cpu 8008                ; use "old" mneumonics for SCELBAL
             RADIX 8                 ; use octal for numbers

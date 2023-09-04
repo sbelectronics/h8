@@ -85,6 +85,63 @@ getbitecho: mov a,b                 ; save the received bits from B to A
             mov b,a                 ; save the received bits in B
             ret
 
+;-----------------------------------------------------------------------------------------
+; 2400 bps character input subroutine for SCELBAL. Without echo.
+; wait for a character from the serial port. 
+; echo the character. return the character in A.
+; uses A and B.
+;-----------------------------------------------------------------------------------------
+CINPNEBB:   in INPORT               ; get input from serial port
+            rar                     ; rotate the received serial bit right into carry
+            jc CINPNEBB             ; jump back if start bit was not detected (input was high)
+
+            ; start bit detected. 1/2 bit time then send start bit
+            mvi b,0                 ; initialize B
+            mvi b,0                 ; timing adjustment
+            xra a                   ; clear the accumulator
+            mvi a,0                 ; timing
+            call delay1             ; timing
+            mvi b,0                 ; timing
+            
+            ; receive and echo bits 0 through 7
+            call getbit         ; receive bit 0
+            call getbit         ; receive bit 1
+            call getbit         ; receive bit 2
+            call getbit         ; receive bit 3
+            call getbit         ; receive bit 4
+            call getbit         ; receive bit 5
+            call getbit         ; receive bit 6
+            call getbit         ; receive bit 7
+            
+            ; wait 1 bit time, then send the stop bit
+            mov a,b                 ; save the character from B to A
+            mvi b,0feh              ; timing adjustment
+            call delay              ; timing adjustment
+            mov b,a                 ; restore the chararacter from A to B
+            mvi a,1                 ; '1' for stop bit
+            mvi a,1                 ; timing
+            ; wait 1 bit time
+            mov a,b                 ; restore the character from B to A
+            mvi b,0feh              ; timing adjustment
+            call delay              ; timing adjustment
+            ifndef nocinp80
+            ori 80h                 ; SCELBAL needs to have the most significant bit set
+            endif
+            ret                     ; return to caller
+
+getbit:     mov a,b                 ; save the received bits from B to A
+            mvi b,0ffh              ; timing adjustment
+            call delay              ; timing adjustment
+            mov b,a                 ; restore the received bits from A to B
+            ana a                   ; timing adjustment
+            in INPORT               ; get input from the serial port
+            in INPORT               ; timing
+            rar                     ; rotate the received bit right into carry
+            mov a,b                 ; restore the previously received bits from B to A
+            rar                     ; rotate the newly received bit in carry right into the MSB of A
+            mov b,a                 ; save the received bits in B
+            ret
+
 ;-----------------------------------------------------------------------------------------       
 ; CRDYBB: return Zero if no character ready, NonZero if character ready
 ;-----------------------------------------------------------------------------------------
