@@ -76,21 +76,6 @@ mv_oldpg27: mvi h,hi(page27)        ; source: OLDPG27 constants in EPROM at page
             jnz mv_oldpg27          ; go back if page not complete
             
             jmp exec                ; run the SCELBAL interpreter
-            
-;-----------------------------------------------------------------------------------------       
-; I/O routines for SCELBAL.
-; According to the SCELBAL Manual: "Only CPU register B and the accumulator may be used by the I/O routines.
-; All the other CPU registers must contain their original values when I/O operations have been completed."       
-; "... the I/O routines themselves may only utilize a maximum of two levels of nesting!"
-; Although the manual doesn't mention it, SCELBAL also assumes that the CPRINT subroutine preserves
-; the character in the accumulator.
-;-----------------------------------------------------------------------------------------
-
-;------------------------------------------------------------------------        
-; Includes the right serial library, depending on defines
-;------------------------------------------------------------------------
-
-            include "serial.inc"
 
 ;------------------------------------------------------------------------        
 
@@ -3797,7 +3782,22 @@ puts:       mov a,m
             inr l                   ; next character
             jnz puts
             inr h
-            jmp puts            
+            jmp puts
+
+;-----------------------------------------------------------------------------------------       
+; I/O routines for SCELBAL.
+; According to the SCELBAL Manual: "Only CPU register B and the accumulator may be used by the I/O routines.
+; All the other CPU registers must contain their original values when I/O operations have been completed."       
+; "... the I/O routines themselves may only utilize a maximum of two levels of nesting!"
+; Although the manual doesn't mention it, SCELBAL also assumes that the CPRINT subroutine preserves
+; the character in the accumulator.
+;-----------------------------------------------------------------------------------------
+
+;------------------------------------------------------------------------        
+; Includes the right serial library, depending on defines
+;------------------------------------------------------------------------
+
+            include "serial.inc"
             
 titletxt:   db  "\r\n\r\nIntel 8008 Single Board Computer\r\n"
             db  "Scelbi BASIC (SCELBAL) Interpreter\r\n"

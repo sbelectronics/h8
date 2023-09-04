@@ -34,6 +34,7 @@ SINITBB:    mvi a,1
 ; echo the character. return the character in A.
 ; uses A and B.
 ;-----------------------------------------------------------------------------------------
+            ifndef nocinp
 CINPBB:     in INPORT               ; get input from serial port
             rar                     ; rotate the received serial bit right into carry
             jc CINPBB               ; jump back if start bit was not detected (input was high)
@@ -84,6 +85,7 @@ getbitecho: mov a,b                 ; save the received bits from B to A
             rar                     ; rotate the newly received bit in carry right into the MSB of A
             mov b,a                 ; save the received bits in B
             ret
+            endif
 
 ;-----------------------------------------------------------------------------------------
 ; 2400 bps character input subroutine for SCELBAL. Without echo.
@@ -91,6 +93,7 @@ getbitecho: mov a,b                 ; save the received bits from B to A
 ; echo the character. return the character in A.
 ; uses A and B.
 ;-----------------------------------------------------------------------------------------
+            ifndef nocinpne
 CINPNEBB:   in INPORT               ; get input from serial port
             rar                     ; rotate the received serial bit right into carry
             jc CINPNEBB             ; jump back if start bit was not detected (input was high)
@@ -141,6 +144,7 @@ getbit:     mov a,b                 ; save the received bits from B to A
             rar                     ; rotate the newly received bit in carry right into the MSB of A
             mov b,a                 ; save the received bits in B
             ret
+            endif
 
 ;-----------------------------------------------------------------------------------------       
 ; CRDYBB: return Zero if no character ready, NonZero if character ready
@@ -185,7 +189,9 @@ CPRINTBB:   ani 7fh                 ; mask off the most significant bit of the c
             mvi a,1                 ; '1' for the stop bit
             out 08h                 ; send the stop bit 
             mov a,b                 ; restore the original character from B to A
+            ifndef nocinp80
             ori 80h                 ; restore the most significant bit of the character
+            endif
             mvi b,0fch              ; timing adjustment
             call delay              ; timing adjustment
             ret                     ; return to caller

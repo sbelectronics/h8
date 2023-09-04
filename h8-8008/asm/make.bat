@@ -28,7 +28,9 @@ y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cp
 y:\projects\pi\h8\h8-8008\as\bin\p2bin pi-1000-digits-16450.p pi-1000-digits-16450.bin || exit /b
 y:\projects\pi\h8\h8-8008\as\bin\p2hex pi-1000-digits-16450.p pi-1000-digits-16450.hex || exit /b
 
-y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L scelbal.asm -o scelbal-bitbang.p -D bitbang || exit /b
+REM ---------- bitbang -----------
+
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L scelbal.asm -o scelbal-bitbang.p -D bitbang -D nocinpne || exit /b
 y:\projects\pi\h8\h8-8008\as\bin\p2bin scelbal-bitbang.p scelbal-bitbang.bin || exit /b
 
 y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L monitor.asm -o monitor-bitbang.p -D nocinp80 -D bitbang || exit /b
