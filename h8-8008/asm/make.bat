@@ -1,7 +1,7 @@
 y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L scelbal-16450.asm || exit /b
 y:\projects\pi\h8\h8-8008\as\bin\p2bin scelbal-16450.p scelbal-16450.bin || exit /b
 
-y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L monitor-16450.asm -D nocinp80 || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L monitor.asm -o monitor-16450.p -D nocinp80 -D frontpanel || exit /b
 y:\projects\pi\h8\h8-8008\as\bin\p2bin monitor-16450.p monitor-16450.bin || exit /b
 
 y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L calc-16450.asm || exit /b
@@ -31,7 +31,7 @@ y:\projects\pi\h8\h8-8008\as\bin\p2hex pi-1000-digits-16450.p pi-1000-digits-164
 y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L scelbal-in-eprom.asm || exit /b
 y:\projects\pi\h8\h8-8008\as\bin\p2bin scelbal-in-eprom.p scelbal-in-eprom.bin || exit /b
 
-y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L monitor.asm || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L monitor.asm -D nocinp80 -D bitbang || exit /b
 y:\projects\pi\h8\h8-8008\as\bin\p2bin monitor.p monitor.bin || exit /b
 
 y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L trekload.asm || exit /b

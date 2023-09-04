@@ -26,6 +26,8 @@ SINITBB:    mvi a,1
 ; CINPBB: wait for and read character
 ;-----------------------------------------------------------------------------------------
 
+
+
 ;-----------------------------------------------------------------------------------------
 ; 2400 bps character input subroutine for SCELBAL
 ; wait for a character from the serial port. 
@@ -34,7 +36,7 @@ SINITBB:    mvi a,1
 ;-----------------------------------------------------------------------------------------
 CINPBB:     in INPORT               ; get input from serial port
             rar                     ; rotate the received serial bit right into carry
-            jc CINP                 ; jump back if start bit was not detected (input was high)
+            jc CINPBB               ; jump back if start bit was not detected (input was high)
 
             ; start bit detected. 1/2 bit time then send start bit
             mvi b,0                 ; initialize B
@@ -65,7 +67,9 @@ CINPBB:     in INPORT               ; get input from serial port
             mov a,b                 ; restore the character from B to A
             mvi b,0feh              ; timing adjustment
             call delay              ; timing adjustment
+            ifndef nocinp80
             ori 80h                 ; SCELBAL needs to have the most significant bit set
+            endif
             ret                     ; return to caller
 
 getbitecho: mov a,b                 ; save the received bits from B to A
@@ -80,6 +84,15 @@ getbitecho: mov a,b                 ; save the received bits from B to A
             rar                     ; rotate the newly received bit in carry right into the MSB of A
             mov b,a                 ; save the received bits in B
             ret
+
+;-----------------------------------------------------------------------------------------       
+; CRDYBB: return Zero if no character ready, NonZero if character ready
+;-----------------------------------------------------------------------------------------
+
+CRDYBB:    in inport
+           xri 0FFH                 ; invert it
+           ani 01H                  ; returns nonzero if start bit was detected
+           ret
 
 ;-----------------------------------------------------------------------------------------       
 ; CPRINTBB: print character
