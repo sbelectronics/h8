@@ -54,6 +54,29 @@ Bank switching is done by writing the desired values to ports 0C, 0D, 0E, and 0F
   8K RAM + Fourth 8K ROM: 08, 09, 06, 07
 ```
 
+## IO Mapping
+
+The 8008 only supports 8 input ports and 24 output ports, whereas the H8 supports 256 ports, each of which can be input, output, or bidirectional. I used a port mapping scheme via 4x4 register files to accommodate this.
+
+Port mapping is achieved by writing output ports 24-31. This is the third group of output ports. These registers configure the input ports as well as the second group of ports. This is best illustrated by example.
+
+```
+            mvi a,0E8H
+            out 1AH           ; configure input port 02 and output port 12
+            mvi a,0EDH
+            out 1BH           ; configure input port 03 and output port 13
+```
+
+After executing the above code,
+
+* reading from port 02H will read from port 0E8H on the H8 bus
+
+* reading from port 03H will read from port 0EDH on the H8 bus
+
+* writing to port 12H will write to port 0E8H on the H8 bus
+
+* writing to port 13H will write to port 0EdH on the H8 bus
+
 ## H8 Front Panel Support
 
 The H8 front panel is implemented as part of the monitor while the CINP (get character from serial port) subroutine is running. It does not use interrupts. It uses simple polling to wait for the signal from the H8 front panel that a display refresh is due. Because of this, the front panel pretty much only works when running the monitor, and only works while the monitor is waiting for keypresses. If the monitor is printing something to serial, the screen will blank.
