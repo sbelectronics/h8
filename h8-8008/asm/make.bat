@@ -62,5 +62,8 @@ y:\projects\pi\h8\h8-8008\as\bin\p2hex pi-1000-digits-bitbang.p pi-1000-digits-b
 
 REM ---------- loaders ------------
 
-y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L trekload.asm || exit /b
-y:\projects\pi\h8\h8-8008\as\bin\p2bin trekload.p trekload.bin || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L load-trek.asm || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2bin load-trek.p load-trek.bin || exit /b
+
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L load-40h.asm || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2bin load-40h.p load-40h.bin || exit /b

@@ -387,8 +387,11 @@ cout    macro
 
 ;; RESET fast calls, 5 states vs. 8 for CAL.  Store varable here too; watch for
 ;;   overlap with rst calls.
+    org 0h
+    db 0            ; SMBAKER put something at address 0h so .BIN file starts at 0
 
-    org 28h     ; rst 0
+
+    org 28h         ; rst 0  -- SMBAKER this doesn't seem like RST 0...
 bcd_cnt:            ; counter used for print_mp
     db  0, 0        ; 0-1
 end_ptr:            ; 16-bits used to store pointers to arrays
