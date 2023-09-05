@@ -1336,10 +1336,9 @@ print_mp1:          ; main loop
         cpu 8008new
         radix 10
 
-        include "16450.inc"
+        include "serial.inc"
 
-SINIT   equ SINIT450
-cout    equ CPRINT450
+cout    equ CPRINT
 
 
 ;; Memory allocation for mp arrays:

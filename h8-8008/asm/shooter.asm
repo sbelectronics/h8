@@ -12,14 +12,6 @@
 ; Jump to 0000H to start.
 ;===================================================================================
 
-; front panel vars from 1FB0 to 1FEF
-
-            include "bitfuncs.inc" 
-
-            cpu 8008new             ; use "new" 8008 mnemonics
-
-            include "fpanelvar.inc"
-
             cpu 8008                ; use "old" 8008 mnemonics
             radix 8                 ; use octal for numbers
 
@@ -331,20 +323,16 @@ PAGE3:      DB      "THE GAME STARTS",CR,LF
             DB      "THE GAME. GOOD LUCK!",EM
 
             cpu 8008new             ; use "new" 8008 mnemonics
-            cpu 8008new             ; use "new" 8008 mnemonics
             radix 10
 
-            include "fpanel.inc"
-            include "16450.inc"
-
-SINIT:      equ SINIT450
+            include "serial.inc"
 
 ;-----------------------------------------------------------------------------------------
 ; wait for a character from the serial port. do not echo. return the character in A.
 ; uses A and D.
 ;-----------------------------------------------------------------------------------------
 INCHAR:     mov d,b
-            call FCINP450
+            call CINPNE
             mov b,d
             ret
 
@@ -353,7 +341,7 @@ INCHAR:     mov d,b
 ; uses A and D.
 ;------------------------------------------------------------------------
 OUTCHAR:    mov d,b
-            call CPRINT450
+            call CPRINT
             mov b,d
             ret
 

@@ -994,17 +994,15 @@ USERDF:	   HLT                    ;Direct program flow after above error
             cpu 8008new             ; use "new" 8008 mnemonics
             radix 10
 
-            include "16450.inc"
-
-SINIT:      equ SINIT450
+            include "serial.inc"
 
 INPUT:      mov e,b
-            call CINP450
+            call CINPNE
             mov b,e
             ret
 
 ECHO:       mov e,b
-            call CPRINT450
+            call CPRINT
             mov b,e
             ret
             

@@ -32,9 +32,9 @@ START:  CAL SINIT
         LLI 350
         LMI 001
         LLI 356
-        LMI 000
+        LMI 000               ; pointer to work table (lo)
         INL
-        LMI 005
+        LMI 006               ; pointer to word table (hi)
 NEWONE: LHI 004
         LLI 000
         CAL MSG
@@ -196,8 +196,8 @@ ZEROFL: LMA
         XRA
         CPM
         JFZ AHEAD3
-        LHI 005
-        LLI 000
+        LHI 006            ; pointer to word table (hi)
+        LLI 000            ; pointer to word table (lo)
 
 AHEAD3: LDI 003
         LEI 360
@@ -272,17 +272,16 @@ MSG:        LAM
         cpu 8008new
         radix 10
 
-        include "16450.inc"
+        include "serial.inc"
 
-SINIT   equ SINIT450
-INPUT   equ CINP450
-PRINT   equ CPRINT450
+INPUT   equ CINP
+PRINT   equ CPRINT
 
         radix 8
         
-        ORG (5*400)+000
+        ORG (6*400)+000
         
-        DB      "HELLO",0
+WORDS:  DB      "HELLO",0
         DB      "ARROW",0
         DB      "COMPUTER",0
         DB      "PREMIUM",0

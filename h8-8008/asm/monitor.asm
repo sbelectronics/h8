@@ -1177,8 +1177,12 @@ putch:      mov e,b                 ; save B
 ;-----------------------------------------------------------------------------------------
 
 getche:     mov e,b            ; save B
+            ifdef bitbang
+            CALL CINP          ; bitbang does not take kindly to calling CPRINT separately
+            else
             call CINPNE
             call CPRINT
+            endif
             mov b,e
             ret
 

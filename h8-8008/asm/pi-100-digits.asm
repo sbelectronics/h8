@@ -1009,10 +1009,9 @@ print:  lam         ; fetch next message byte
         cpu 8008new
         radix 10
 
-        include "16450.inc"
+        include "serial.inc"
 
-SINIT   equ SINIT450
-soutput equ CPRINT450
+soutput equ CPRINT
             
             cpu 8008                ; use "old" mneumonics for SCELBAL
 
