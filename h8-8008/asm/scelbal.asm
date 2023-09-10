@@ -12,11 +12,14 @@
 ;
 ; modified to run from a 2764 EPROM for my 8008 home-brew single board computer by Jim Loos.   
 ;
-; the user defined function (UDF) is used to control the red LED on the SBC.
-; UDF is a math function like: INT, SGN, ABS, SQR, TAB, RND or CHR;
-; therefore, the syntax is:
-; A=UDF(1) to turn the red LED on
-; A=UDF(0) to turn the red LED off 
+; Changelong
+;  - made function name table 8 bytes wide
+;  - moved function name table to a separate page
+;  - added LED(n) to set LEDs
+;
+; Note: LED, PEEK, POKE, INP, OUTP are all functions. You must take the value of them even
+;       if you don't care what the result is. For example, 
+;           A=LED(3)   ... turn on the first two LEDs 
 ;------------------------------------------------------------------------            
             
             include "bitfuncs.inc" 
@@ -896,6 +899,12 @@ PRIGHT:    LLI 230                ;Load L with address of F/A STACK pointer
            JTZ CHRX               ;If so, go perform the function.
            CPI 010                ;Else, see if token for user defined machine language
            JTZ UDEFX              ;# Function. If so, perform the User DEfined Function
+           CPI 011                ;
+           JTZ LEDX               ;
+           CPI 012                ;
+           JTZ PEKX               ;
+           CPI 013                ;
+           JTZ POKX               ;
            HLT                    ;Safety halt. Program should not reach this location!
 
 FUNARR:    LLI 120                ;Load L with starting address of SYMBOL BUFFER
@@ -911,9 +920,9 @@ FUNAR1:    LLI 202                ;Load L with address of TEMP COUNTER
            LBM                    ;Fetch the counter value to register B
            INB                    ;Increment the counter
            LMB                    ;Restore the updated value to memory
-           LCI 002                ;Initialize C to a value of two for future ops
-           LLI 274                ;Load L with starting address (less four) of FUNCTION
-           LHI OLDPG26/400        ;** LOOK-UP TABLE. Set H to table page.
+           LCI FUNCSHIFT          ;Bits to shift function table offset. 3 bits = multiply by 8. (smbaker)
+           LLI FUNCTAB&377        ;Load offset of function table (smbaker)
+           LHI FUNCTAB/400        ;Load page of function table (smbaker)
            CAL TABADR             ;Find address of next entry in the table
            LDI OLDPG26/400        ;** Load D with page of SYMBOL BUFFER
            LEI 120                ;Load E with starting address of SYMBOL BUFFER
@@ -922,7 +931,7 @@ FUNAR1:    LLI 202                ;Load L with address of TEMP COUNTER
            LLI 202                ;Up the function token value. Else, set L to the TEMP
            LHI OLDPG27/400        ;** COUNTER and set H to the proper page. Fetch the
            LAM                    ;Current counter value and see if have tried all eight
-           CPI 010                ;Possible functions in the table.
+           CPI FUNCCNT            ;Possible functions in the table. (smbaker)
            JFZ FUNAR1             ;If not, go back and check the next entry.
            LLI 202                ;If have tried all of the entries in the table, set L
            LHI OLDPG27/400        ;** As well as H to the address of the TEMP COUI,.7ER
@@ -3758,11 +3767,20 @@ DIMERR:    LAI 304                ;On error condition, load ASCII code for lette
 ; A=UDF(0) turns the red LED off
 
            cpu 8008new             ; use "new" 8008 mnemonics
-UDEFX:	   call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
+
+UDEFX:	   ret
+
+LEDX:      call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
            mvi l,54h              ; load L with the address of the LSW of the fixed point value  
            mov a,m                ; fetch the byte into the accumulator
            out 09h                ; odd arguments for UDF turn the red LED on, even arguments turn the red LED off
            ret
+
+PEKX:      ret
+
+POKX:      ret
+
+
            cpu 8008               ; return to using "old" mneumonics
 
 save:	
@@ -3807,6 +3825,95 @@ titletxt:   db  "\r\n\r\nIntel 8008 Single Board Computer\r\n"
 
             cpu 8008                ; use "old" mneumonics for SCELBAL
             RADIX 8                 ; use octal for numbers
+
+;; align the function table
+
+    rept    400-$&0FFh
+    db  0
+    endm
+
+FUNCCNT        EQU 16         ; number of functions in table. octal.
+FUNCSHIFT      EQU 3          ; number of bits to multiply by. 3 bits = multiply by 8.
+
+	       ;; FUNCTION NAMES TABLE (smbaker)
+               ;; Move this from its earlier location. Made the entries 8 bytes wide
+               ;; to accommodate peek and poke. Each entry can be less than 8 bytes
+               ;; but cannot be greater. The first byte is the length.
+FUNCTAB:       DB 0,0,0,0     ; start the pointer 8 bytes early
+               DB 0,0,0,0
+               DB 3
+	       DB 'I'+200
+	       DB 'N'+200
+	       DB 'T'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'S'+200
+	       DB 'G'+200
+	       DB 'N'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'A'+200
+	       DB 'B'+200
+	       DB 'S'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'S'+200
+	       DB 'Q'+200
+	       DB 'R'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'T'+200
+	       DB 'A'+200
+	       DB 'B'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'R'+200
+	       DB 'N'+200
+	       DB 'D'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'C'+200
+	       DB 'H'+200
+	       DB 'R'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'U'+200
+	       DB 'D'+200
+	       DB 'F'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'L'+200
+	       DB 'E'+200
+	       DB 'D'+200
+               DB 0,0,0,0
+	       DB 4
+	       DB 'P'+200
+	       DB 'E'+200
+	       DB 'E'+200               
+	       DB 'K'+200
+               DB 0,0,0
+	       DB 4
+	       DB 'P'+200
+	       DB 'O'+200
+	       DB 'K'+200
+	       DB 'E'+200
+               DB 0,0,0
+	       DB 3
+	       DB 'I'+200
+	       DB 'N'+200
+	       DB 'P'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'O'+200
+	       DB 'U'+200
+	       DB 'T'+200
+               DB 0,0,0,0
+	       DB 4
+	       DB 'A'+200
+	       DB 'D'+200
+	       DB 'D'+200
+	       DB 'R'+200               
+               DB 0,0,0
 
 ;this page gets copied from EPROM to RAM at 0000H as OLDPG1           
             ORG 3D00H
@@ -3979,39 +4086,10 @@ page26:    DB 000			    ; CC FOR INPUT LINE BUFFER
 	       DB 000		        ; EVAL START POINTER
 	       DB 000		        ; EVAL FINISH POINTER
 
-	       ;; FUNCTION NAMES TABLE
-	       DB 3
-	       DB 'I'+200
-	       DB 'N'+200
-	       DB 'T'+200
-	       DB 3
-	       DB 'S'+200
-	       DB 'G'+200
-	       DB 'N'+200
-	       DB 3
-	       DB 'A'+200
-	       DB 'B'+200
-	       DB 'S'+200
-	       DB 3
-	       DB 'S'+200
-	       DB 'Q'+200
-	       DB 'R'+200
-	       DB 3
-	       DB 'T'+200
-	       DB 'A'+200
-	       DB 'B'+200
-	       DB 3
-	       DB 'R'+200
-	       DB 'N'+200
-	       DB 'D'+200
-	       DB 3
-	       DB 'C'+200
-	       DB 'H'+200
-	       DB 'R'+200
-	       DB 3
-	       DB 'U'+200
-	       DB 'D'+200
-	       DB 'F'+200
+               rept    340-$&0FFh       ; The function name table originally sat here
+               db  0                    ; and consumed space up to 0xE0.
+               endm
+
 	       DB 000,000,000,000	; LINE NUMBER BUFFER STORAGE
 	       DB 000,000,000,000
 	       DB 000,000,000,000	; AUX LINE NUMBER BUFFER
@@ -4033,7 +4111,7 @@ page26:    DB 000			    ; CC FOR INPUT LINE BUFFER
            
 ;this page gets copied from EPROM to RAM at 0200H as OLDPG27           
 	       ORG 3F00H
-page27:    DB 3
+page27:        DB 3
 	       DB 'R'+200
 	       DB 'E'+200
 	       DB 'M'+200
