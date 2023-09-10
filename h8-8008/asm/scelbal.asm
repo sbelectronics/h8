@@ -902,9 +902,15 @@ PRIGHT:    LLI 230                ;Load L with address of F/A STACK pointer
            CPI 011                ;
            JTZ LEDX               ;
            CPI 012                ;
-           JTZ PEKX               ;
+           JTZ PEEKX              ;
            CPI 013                ;
-           JTZ POKX               ;
+           JTZ POKEX              ;
+           CPI 014
+           JTZ INPX
+           CPI 015
+           JTZ OUTX
+           CPI 016
+           JTZ ADDRX
            HLT                    ;Safety halt. Program should not reach this location!
 
 FUNARR:    LLI 120                ;Load L with starting address of SYMBOL BUFFER
@@ -3776,9 +3782,47 @@ LEDX:      call FPFIX             ; convert the contents of FPACC from floating 
            out 09h                ; odd arguments for UDF turn the red LED on, even arguments turn the red LED off
            ret
 
-PEKX:      ret
+PEEKX:     call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
+           mvi l,54H              ; load L with the address of the LSW of the fixed point value
+           mov b,m                ; fetch LSB into B
+           mvi l,55H              ; load L with the address of the LSW of the fixed point value
+           mov h,m                ; fetch MSB into H
+           mov l,b                ; move LSB into L
+           mov a,m                ; get the value at memory location HL into A
+           mvi h,00H              
+           mvi l,54H              ; 054H is LSW of FPACC
+           mov m,a                ; store the input value
+           inr l
+           mvi m,0H               ; clear out the NSB of the result
+           inr l
+           mvi m,0H               ; and the LSB of the result
+           mvi l,053H             ; To fixed point. Load L with address of FPACC
+           mvi m,0H               ; Extension register and clear it. Now convert the number
+           JMP FPFLT              ; Back to floating point to integerize it and exit to caller
 
-POKX:      ret
+
+POKEX:     ret
+
+INPX:      call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
+           mvi l,54h              ; load L with the address of the LSW of the fixed point value  
+           mov a,m                ; fetch the byte into the accumulator
+           ani 00000111B          ; Construct an "IN" instruction
+           rlc
+           ori 01000001B          ; Store it at 01C0H
+           mvi h,01H
+           mvi l,0C0H
+           mov m,a
+           call 01C0H             ; Call the IN function
+           mvi h,00H              
+           mvi l,54H              ; 054H is LSW of FPACC
+           mov m,a                ; store the input value
+           mvi l,053H             ; To fixed point. Load L with address of FPACC
+           mvi m,0H               ; Extension register and clear it. Now convert the number
+           JMP FPFLT              ; Back to floating point to integerize it and exit to caller
+
+OUTX:      ret
+
+ADDRX:     ret
 
 
            cpu 8008               ; return to using "old" mneumonics
@@ -4085,6 +4129,9 @@ page26:    DB 000			    ; CC FOR INPUT LINE BUFFER
 	       DB 002		        ; LESS THAN OR GREATER THAN
 	       DB 000		        ; EVAL START POINTER
 	       DB 000		        ; EVAL FINISH POINTER
+
+iofunc:        DB 0                     ; placeholder for IO function   (01C0H)
+               ret                      ; return                        (01C1H)
 
                rept    340-$&0FFh       ; The function name table originally sat here
                db  0                    ; and consumed space up to 0xE0.
