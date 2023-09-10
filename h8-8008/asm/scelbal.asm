@@ -16,10 +16,17 @@
 ;  - made function name table 8 bytes wide
 ;  - moved function name table to a separate page
 ;  - added LED(n) to set LEDs
+;  - case insensitive keyboard comparisongs.
 ;
 ; Note: LED, PEEK, POKE, INP, OUTP are all functions. You must take the value of them even
 ;       if you don't care what the result is. For example, 
-;           A=LED(3)   ... turn on the first two LEDs 
+;           A=LED(3)   ... turn on the first two LEDs
+;
+; Note: Since each function only takes argument, POKE and OUT require the addr function be
+;       used. For example,
+;           A=ADDR(8155) ... set address to 8155 decimal
+;           A=POKE(25)   ... write 25 decimal to address 8155 decimal
+;       PEEK and INP only take one argument do not need ADDR() called first.
 ;------------------------------------------------------------------------            
             
             include "bitfuncs.inc" 
@@ -289,7 +296,11 @@ STRCPL:    CAL ADV                ;Advance the pointer to string number 1 and fe
            CAL SWITCH             ;Now switch the pointers to string number 2.
            CAL ADV                ;Advance the pointer in line number 2.
 STRCPE:    CPM                    ;Compare char in stxing 1 (ACC) to string 2 (memory)
+           JTZ STRCPM             ;We matched... keep on checking
+           XRI 020H               ;We didn't match. Try flipping the case bit...
+           CPM                    ;... and compare again
            RFZ                    ;If not equal, return to cauer with flags set to non-zero
+STRCPM:
            CAL SWITCH             ;Else, exchange pointers to restore pntr to string 1
            DCB                    ;Decrement the string length counter in register B
            JFZ STRCPL             ;If not finiahed, continue testing entire string
@@ -3773,11 +3784,12 @@ DIMERR:    LAI 304                ;On error condition, load ASCII code for lette
 ; A=UDF(0) turns the red LED off
 
            cpu 8008new             ; use "new" 8008 mnemonics
+           radix 10
 
 UDEFX:	   ret
 
 LEDX:      call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
-           mvi l,54h              ; load L with the address of the LSW of the fixed point value  
+           mvi l,lo(pg0FPACC_LSB) ; load L with the address of the LSW of the fixed point value  
            mov a,m                ; fetch the byte into the accumulator
            out 09h                ; odd arguments for UDF turn the red LED on, even arguments turn the red LED off
            ret
@@ -3789,22 +3801,50 @@ PEEKX:     call FPFIX             ; convert the contents of FPACC from floating 
            mov h,m                ; fetch MSB into H
            mov l,b                ; move LSB into L
            mov a,m                ; get the value at memory location HL into A
-           mvi h,00H              
-           mvi l,54H              ; 054H is LSW of FPACC
+           mvi h,hi(pg0FPACC_LSB)
+           mvi l,lo(pg0FPACC_LSB)
            mov m,a                ; store the input value
            inr l
            mvi m,0H               ; clear out the NSB of the result
            inr l
-           mvi m,0H               ; and the LSB of the result
+           mvi m,0H               ; and the MSB of the result
+           mvi l,053H             ; To fixed point. Load L with address of FPACC
+           mvi m,0H               ; Extension register and clear it. Now convert the number
+           JMP FPFLT              ; Back to floating point to integerize it and exit to caller
+
+POKEX:     call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
+           mvi l,54h              ; load L with the address of the LSW of the fixed point value  
+           mov a,m                ; fetch the byte into the accumulator
+
+           mvi h,hi(pg1addrlsb)
+           mvi l,lo(pg1addrlsb)
+           mov b,m                ; Put the LSB of ADDR into B
+           inr l
+           mov h,m                ; ... and the MSB of ADDR into H
+           mov l,b                ; Move the LSB of ADDR into HL
+
+           mov m,a                ; store the value to memory
+           jmp GETADDR
+
+GETADDR:   mvi h,hi(pg1addrlsb)   ; simple readout of the the ADDR value
+           mvi l,lo(pg1addrlsb)
+           mov a,m                ; Put the LSB of ADDR into B
+           inr l
+           mov b,m                ; ... and the MSB of ADDR into H
+           mvi h,hi(pg0FPACC_LSB)
+           mvi l,lo(pg0FPACC_LSB)
+           mov m,a                ; store the LSB
+           inr l
+           mov m,b                ; and store the NSB
+           inr l
+           mvi m,0H               ; and clear the LSB of the result
            mvi l,053H             ; To fixed point. Load L with address of FPACC
            mvi m,0H               ; Extension register and clear it. Now convert the number
            JMP FPFLT              ; Back to floating point to integerize it and exit to caller
 
 
-POKEX:     ret
-
 INPX:      call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
-           mvi l,54h              ; load L with the address of the LSW of the fixed point value  
+           mvi l,lo(pg0FPACC_LSB) ; load L with the address of the LSW of the fixed point value  
            mov a,m                ; fetch the byte into the accumulator
            ani 00000111B          ; Construct an "IN" instruction
            rlc
@@ -3813,17 +3853,54 @@ INPX:      call FPFIX             ; convert the contents of FPACC from floating 
            mvi l,0C0H
            mov m,a
            call 01C0H             ; Call the IN function
-           mvi h,00H              
-           mvi l,54H              ; 054H is LSW of FPACC
+           mvi h,hi(pg0FPACC_LSB)
+           mvi l,lo(pg0FPACC_LSB)
            mov m,a                ; store the input value
            mvi l,053H             ; To fixed point. Load L with address of FPACC
            mvi m,0H               ; Extension register and clear it. Now convert the number
            JMP FPFLT              ; Back to floating point to integerize it and exit to caller
 
-OUTX:      ret
+OUTX:      call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
+           mvi l,lo(pg0FPACC_LSB) ; load L with the address of the LSW of the fixed point value  
+           mov b,m                ; fetch the byte into B
 
-ADDRX:     ret
+           mvi h,hi(pg1addrlsb)
+           mvi l,lo(pg1addrlsb)
+           mov a,m                ; Put the LSB of ADDR into B
 
+           ani 00011111B          ; construct the "OUT" instruction
+           rlc
+           ori 01000001B
+
+           mvi h,hi(pg1iofunc)    ; Store it at pg1iofunc
+           mvi l,lo(pg1iofunc)
+           mov m,a
+           call pg1iofunc         ; call the OUT function
+           jmp GETADDR
+
+ADDRX:     call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
+           mvi l,lo(pg0FPACC_LSB) ; load L with the address of the LSW of the fixed point value
+           mov a,m                ; fetch LSB into A
+           mvi l,lo(pg0FPACC_NSB) ; load L with the address of the NSW of the fixed point value
+           mov b,m                ; fetch MSB into B
+           mov l,b                ; move LSB into L
+
+           mvi h,hi(pg1addrlsb)
+           mvi l,lo(pg1addrlsb)
+           mov m,a                ; store the LSB
+           inr l
+           mov m,b                ; store the MSB
+
+           mvi h,hi(pg0FPACC_LSB)
+           mvi l,lo(pg0FPACC_LSB)
+           mov m,a                ; store the LSB
+           inr l
+           mov m,b                ; and store the NSB
+           inr l
+           mvi m,0H               ; and clear the LSB of the result
+           mvi l,053H             ; To fixed point. Load L with address of FPACC
+           mvi m,0H               ; Extension register and clear it. Now convert the number
+           JMP FPFLT              ; Back to floating point to integerize it and exit to caller
 
            cpu 8008               ; return to using "old" mneumonics
 
@@ -3986,7 +4063,12 @@ page1:      DB 000,000,000,000
             DB 000		                ; OUTPUT DIGIT COUNTER
             DB 000 		                ; FP MODE INDICATOR
             DB 000,000,000,000,000,000,000  ; NOT ASSIGNED
+pg0FPACC_EXT equ 0053H
             DB 000,000,000,000	        ; FPACC EXTENSION
+pg0FPACC_LSB equ 0054H
+pg0FPACC_NSB equ 0055H
+pg0FPACC_MSB equ 0056H
+pg0FPACC_EXP equ 0057H
             DB 000,000,000,000	        ; FPACC LSW, NSW, MSW, EXPONENT
             DB 000,000,000,000	        ; FPOP  Extension
             DB 000,000,000,000	        ; FPOP  LSW, NSW, MSW, EXPONENT
@@ -4130,8 +4212,15 @@ page26:    DB 000			    ; CC FOR INPUT LINE BUFFER
 	       DB 000		        ; EVAL START POINTER
 	       DB 000		        ; EVAL FINISH POINTER
 
+pg1iofunc      EQU 01C0H
 iofunc:        DB 0                     ; placeholder for IO function   (01C0H)
                ret                      ; return                        (01C1H)
+
+pg1addrlsb     EQU 01C2H
+               DB 0
+
+pg1addrmsb     EQU 01C3H
+               DB 0
 
                rept    340-$&0FFh       ; The function name table originally sat here
                db  0                    ; and consumed space up to 0xE0.
