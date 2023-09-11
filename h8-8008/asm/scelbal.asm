@@ -3875,6 +3875,7 @@ OUTX:      call FPFIX             ; convert the contents of FPACC from floating 
            mvi h,hi(pg1iofunc)    ; Store it at pg1iofunc
            mvi l,lo(pg1iofunc)
            mov m,a
+           mov a,b                ; put the value back in a
            call pg1iofunc         ; call the OUT function
            jmp GETADDR
 
@@ -3897,18 +3898,116 @@ ADDRX:     call FPFIX             ; convert the contents of FPACC from floating 
            inr l
            mov m,b                ; and store the NSB
            inr l
-           mvi m,0H               ; and clear the LSB of the result
+           mvi m,0H               ; and clear the MSB of the result
            mvi l,053H             ; To fixed point. Load L with address of FPACC
            mvi m,0H               ; Extension register and clear it. Now convert the number
            JMP FPFLT              ; Back to floating point to integerize it and exit to caller
 
-           cpu 8008               ; return to using "old" mneumonics
+;------------------------------------------------------------------------        
+; save: save to tape
+;------------------------------------------------------------------------
 
-save:	
-load:	   JMP EXEC		            ; By default, save and load isn't implemented.
+save:	   call INITTAPE
+           mvi A,016H          ; Just like the H8, emit 32 016H to the tape
+           mvi C,020H
+sleader:   call WTAPE
+           dcr C
+           jnz sleader
 
-            cpu 8008new             ; use "new" 8008 mnemonics
-            radix 10                ; use base 10 for numbers
+           mvi a,'T'
+           call WTAPE
+           mvi a,'A'
+           call WTAPE
+           mvi a,'P'
+           call WTAPE
+           mvi a,'E'
+           call WTAPE
+
+           mvi h,hi(pg1pgme_msb)
+           mvi l,lo(pg1pgme_msb)
+           mov a,m                  ; a = end of user program, MSB
+           inr l
+           mov e,m                  ; e = end of user program, LSB
+           sui BGNPGRAM             ; subtract start of user program.
+           mov d,a                  ; DE now has length of user program
+
+           mov a,d
+           call WTAPE               ; write length MSB
+           mov a,e
+           call WTAPE               ; write length LSB
+
+           mvi h,BGNPGRAM           ; Put start of program in HL
+           mvi l,0
+
+sloop:     mov a,m
+           CALL WTAPE
+
+           inr l                    ; increment memory pointer
+           jnz snowrap
+           inr h                    ; wrapped
+snowrap:
+           mov a,e
+           sui 1                    ; decrement lsb of counter
+           mov e,a
+           mov a,d
+           sbi 0                    ; carry as necessary
+           mov d,a
+           ora e                    ; if DE=0 then we done.
+           jnz sloop
+           jmp exec
+
+;------------------------------------------------------------------------        
+; load: load from tape
+;------------------------------------------------------------------------
+
+load:	   call INITTAPE
+lheader:   call RTAPE
+           cpi 'T'
+           jnz lheader
+           call RTAPE
+           cpi 'A'
+           jnz lheader
+           call RTAPE
+           cpi 'P'
+           jnz lheader
+           call RTAPE
+           cpi 'E'
+           jnz lheader
+
+           call RTAPE               ; put the program length into DE
+           mov d,a
+           call RTAPE
+           mov e,a
+
+           mvi h,hi(pg1pgme_msb)
+           mvi l,lo(pg1pgme_msb)
+           mov a,d                          ; get length MSB
+           adi BGNPGRAM                     ; add start of program to length
+           mov m,a                          ; store end of program MSB
+           inr l
+           mov m,e                          ; store end of program LSB
+
+           mvi h,BGNPGRAM
+           mvi l,0
+
+lloop:     mov a,d                          ; if d and e are 0, then we're done
+           ora e
+           jz exec
+
+           call RTAPE
+           mov m,a
+
+           inr l
+           jnz lnowrap
+           inr h
+lnowrap:
+           mov a,e
+           sui 1                    ; decrement lsb of counter
+           mov e,a
+           mov a,d
+           sbi 0                    ; carry as necessary
+           mov d,a
+           jmp lloop
 
 ;------------------------------------------------------------------------        
 ; serially print the null terminated string whose address is in HL.
@@ -3937,13 +4036,8 @@ puts:       mov a,m
 ;------------------------------------------------------------------------
 
             include "serial.inc"
+            include "8251-tape.inc"
             
-titletxt:   db  "\r\n\r\nIntel 8008 Single Board Computer\r\n"
-            db  "Scelbi BASIC (SCELBAL) Interpreter\r\n"
-            db  "Assembled on ",DATE," at ",TIME,"\r\n"
-            db  "Portions copyright 2021 by Jim Loos\r\n\r\n"   
-            db  "Type \"SCR\" to clear and initialize program space\r\n\r\n",0
-
             cpu 8008                ; use "old" mneumonics for SCELBAL
             RADIX 8                 ; use octal for numbers
 
@@ -4035,6 +4129,9 @@ FUNCTAB:       DB 0,0,0,0     ; start the pointer 8 bytes early
 	       DB 'D'+200
 	       DB 'R'+200               
                DB 0,0,0
+
+titletxt:   db  "\r\nScelbi BASIC (SCELBAL) ",DATE," ",TIME,"\r\n"
+            db  "Type \"SCR\" to initialize program space\r\n\r\n",0
 
 ;this page gets copied from EPROM to RAM at 0000H as OLDPG1           
             ORG 3D00H
@@ -4238,7 +4335,9 @@ pg1addrmsb     EQU 01C3H
 	       DB 000 		        ; USER PGM LINE PTR (LOW)
 	       DB 000 		        ; AUX PGM LINE PTR (PG)
 	       DB 000 		        ; AUX PGM LINE PTR (LOW)
+pg1pgme_msb    EQU 01F4H
 	       DB 000 		        ; END OF USER PGM BUFFER PTR (PG)
+pg1pgme_lsb    EQU 01F5H
 	       DB 000 		        ; END OF USER PGM BUFFER PTR (LOW)
 	       DB 000		        ; PARENTHESIS COUNTER (366)
 	       DB 000		        ; QUOTE INDICATOR

@@ -12,6 +12,8 @@
 ;    * nocinp80 - omit setting the high bit on CINP/CINPNE
 ;------------------------------------------------------------------------
 
+            include "h8.inc"
+
 ;; avoid a proliferation of ifdefs, and just define this stub to stand in
 ;; for the frontpanel functions.
 
