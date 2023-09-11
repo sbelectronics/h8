@@ -67,9 +67,17 @@ mv_oldpg1:  mvi h,hi(page1)         ; source: OLDPG1 constants in EPROM at page 
             inr l                   ; next address
             jnz mv_oldpg1           ; go back if page not complete
 
-; copy OLDPG26 constants and variables from EPROM at 3E00H to RAM at 0100H            
-            mvi l,00h               ; initialize L to start of page
-mv_oldpg26: mvi h,hi(page26)        ; source: OLDPG26 constants in EPROM at page 3EH
+; most of OLDPG26 is zeroes. So we can just zero the memory
+            mvi h,hi(OLDPG26)
+            mvi l,0
+            mvi a,0
+zr_oldpg26: mov m,a
+            inr l
+            jnz zr_oldpg26
+
+; the rest of OLDPG26 has some stuff in it. Copy from 3EA0 to 01A0.
+            mvi l,lo(HEIRTAB)       ; initialize L to A0
+mv_oldpg26: mvi h,hi(HEIRTAB)       ; source: OLDPG26 constants in EPROM at page 3EH
             mov a,m                 ; retrieve the byte from EPROM
             mvi h,hi(OLDPG26)       ; destination: RAM at page 01H
             mov m,a                 ; store the byte in RAM
@@ -4022,6 +4030,10 @@ puts:       mov a,m
             inr h
             jmp puts
 
+
+titletxt:   db  "\r\nScelbi BASIC (SCELBAL) ",DATE," ",TIME,"\r\n"
+            db  "Type \"SCR\" to initialize program space\r\n\r\n",0
+
 ;-----------------------------------------------------------------------------------------       
 ; I/O routines for SCELBAL.
 ; According to the SCELBAL Manual: "Only CPU register B and the accumulator may be used by the I/O routines.
@@ -4041,99 +4053,11 @@ puts:       mov a,m
             cpu 8008                ; use "old" mneumonics for SCELBAL
             RADIX 8                 ; use octal for numbers
 
-;; align the function table
+;-----------------------------------------------------------------------------------------
+; 3D00-3DFF - OLDPG1
+;-----------------------------------------------------------------------------------------
 
-    rept    400-$&0FFh
-    db  0
-    endm
-
-FUNCCNT        EQU 16         ; number of functions in table. octal.
-FUNCSHIFT      EQU 3          ; number of bits to multiply by. 3 bits = multiply by 8.
-
-	       ;; FUNCTION NAMES TABLE (smbaker)
-               ;; Move this from its earlier location. Made the entries 8 bytes wide
-               ;; to accommodate peek and poke. Each entry can be less than 8 bytes
-               ;; but cannot be greater. The first byte is the length.
-FUNCTAB:       DB 0,0,0,0     ; start the pointer 8 bytes early
-               DB 0,0,0,0
-               DB 3
-	       DB 'I'+200
-	       DB 'N'+200
-	       DB 'T'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'S'+200
-	       DB 'G'+200
-	       DB 'N'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'A'+200
-	       DB 'B'+200
-	       DB 'S'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'S'+200
-	       DB 'Q'+200
-	       DB 'R'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'T'+200
-	       DB 'A'+200
-	       DB 'B'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'R'+200
-	       DB 'N'+200
-	       DB 'D'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'C'+200
-	       DB 'H'+200
-	       DB 'R'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'U'+200
-	       DB 'D'+200
-	       DB 'F'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'L'+200
-	       DB 'E'+200
-	       DB 'D'+200
-               DB 0,0,0,0
-	       DB 4
-	       DB 'P'+200
-	       DB 'E'+200
-	       DB 'E'+200               
-	       DB 'K'+200
-               DB 0,0,0
-	       DB 4
-	       DB 'P'+200
-	       DB 'O'+200
-	       DB 'K'+200
-	       DB 'E'+200
-               DB 0,0,0
-	       DB 3
-	       DB 'I'+200
-	       DB 'N'+200
-	       DB 'P'+200
-               DB 0,0,0,0
-	       DB 3
-	       DB 'O'+200
-	       DB 'U'+200
-	       DB 'T'+200
-               DB 0,0,0,0
-	       DB 4
-	       DB 'A'+200
-	       DB 'D'+200
-	       DB 'D'+200
-	       DB 'R'+200               
-               DB 0,0,0
-
-titletxt:   db  "\r\nScelbi BASIC (SCELBAL) ",DATE," ",TIME,"\r\n"
-            db  "Type \"SCR\" to initialize program space\r\n\r\n",0
-
-;this page gets copied from EPROM to RAM at 0000H as OLDPG1           
+ ;this page gets copied from EPROM to RAM at 0000H as OLDPG1           
             ORG 3D00H
 page1:      DB 000,000,000,000
             DB 000,000,100,001	        ; STORES FLOATING POINT CONSTANT +1.0
@@ -4241,39 +4165,133 @@ pg0FPACC_EXP equ 0057H
             DB 'I'+200
             DB 'N'+200
             DB 'E'+200
-            DB ' '+200        
-            
-;this page gets copied from EPROM to RAM at 0100H as OLDPG26            
-           ORG 3E00H
-page26:    DB 000			    ; CC FOR INPUT LINE BUFFER
-           DB 117 dup 0 		; 79 Bytes THE INPUT LINE BUFFER
-	       DB 000,000,000,000	; THESE ARE SYMBOL BUFFER STORAGE
-	       DB 000,000,000,000
-	       DB 000,000,000,000
-	       DB 000,000,000,000
-	       DB 000,000,000,000
-	       DB 000,000,000,000	; THESE LOCATIONS ARE AUXILIARY SYMBOL BUFFER
-	       DB 000,000,000,000
-	       DB 000,000,000,000
-	       DB 000,000,000,000
-	       DB 000,000,000,000
-	       DB 000,000,000,000
-	       DB 000,000
-	       DB 000		        ; TEMP SCAN STORAGE REGISTER
-	       DB 000		        ; TAB FLAG
-	       DB 000		        ; EVAL CURRENT TEMP REG.
-	       DB 000		        ; SYNTAX LINE NUMBER
-	       DB 000		        ; SCAN TEMPORARY REGISTER
-	       DB 000		        ; STATEMENT TOKEN
-	       DB 000,000		    ; TEMPORARY WORKING REGISTERS
-	       DB 000,000		    ; ARRAY POINTERS
-	       DB 000		        ; OPERATOR STACK POINTER
-	       DB 17 dup 0	        ; 15 Bytes OPERATOR STACK
-	       DB 000		        ; FUN/ARRAY STACK POINTER
-	       DB 7 dup 0	        ; FUNCTION/ARRAY STACK
+            DB ' '+200
+
+;-----------------------------------------------------------------------------------------
+; 3E00-3E9F - new function table
+; 3EA0-3EFF - OLDPG26
+;-----------------------------------------------------------------------------------------
+
+              ORG 3E00H
+
+FUNCCNT        EQU 16         ; number of functions in table. octal.
+FUNCSHIFT      EQU 3          ; number of bits to multiply by. 3 bits = multiply by 8.
+
+	       ;; FUNCTION NAMES TABLE (smbaker)
+               ;; Move this from its earlier location. Made the entries 8 bytes wide
+               ;; to accommodate peek and poke. Each entry can be less than 8 bytes
+               ;; but cannot be greater. The first byte is the length.
+FUNCTAB:       DB 0,0,0,0     ; start the pointer 8 bytes early
+               DB 0,0,0,0
+               DB 3
+	       DB 'I'+200
+	       DB 'N'+200
+	       DB 'T'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'S'+200
+	       DB 'G'+200
+	       DB 'N'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'A'+200
+	       DB 'B'+200
+	       DB 'S'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'S'+200
+	       DB 'Q'+200
+	       DB 'R'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'T'+200
+	       DB 'A'+200
+	       DB 'B'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'R'+200
+	       DB 'N'+200
+	       DB 'D'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'C'+200
+	       DB 'H'+200
+	       DB 'R'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'U'+200
+	       DB 'D'+200
+	       DB 'F'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'L'+200
+	       DB 'E'+200
+	       DB 'D'+200
+               DB 0,0,0,0
+	       DB 4
+	       DB 'P'+200
+	       DB 'E'+200
+	       DB 'E'+200               
+	       DB 'K'+200
+               DB 0,0,0
+	       DB 4
+	       DB 'P'+200
+	       DB 'O'+200
+	       DB 'K'+200
+	       DB 'E'+200
+               DB 0,0,0
+	       DB 3
+	       DB 'I'+200
+	       DB 'N'+200
+	       DB 'P'+200
+               DB 0,0,0,0
+	       DB 3
+	       DB 'O'+200
+	       DB 'U'+200
+	       DB 'T'+200
+               DB 0,0,0,0
+	       DB 4
+	       DB 'A'+200
+	       DB 'D'+200
+	       DB 'D'+200
+	       DB 'R'+200               
+               DB 0,0,0
+
+;These are all zeros. We can fill rather than copy, to save some space         
+;           ORG 3E00H
+;page26:    DB 000			    ; CC FOR INPUT LINE BUFFER
+;           DB 117 dup 0 		; 79 Bytes THE INPUT LINE BUFFER
+;	       DB 000,000,000,000	; THESE ARE SYMBOL BUFFER STORAGE
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000	; THESE LOCATIONS ARE AUXILIARY SYMBOL BUFFER
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000
+;	       DB 000,000,000,000
+;	       DB 000,000
+;	       DB 000		        ; TEMP SCAN STORAGE REGISTER
+;	       DB 000		        ; TAB FLAG
+;	       DB 000		        ; EVAL CURRENT TEMP REG.
+;	       DB 000		        ; SYNTAX LINE NUMBER
+;	       DB 000		        ; SCAN TEMPORARY REGISTER
+;	       DB 000		        ; STATEMENT TOKEN
+;	       DB 000,000		    ; TEMPORARY WORKING REGISTERS
+;	       DB 000,000		    ; ARRAY POINTERS
+;	       DB 000		        ; OPERATOR STACK POINTER
+;	       DB 17 dup 0	        ; 15 Bytes OPERATOR STACK
+;	       DB 000		        ; FUN/ARRAY STACK POINTER
+;	       DB 7 dup 0	        ; FUNCTION/ARRAY STACK
+
+               ;; The rest of oldpg26 is here
+           
+               ORG 3EA0H
 
 	       ;; HEIRARCHY TABLE (FOR OUT OF STACK OPS) USED BY PARSER ROUTINE.
-	       DB 000		        ; EOS
+HEIRTAB:       DB 000		        ; EOS
 	       DB 003		        ; PLUS SIGN
 	       DB 003		        ; MINUS SIGN
 	       DB 004		        ; MULTIPLICATION SIGN
@@ -4343,7 +4361,12 @@ pg1pgme_lsb    EQU 01F5H
 	       DB 000		        ; QUOTE INDICATOR
 	       DB 000		        ; TABLE COUNTER (370)
            db 0,0,0,0,0,0,0
-           
+
+;-----------------------------------------------------------------------------------------
+; 3F00-3FFF - OLDPG27
+;-----------------------------------------------------------------------------------------
+            
+
 ;this page gets copied from EPROM to RAM at 0200H as OLDPG27           
 	       ORG 3F00H
 page27:        DB 3
