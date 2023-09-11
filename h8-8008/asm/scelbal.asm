@@ -4331,10 +4331,9 @@ pg1iofunc      EQU 01C0H
 iofunc:        DB 0                     ; placeholder for IO function   (01C0H)
                ret                      ; return                        (01C1H)
 
-pg1addrlsb     EQU 01C2H
-               DB 0
-
-pg1addrmsb     EQU 01C3H
+pg1addrlsb     EQU 01C2H                
+               DB 0                     ; for ADDR function, LSB
+pg1addrmsb     EQU 01C3H                ; ... and MSB
                DB 0
 
                rept    340-$&0FFh       ; The function name table originally sat here

@@ -5,6 +5,7 @@
 ;    * frontpanel - build with frontpanel and 16450
 ;    * ser16450 - build with 16450 but not frontpanel
 ;    * bitbang - build with bitbang without frontpanel
+;    * ser8251 - build with 8251 from the tape board without front panel
 ;
 ; additional defines
 ;    * nocinpne - omit the CINPNE function
@@ -67,6 +68,24 @@ CINPNE:     equ CINPNEBB
             endif
 CPRINT:     equ CPRINTBB
 CRDY:       equ CRDYBB
+FPANINIT:   equ EMPTYFUNC
+FPDISABLE:  equ EMPTYFUNC
+FPENABLE:   equ EMPTYFUNC
+            endif
+
+;; just the 8251 console
+
+            ifdef ser8251
+            include "8251-cons.inc"
+SINIT:      equ SINIT8251
+            ifndef nocinp
+CINP:       equ CINP8251
+            endif
+            ifndef nocinpne
+CINPNE:     equ CINP8251NE
+            endif
+CPRINT:     equ CPRINT8251
+CRDY:       equ CRDY8251
 FPANINIT:   equ EMPTYFUNC
 FPDISABLE:  equ EMPTYFUNC
 FPENABLE:   equ EMPTYFUNC

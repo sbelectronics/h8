@@ -60,6 +60,22 @@ y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cp
 y:\projects\pi\h8\h8-8008\as\bin\p2bin pi-1000-digits-bitbang.p pi-1000-digits-bitbang.bin || exit /b
 y:\projects\pi\h8\h8-8008\as\bin\p2hex pi-1000-digits-bitbang.p pi-1000-digits-bitbang.hex || exit /b
 
+REM ---------- 8251 -----------
+
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L scelbal.asm -o scelbal-8251.p -D ser8251 || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2bin scelbal-8251.p scelbal-8251.bin || exit /b
+
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L monitor.asm -o monitor-8251.p -D nocinp80 -D ser8251 || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2bin monitor-8251.p monitor-8251.bin || exit /b
+
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L galaxy.asm -o galaxy-8251.p -D ser8251 || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2bin galaxy-8251.p galaxy-8251.bin || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2hex galaxy-8251.p galaxy-8251.hex || exit /b
+
+y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L pi-100-digits.asm -o pi-100-digits-8251.p -D ser8251 || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2bin pi-100-digits-8251.p pi-100-digits-8251.bin || exit /b
+y:\projects\pi\h8\h8-8008\as\bin\p2hex pi-100-digits-8251.p pi-100-digits-8251.hex || exit /b
+
 REM ---------- loaders ------------
 
 y:\projects\pi\h8\h8-8008\as\bin\asw -i y:\projects\pi\h8\h8-8008\as\include -cpu 8008 -L load-trek.asm || exit /b
