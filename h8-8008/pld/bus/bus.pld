@@ -25,7 +25,7 @@ Pin 11 = NC2;
 Pin 13 = NC3;
 
 /* Outputs:   */
-Pin 23 = !RUNNING;   /* Output to "Running" LED              */ 
+Pin 23 = LOSTIT;     /* Output to "Running" LED  ... was !RUNNING            */ 
 Pin 22 = ALL;        /* 74LS273 #1 Address Latch Low strobe  */
 Pin 21 = ALH;        /* 74LS273 #2 Address Latch High strobe */
 Pin 20 = !MEMRD;     /* Memory Read strobe                   */
@@ -46,7 +46,7 @@ stopped = !S2 &  S1 &  S0;      /* halt instruction received by CPU         */
 t4      =  S2 &  S1 &  S0;      /* execution of instruction                 */
 t5      =  S2 & !S1 &  S0;      /* execution of instruction                 */
 
-RUNNING = !stopped;
+/* RUNNING = !stopped; */
 
 /* cycle types... */
 pci = !CC1 & !CC2;            /* Memory Read Instruction */
@@ -63,7 +63,10 @@ ALH  = t2 & !SYNC & PHASE2;
 MEMRD = t3 & (pci # pcr) & SYNC;
 MEMWR = t3 & pcw & !SYNC & PHASE2;
 
-IORD = t3 & pcc & SYNC;
+/* LOSTIT simulates a flipflop that is true if SYNC is released during IO Read and persists until the end of T3 */
+LOSTIT = (IORD & !SYNC) # (LOSTIT & t3); 
+
+IORD = t3 & pcc & SYNC & (!LOSTIT);
 IOWR = t3 & pcc & !SYNC & PHASE2;
 
 INTACK = t1i & !SYNC & PHASE2;
