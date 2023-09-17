@@ -16,10 +16,10 @@ Pin 4 = NC2;
 Pin 5 = POR;
 Pin 6 = !RESET;
 Pin 7 = !CMEMRD;
-Pin 8 = !OUTEI;
-Pin 9 = !OUTDI;
-Pin 10 = !OUTFPEI;
-Pin 11 = !OUTFPDI;
+Pin 8 = NC3;       /* OUTEI on the 0.22 schematic */
+Pin 9 = NC4;       /* OUTDI on the 0.22 schematic */
+Pin 10 = !OUTEI;   /* OUTFPEI on the 0.22 schematic */
+Pin 11 = !OUTDI;   /* OUTFPDI on the 0.22 schematic
 Pin 13 = !M1;
 
 /* Outputs:   */
@@ -36,7 +36,7 @@ Pin 14 = IES;      /* temporary */
 
 IES = (IES & !RESET & !OUTDI & !INTACK) # (OUTEI & !RESET);     /* interrupts are disabled on reset, during intack, and on OUTDI. interrupts are enabled on OUTEI. */
 
-ISERV = IES & (INTACK # (ISERV & WAITMEM) # (ISERV & CMEMRD));  /* servicing interrupt during intack, while waiting for MEMRD, or during MEMRD */
+ISERV = INTACK # (ISERV & WAITMEM) # (ISERV & CMEMRD);          /* servicing interrupt during intack, while waiting for MEMRD, or during MEMRD */
 
 WAITMEM = INTACK # (WAITMEM & !CMEMRD);                         /* wait for mem starts on intack, and continues until MEMRD */
 
