@@ -6,7 +6,7 @@ INCDEPS=16450.inc 8251-cons.inc 8251-tape.inc bbser.inc fpanel.inc fpanelvar.inc
 
 all: scelbal-16450.bin monitor-16450.bin calc-16450.bin shooter-16450.bin galaxy-16450.bin pi-100-digits-16450.bin pi-1000-digits-16450.bin \
      scelbal-bitbang.bin monitor-bitbang.bin calc-bitbang.bin shooter-bitbang.bin galaxy-bitbang.bin pi-100-digits-bitbang.bin pi-1000-digits-bitbang.bin \
-	 scelbal-8251.bin monitor-8251.bin calc-8251.bin \
+	 scelbal-8251.bin monitor-8251.bin calc-8251.bin shooter-8251.bin galaxy-8251.bin pi-100-digits-8251.bin pi-1000-digits-8251.bin \
 	 load-trek.bin load-40h.bin
 
 #------- 16450 ----------
@@ -16,7 +16,7 @@ scelbal-16450.bin: $(INCDEPTS) scelbal.asm
 	$(P2BIN) scelbal-16450.p scelbal-16450.bin
 
 monitor-16450.bin: $(INCDEPS) monitor.asm
-	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-16450.p -D noinp80 -D frontpanel
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-16450.p -D nocinp80 -D frontpanel
 	$(P2BIN) monitor-16450.p monitor-16450.bin
 
 calc-16450.bin: $(INCDEPTS) calc.asm
@@ -56,7 +56,7 @@ scelbal-bitbang.bin: $(INCDEPTS) scelbal.asm
 	$(P2BIN) scelbal-bitbang.p scelbal-bitbang.bin
 
 monitor-bitbang.bin: $(INCDEPS) monitor.asm
-	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-bitbang.p -D noinp80 -D bitbang
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-bitbang.p -D nocinp80 -D bitbang
 	$(P2BIN) monitor-bitbang.p monitor-bitbang.bin
 
 calc-bitbang.bin: $(INCDEPTS) calc.asm
@@ -96,13 +96,38 @@ scelbal-8251.bin: $(INCDEPTS) scelbal.asm
 	$(P2BIN) scelbal-8251.p scelbal-8251.bin
 
 monitor-8251.bin: $(INCDEPS) monitor.asm
-	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251.p -D noinp80 -D ser8251
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251.p -D nocinp80 -D ser8251
 	$(P2BIN) monitor-8251.p monitor-8251.bin
 
 calc-8251.bin: $(INCDEPTS) calc.asm
 	$(ASL) -i $(INC) -cpu 8008 -L calc.asm -o calc-8251.p -D ser8251
 	$(P2BIN) calc-8251.p calc-8251.bin
 	$(P2HEX) calc-8251.p calc-8251.hex
+
+shooter-8251.bin: $(INCDEPTS) shooter.asm
+	$(ASL) -i $(INC) -cpu 8008 -L shooter.asm -o shooter-8251.p -D nocinp80 -D ser8251
+	$(P2BIN) shooter-8251.p shooter-8251.bin
+	$(P2HEX) shooter-8251.p shooter-8251.hex
+
+galaxy-8251.bin: $(INCDEPTS) galaxy.asm
+	$(ASL) -i $(INC) -cpu 8008 -L galaxy.asm -o galaxy-8251.p -D ser8251
+	$(P2BIN) galaxy-8251.p galaxy-8251.bin
+	$(P2HEX) galaxy-8251.p galaxy-8251.hex
+
+hangman-8251.bin: $(INCDEPTS) hangman.asm
+	$(ASL) -i $(INC) -cpu 8008 -L hangman.asm -o hangman-8251.p -D nocinp80 -D ser8251
+	$(P2BIN) hangman-8251.p hangman-8251.bin
+	$(P2HEX) hangman-8251.p hangman-8251.hex
+
+pi-100-digits-8251.bin: $(INCDEPTS) pi-100-digits.asm
+	$(ASL) -i $(INC) -cpu 8008 -L pi-100-digits.asm -o pi-100-digits-8251.p -D ser8251
+	$(P2BIN) pi-100-digits-8251.p pi-100-digits-8251.bin
+	$(P2HEX) pi-100-digits-8251.p pi-100-digits-8251.hex
+
+pi-1000-digits-8251.bin: $(INCDEPTS) pi-1000-digits.asm
+	$(ASL) -i $(INC) -cpu 8008 -L pi-1000-digits.asm -o pi-1000-digits-8251.p -D ser8251
+	$(P2BIN) pi-1000-digits-8251.p pi-1000-digits-8251.bin
+	$(P2HEX) pi-1000-digits-8251.p pi-1000-digits-8251.hex
 
 #---------- loaders ---------
 

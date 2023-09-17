@@ -44,6 +44,7 @@ RETURN      equ 0DH
             
 rom_start:  call SINIT
             call FPANINIT
+            call STACKINIT
             xra a
             out 09H                     ; turn off orange LEDs
             
@@ -111,15 +112,33 @@ prompt2:    mvi h,hi(esccount)
             jz input                    ; input from port
             cpi 'O'
             jz output                   ; output to port
+            cpi 'P'
+            jz pop                      ; output to port
             cpi 'R'
             jz bindl                    ; binary file download
             cpi 'S'
             jz switch                   ; switch to rom bank and jump
+            cpi 'U'
+            jz push                     ; push to stack
             cpi 0DH
             jz menu                     ; display the menu
             mvi a,'?'
             call putch                  ; whaaat??
             jmp prompt
+
+pop:       mvi h,hi(poptxt)
+           mvi l,lo(poptxt)
+           call puts                   ; prompt for the value
+           in stack_pop
+           call write_hex
+           jmp prompt
+
+push:      mvi h,hi(pushtxt)
+           mvi l,lo(pushtxt)
+           call puts                   ; prompt for the value
+           call get_two                ; get the value used to fill in A
+           out stack_push
+           jmp prompt
             
 ;------------------------------------------------------------------------
 ; dump a page of memory in hex and ascii
@@ -1159,6 +1178,7 @@ puts:       mov a,m
 ;------------------------------------------------------------------------
 
             include "serial.inc"
+            include "stack.inc"
 
 ;------------------------------------------------------------------------        
 ; sends the character in A out from the serial port at 2400 bps.
@@ -1245,3 +1265,5 @@ switchtxt   db  "witch and load bank (one digit): ",0
 badbanktxt  db  "Invalid bank number\r\n",0
 progtxt     db  "rogram to RAM from bank (one digit): ",0
 loadingtxt  db  "\r\nSwitching banks and jumping...\r\n",0
+poptxt:     db  "op stack\r\n",0
+pushtxt:    db  "-Push stack: (in hex) ",0

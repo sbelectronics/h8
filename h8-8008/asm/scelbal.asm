@@ -3916,6 +3916,7 @@ ADDRX:     call FPFIX             ; convert the contents of FPACC from floating 
 ;------------------------------------------------------------------------
 
 save:	   call INITTAPE
+           call WSTARTAPE
            mvi A,016H          ; Just like the H8, emit 32 016H to the tape
            mvi C,020H
 sleader:   call WTAPE
@@ -3962,6 +3963,10 @@ snowrap:
            mov d,a
            ora e                    ; if DE=0 then we done.
            jnz sloop
+           xra a
+           call WTAPE               ; flush tape buffer by writing 0
+           call WTAPE               ; ... twice
+           call STOPTAPE
            jmp exec
 
 ;------------------------------------------------------------------------        
@@ -3993,14 +3998,19 @@ lheader:   call RTAPE
            adi BGNPGRAM                     ; add start of program to length
            mov m,a                          ; store end of program MSB
            inr l
-           mov m,e                          ; store end of program LSB
+           mov m,e                          ; store end of program LSB           
 
            mvi h,BGNPGRAM
            mvi l,0
 
 lloop:     mov a,d                          ; if d and e are 0, then we're done
            ora e
-           jz exec
+           jnz lcontinue
+           xra a                            ; terminate with a null?
+           mov m,a
+           call STOPTAPE
+           jmp exec
+lcontinue:
 
            call RTAPE
            mov m,a
