@@ -1266,4 +1266,4 @@ badbanktxt  db  "Invalid bank number\r\n",0
 progtxt     db  "rogram to RAM from bank (one digit): ",0
 loadingtxt  db  "\r\nSwitching banks and jumping...\r\n",0
 poptxt:     db  "op stack\r\n",0
-pushtxt:    db  "-Push stack: (in hex) ",0
+pushtxt:    db  "-pUsh stack: (in hex) ",0
