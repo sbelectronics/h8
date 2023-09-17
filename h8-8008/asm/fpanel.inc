@@ -168,70 +168,6 @@ FPENABLE:
            ret
 
 ;--------------------------------------------------------------------------------
-; FCINP450
-;
-; CINP from 16450 with no echo and front panel service
-;
-; Destroys A, B
-;
-; Variables
-;    H - always points to the monitor variable section MSB
-;    A - temporary
-;    B - temporary
-;    C - dot mask for address octal group
-;    D - dot mask for alter octal group
-;
-; We're enormously tight on cycles when servicing the front panel. Every cycle
-; saved is less artifacting on the display. So we combined the serial ipoll and
-; the front panel poll together.
-;--------------------------------------------------------------------------------
-
-FCINP450:   
-           mov a,h                ; save registers
-           mov b,l
-           mvi h,hi(msave_H)      ; Point HL at register storage location        
-           mvi l,lo(msave_H)      
-           mov m,a                ; save A (entry value of H) in memory
-           inr l                  ; advance pointer
-           mov m,b                ; save B (entry value of L) in memory
-           inr l
-           mov m,c                ; save C
-           inr l
-           mov m,d                ; save D
-
-           mvi c,0FFH             ; Intialize all dots off
-           mvi d,0FFH
-
-RXPOLL:    in ser_lsr             ; poll for serial ready
-           ani 01H
-           jz FPANPOLL            ; no character pending -- jump to next check
-
-           mvi h,hi(msave_H)      ; Point HL at register storage location      
-           mvi l,lo(msave_H) 
-           mov a,m
-           inr l
-           mov b,m
-           inr l
-           mov c,m                ; restore C
-           inr l
-           mov d,m                ; restore D
-           mov h,a                ; restore H
-           mov l,b                ; restore L
-
-           in ser_rhr             ; read the character from the 16450
-           ifndef nocinp80
-           ori 80h                ; SCELBAL needs to have the most significant bit set
-           endif
-           ret                    ; finally, we can return
-
-FPANPOLL:
-           in ipoll               ; check if interrupt pending
-           ani 02H                ; int1 == 0x02 is the front panel asking for service
-           jz RXPOLL              ; no display interrupt, go back to polling
-
-           ;; Fall through and process the displays
-
-;--------------------------------------------------------------------------------
 ; FPANSVC service the front panel
 ;
 ; We fall through from the serial input function above.
@@ -298,7 +234,7 @@ nocarry:
            cpi 018H
            jz FPUPDOTS
 
-           jmp FPANPOLL           ; Nothing more to do -- go back to polling
+           jmp FPANRET           ; Nothing more to do -- go back to polling
 
 FPANUPL:   ;; update the left octal group
 
@@ -340,7 +276,7 @@ FPANUPL:   ;; update the left octal group
            mvi l,lo(m_dig_l)
            mov m,a
 
-           jmp FPANPOLL
+           jmp FPANRET
 
 FPANUPM:   ;; update the middle octal group
 
@@ -382,7 +318,7 @@ FPANUPM:   ;; update the middle octal group
            mvi l,lo(m_dig_m)
            mov m,a
 
-           jmp FPANPOLL
+           jmp FPANRET
 
 FPANUPR:   ;; update the right octal group
 
@@ -430,7 +366,7 @@ FPANUPR:   ;; update the right octal group
            mvi l,lo(m_dig_r)
            mov m,a
 
-           jmp FPANPOLL
+           jmp FPANRET
 
 ;--------------------------------------------------------------
 ; FPUPDOTS - update the dots then fall through to keyboard scan
@@ -471,15 +407,15 @@ FPSCANK:   in fp_kbd
            jz enough                ; yeah
            adi 1
            mov m,a
-           jmp FPANPOLL
+           jmp FPANRET
 enough:
            mvi l,lo(m_lastkey)      ; reset lastkey so we can repeat
            mvi m,0
-           jmp FPANPOLL
+           jmp FPANRET
 nokey:
            mvi l,lo(m_lastkey)      ; make sure we're primed for the next key
            mvi m,0
-           jmp FPANPOLL
+           jmp FPANRET
 diffkey:
            mvi l,lo(m_lastcnt)
            mvi m,0
@@ -490,10 +426,10 @@ diffkey:
 ;           cmp b
 ;           jz samekey              ; Is it the same key?
 ;           mov m,a                 ; Nope. Store it in lastkey
-;           jmp FPANPOLL
+;           jmp FPANRET
 ;           mvi l,lo(m_lastcnt)     ; ... and reset lastcnt
 ;           mvi l,0
-;           jmp FPANPOLL            ; Different key
+;           jmp FPANRET            ; Different key
 ;samekey:   mov b,a                 ; Save scancode in b
 ;           mvi l,lo(m_lastcnt)     ; Check how many times we've seen it
 ;           mov a,m
@@ -501,7 +437,7 @@ diffkey:
 ;           jz enough               ; we have enough?
 ;           adi 1                   ; inrement the count
 ;           mov m,a
-;           jmp FPANPOLL            ; Wait until we see more
+;           jmp FPANRET            ; Wait until we see more
 ;enough:    mvi m,0                 ; reset lastcnt, to bound our repeat rate
 ;           mov a,b                 ; restore the scancode to b
 
@@ -591,7 +527,7 @@ doPlus:
            adi 1
            mov a,m
 nowrapup:
-           jmp FPANPOLL
+           jmp FPANRET
 
 notplus:   cpi scMinus
            jnz notminus
@@ -612,7 +548,7 @@ doMinus:
            sui 1
            mov a,m
 nowrapdn:
-           jmp FPANPOLL
+           jmp FPANRET
 
 notminus:  cpi scMem
            jnz notMem
@@ -633,7 +569,7 @@ notAlter:  cpi scCancel
            jmp changeMode    ; change to Display
 
 notCancel:
-           jmp FPANPOLL
+           jmp FPANRET
 
 ;--------------------------------------------------------------
 ; doEnter - process entry of numbers to cell pointed by maddr
@@ -716,7 +652,7 @@ notAddrO:
            jmp doPlus          ; move to next memory cell
 notAltO:
 changeMode:
-           jmp FPANPOLL
+           jmp FPANRET
 
 ;--------------------------------------------------------------
 ; doOut - output to port. Uses the (val, addr) in maddr
@@ -742,7 +678,7 @@ doOut:
            mov a,b                     ; put value back in a
            jmp m_codebuf
 afterOut:
-           jmp FPANPOLL
+           jmp FPANRET
 
 ;--------------------------------------------------------------
 ; doInt - input port. Uses the (val, addr) in maddr
@@ -767,7 +703,7 @@ doIn:
 afterIn:
            mvi l,lo(maddr)+1
            mov m,a
-           jmp FPANPOLL
+           jmp FPANRET
 
 ;dig_7seg_rom:
 ;           db 081H  ;  0b10000001  ! 0

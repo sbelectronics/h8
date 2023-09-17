@@ -24,6 +24,7 @@ EMPTYFUNC:  ret
 
             ifdef frontpanel
             include "fpanelvar.inc"
+            include "fpanpoll-16450.inc"
             include "fpanel.inc"
             include "16450.inc"
 SINIT:      equ SINIT450
