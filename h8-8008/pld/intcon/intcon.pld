@@ -34,7 +34,7 @@ Pin 16 = WAITMEM;  /* temporary */
 Pin 15 = ISERV;    /* temporary */
 Pin 14 = IES;      /* temporary */
 
-IES = (IES & !RESET & !OUTDI & !INTACK) # OUTEI;     /* interrupts are disabled on reset, during intack, and on OUTDI. interrupts are enabled on OUTEI. */
+IES = (IES & !RESET & !OUTDI & !INTACK) # (OUTEI & !RESET);     /* interrupts are disabled on reset, during intack, and on OUTDI. interrupts are enabled on OUTEI. */
 
 ISERV = INTACK # (ISERV & WAITMEM) # (ISERV & CMEMRD);          /* servicing interrupt during intack, while waiting for MEMRD, or during MEMRD */
 
