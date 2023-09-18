@@ -48,12 +48,6 @@
             
 rom_start:  call SINIT
 
-            ;mvi a, 41H
-            ;out ser_thr
-
-            ;xra a
-            ;out 09h                 ; turn off the red LED
-            
             mvi h,hi(titletxt)      ; print the title
             mvi l,lo(titletxt) 
             call puts
@@ -92,6 +86,11 @@ mv_oldpg27: mvi h,hi(page27)        ; source: OLDPG27 constants in EPROM at page
             mov m,a                 ; store the byte in RAM
             inr l                   ; next address
             jnz mv_oldpg27          ; go back if page not complete
+
+            ifdef frontpanel_isr
+            call STACKINIT
+            call STARTINT
+            endif
             
             jmp exec                ; run the SCELBAL interpreter
 
@@ -4059,6 +4058,7 @@ titletxt:   db  "\r\nScelbi BASIC (SCELBAL) ",DATE," ",TIME,"\r\n"
 
             include "serial.inc"
             include "8251-tape.inc"
+            include "stack.inc"
             
             cpu 8008                ; use "old" mneumonics for SCELBAL
             RADIX 8                 ; use octal for numbers

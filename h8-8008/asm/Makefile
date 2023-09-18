@@ -2,11 +2,12 @@ ASL=/usr/local/bin/asl
 P2BIN=/usr/local/bin/p2bin
 P2HEX=/usr/local/bin/p2hex
 INC=/home/smbaker/projects/pi/h8/h8-8008/as/include
-INCDEPS=16450.inc 8251-cons.inc 8251-tape.inc bbser.inc fpanel.inc fpanelvar.inc go-rom.inc h8.inc serial.inc
+INCDEPS=16450.inc 8251-cons.inc 8251-tape.inc bbser.inc fpanel.inc fpanelvar.inc go-rom.inc h8.inc serial.inc fpanisr.inc
 
 all: scelbal-16450.bin monitor-16450.bin calc-16450.bin shooter-16450.bin galaxy-16450.bin pi-100-digits-16450.bin pi-1000-digits-16450.bin \
      scelbal-bitbang.bin monitor-bitbang.bin calc-bitbang.bin shooter-bitbang.bin galaxy-bitbang.bin pi-100-digits-bitbang.bin pi-1000-digits-bitbang.bin \
 	 scelbal-8251.bin monitor-8251.bin calc-8251.bin shooter-8251.bin galaxy-8251.bin pi-100-digits-8251.bin pi-1000-digits-8251.bin \
+	 scelbal-16450-isr.bin monitor-16450-isr.bin \
 	 load-trek.bin load-40h.bin
 
 #------- 16450 ----------
@@ -48,6 +49,17 @@ pi-1000-digits-16450.bin: $(INCDEPTS) pi-1000-digits.asm
 	$(ASL) -i $(INC) -cpu 8008 -L pi-1000-digits.asm -o pi-1000-digits-16450.p -D ser16450
 	$(P2BIN) pi-1000-digits-16450.p pi-1000-digits-16450.bin
 	$(P2HEX) pi-1000-digits-16450.p pi-1000-digits-16450.hex
+
+#------- 16450-fp-isr ----------
+
+scelbal-16450-isr.bin: $(INCDEPTS) scelbal.asm
+	$(ASL) -i $(INC) -cpu 8008 -L scelbal.asm -o scelbal-16450-isr.p -D frontpanel_isr  -D nofrontpanel
+	$(P2BIN) scelbal-16450-isr.p scelbal-16450-isr.bin
+
+monitor-16450-isr.bin: $(INCDEPS) monitor.asm
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-16450-isr.p -D nocinp80 -D frontpanel_isr
+	$(P2BIN) monitor-16450-isr.p monitor-16450-isr.bin
+
 
 #------- bitbang ----------
 
@@ -141,3 +153,6 @@ load-40h.bin: $(INCDEPTS) rom2ram.inc load-40h.asm
 
 clean:
 	rm -f *.p *.bin *.hex *.lst
+
+rom:
+	cd ../rom && make

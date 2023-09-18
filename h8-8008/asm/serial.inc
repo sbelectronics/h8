@@ -11,6 +11,7 @@
 ;    * nocinpne - omit the CINPNE function
 ;    * nocinp - omit the CINP function
 ;    * nocinp80 - omit setting the high bit on CINP/CINPNE
+;    * nofrontpanel - removes the frontpanel from frontpanel_isr
 ;------------------------------------------------------------------------
 
             include "h8.inc"
@@ -33,6 +34,26 @@ CINP:       equ CINP450
             endif
             ifndef nocinpne
 CINPNE:     equ FCINP450
+            endif
+CPRINT:     equ CPRINT450
+CRDY:       equ CRDY450
+            endif
+
+;; front panel with interrupts
+
+            ifdef frontpanel_isr
+            include "fpanelvar.inc"
+            include "fpanisr.inc"
+            ifndef nofrontpanel
+            include "fpanel.inc"
+            endif
+            include "16450.inc"
+SINIT:      equ SINIT450
+            ifndef nocinp
+CINP:       equ CINP450
+            endif
+            ifndef nocinpne
+CINPNE:     equ CINP450NE
             endif
 CPRINT:     equ CPRINT450
 CRDY:       equ CRDY450

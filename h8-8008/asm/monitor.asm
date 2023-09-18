@@ -45,6 +45,11 @@ RETURN      equ 0DH
 rom_start:  call SINIT
             call FPANINIT
             call STACKINIT
+
+            ifdef frontpanel_isr
+            call STARTINT
+            endif
+
             xra a
             out 09H                     ; turn off orange LEDs
             
@@ -120,6 +125,8 @@ prompt2:    mvi h,hi(esccount)
             jz switch                   ; switch to rom bank and jump
             cpi 'U'
             jz push                     ; push to stack
+            cpi 'Z'
+            jz disableint               ; disable interrupts
             cpi 0DH
             jz menu                     ; display the menu
             mvi a,'?'
@@ -138,6 +145,14 @@ push:      mvi h,hi(pushtxt)
            call puts                   ; prompt for the value
            call get_two                ; get the value used to fill in A
            out stack_push
+           jmp prompt
+
+disableint: mvi h,hi(disabletxt)
+           mvi l,lo(disabletxt)
+           call puts                   ; prompt for the value
+           ifdef frontpanel_isr
+           out int_di
+           endif
            jmp prompt
             
 ;------------------------------------------------------------------------
@@ -1234,7 +1249,11 @@ menutxt:    db  "\r\n"
             db  "I - Input byte from port\r\n"
             db  "O - Output byte to port\r\n"
             db  "R - Raw binary file download\r\n"
-            db  "S - Switch bank and load rom\r\n",0
+            db  "S - Switch bank and load rom\r\n"
+            ifdef frontpanel_isr
+            db  "Z - Disable interrupts\r\n"
+            endif
+            db 0
 
 prompttxt:  db  "\r\n>>",0
 dumptxt:    db  "ump memory\r\n",0
@@ -1267,3 +1286,4 @@ progtxt     db  "rogram to RAM from bank (one digit): ",0
 loadingtxt  db  "\r\nSwitching banks and jumping...\r\n",0
 poptxt:     db  "op stack\r\n",0
 pushtxt:    db  "-pUsh stack: (in hex) ",0
+disabletxt: db  "-disable iterrupts\r\n",0
