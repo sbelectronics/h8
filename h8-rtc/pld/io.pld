@@ -1,0 +1,55 @@
+/* 
+ */
+
+name io;
+device g16v8ma;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+PIN 1 = !IOW;
+PIN 2 = !A0;
+PIN 3 = !A1; 
+PIN 4 = !A2;
+PIN 5 = !A3;
+PIN 6 = !A4;
+PIN 7 = !A5;
+PIN 8 = !A6;
+PIN 9 = !A7;
+PIN 10 = GND;
+PIN 11 = !IOR;
+PIN 12 = !RX;
+PIN 13 = !MODE8080;
+PIN 14 = !RTC_8080;
+PIN 15 = !RTC_8008;
+PIN 16 = !RTC_IOW;
+PIN 17 = !RTC_IOR;
+PIN 18 = RTC_ALE;
+PIN 19 = !RTC_CS;
+
+FIELD ALO = [A7..A0];
+
+MODE8008 = !MODE8080;
+
+$DEFINE ADDR240   A0
+$DEFINE ADDR241   A1
+
+$DEFINE ADDR240_257  AX
+
+/* CS = (MODE8080 & (ALO:ADDR240_257)) # (MODE8008 & ((ALO:ADDR240) # (ALO:ADDR241))); */
+
+CS = (MODE8080 & (ALO:ADDR240_257)) # (MODE8008 & (ALO:ADDR240));
+
+RTC_IOR = CS & IOR;
+RTC_IOW = CS & IOW;
+RTC_8008 = MODE8008;
+RTC_8080 = MODE8080;
+
+RTC_ALE = MODE8080 # (MODE8008 & (ALO:ADDR241) & IOW);
+RTC_CS = CS # (MODE8008 & (ALO:ADDR241));
+
+RX = IOR & CS;
