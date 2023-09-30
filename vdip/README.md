@@ -36,3 +36,16 @@ Run install dependencies as directed in INSTALL.md
 
 Run `make install` to install the library. This install the library and builds the C extension only. The program remains in the current working directory.
 
+## Flow-control on the pi
+
+You might need to switch the uarts. By default on some pis, the bluetooth gets the good UART that supports flow control and the
+serial port gets the shitty mini uart that does not. Switch them by putting this in /boot/config.txt
+
+dtoverlay=pi3-miniuart-bt
+
+Then you need to run this tool:
+
+https://github.com/mholling/rpirtscts
+
+Finally, use '--flow h' in picocom. Make sure to use ttyAMA0 instead of ttyS0 as the UARTs have now switched places.
+
