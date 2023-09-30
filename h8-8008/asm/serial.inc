@@ -25,9 +25,9 @@ EMPTYFUNC:  ret
 
             ifdef frontpanel
             include "fpanelvar.inc"
+            include "16450.inc"
             include "fpanpoll-16450.inc"
             include "fpanel.inc"
-            include "16450.inc"
 SINIT:      equ SINIT450
             ifndef nocinp
 CINP:       equ CINP450
@@ -90,6 +90,18 @@ CINPNE:     equ CINPNEBB
             endif
 CPRINT:     equ CPRINTBB
 CRDY:       equ CRDYBB
+FPANINIT:   equ EMPTYFUNC
+FPDISABLE:  equ EMPTYFUNC
+FPENABLE:   equ EMPTYFUNC
+            endif
+
+;; just the scelbi serial
+
+            ifdef serscel
+            include "bbscelbi.inc"
+SINIT:      equ SINITSCEL
+CINP:       equ CINPSCEL
+CPRINT:     equ CPRINTSCEL
 FPANINIT:   equ EMPTYFUNC
 FPDISABLE:  equ EMPTYFUNC
 FPENABLE:   equ EMPTYFUNC

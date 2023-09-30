@@ -190,7 +190,7 @@ CPRINTBB:   ani 7fh                 ; mask off the most significant bit of the c
             out 08h                 ; send the stop bit 
             mov a,b                 ; restore the original character from B to A
             ifndef nocinp80
-            ori 80h                 ; restore the most significant bit of the character
+            ori 80h                 ; restore the most significant bit of the character XXX timing adjustment??
             endif
             mvi b,0fch              ; timing adjustment
             call delay              ; timing adjustment

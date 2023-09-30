@@ -7,13 +7,22 @@ inc16450     equ      1
 ; Scott Baker, https://www.smbaker.com
 ;-----------------------------------------------------------------------------------------
 
+; Port usage 
+;    port 1 - output only, used for MCR
+;    port 2 - input/output, used for thr and tcr
+;    port 3 - input only, used for lsr
+;
+; during initialization, ports 4 and 5 are used for lcr and ier
+
 
 h8_thr:    equ 0E8H
 h8_rhr:    equ 0E8H
 h8_ier:    equ 0E9H
 h8_lcr:    equ 0EBH
+h8_mcr:    equ 0ECH
 h8_lsr:    equ 0EDH
 
+ser_mcr:   equ h8_out1
 ser_thr:   equ h8_out2
 ser_lcr:   equ h8_out4
 ser_ier:   equ h8_out5
@@ -23,6 +32,24 @@ ser_dlm:   equ ser_ier
 
 ser_rhr:   equ h8_in2
 ser_lsr:   equ h8_in3
+
+;-----------------------------------------------------------------------------------------       
+; Macros for RTS
+;-----------------------------------------------------------------------------------------
+
+rts_on     macro
+           ifndef no_rts_flow
+           mvi a,2
+           out ser_mcr
+           endif
+           endm
+
+rts_off    macro
+           ifndef no_rts_flow
+           mvi a,0
+           out ser_mcr
+           endif
+           endm
 
 ;-----------------------------------------------------------------------------------------       
 ; SINIT450: initialize serial port
@@ -36,6 +63,11 @@ SINIT450:   mvi a,h8_thr            ; configure IO mapper
             out mm_io4
             mvi a,h8_ier
             out mm_io5
+
+            ifndef no_rts_flow
+            mvi a,h8_mcr
+            out mm_io1
+            endif
 
             mvi a,083H              ; enable the baud rate regs
             out ser_lcr
@@ -59,9 +91,12 @@ SINIT450:   mvi a,h8_thr            ; configure IO mapper
 ; CINP450: wait for and read character, with echo
 ;-----------------------------------------------------------------------------------------
 
+CINP450_RTS: 
+            rts_on
 CINP450:    in ser_lsr              ; normal entrypoint
             ani 01H
-            jz  CINP450             ; loop while waiting for character. Check fpanel if idle
+            jz  CINP450_RTS         ; loop while waiting for character.
+            rts_off
             in ser_rhr
             mov b,a                 ; save received character in B
 TXWAIT450:  in ser_lsr
@@ -78,9 +113,12 @@ TXWAIT450:  in ser_lsr
 ; CINP450NE: wait for and read character, without echo
 ;-----------------------------------------------------------------------------------------
 
+CINP450NE_RTS: 
+            rts_on
 CINP450NE:  in ser_lsr              ; normal entrypoint
             ani 01H
-            jz CINP450NE            ; loop while waiting for character
+            jz CINP450NE_RTS        ; loop while waiting for character
+            rts_off
             in ser_rhr
             ifndef nocinp80
             ori 80h                 ; SCELBAL needs to have the most significant bit set

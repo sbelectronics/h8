@@ -33,11 +33,17 @@ FCINP450:
            mvi c,0FFH             ; Intialize all dots off
            mvi d,0FFH
 
+           in ser_lsr             ; check once for pending char before we rts_on
+           ani 01H
+           jnz RXPOLL1            ; yeah, we got something
+
+           rts_on                 ; turn on RTS and prepare to wait
+
 RXPOLL:    in ser_lsr             ; poll for serial ready
            ani 01H
            jz FPANPOLL            ; no character pending -- jump to next check
 
-           mvi h,hi(msave_H)      ; Point HL at register storage location      
+RXPOLL1:   mvi h,hi(msave_H)      ; Point HL at register storage location      
            mvi l,lo(msave_H) 
            mov a,m
            inr l
@@ -48,6 +54,8 @@ RXPOLL:    in ser_lsr             ; poll for serial ready
            mov d,m                ; restore D
            mov h,a                ; restore H
            mov l,b                ; restore L
+
+           rts_off
 
            in ser_rhr             ; read the character from the 16450
            ifndef nocinp80
