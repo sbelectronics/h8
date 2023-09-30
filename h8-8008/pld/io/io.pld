@@ -61,7 +61,7 @@ OUTIOMMMUX = out2 & IOWR;                            /* all of Output ports 24-3
 H8IOR = in0 & (!device0) & (!device1) & IORD;        /* IORD to H8 bus: all ports except 0 and 1 */
 H8IOW = out1 & IOWR;                                 /* IOW to H8 bus: ports 16-23 (group 1) */
 
-H8OUT = !IORD;                                       /* H8 direction - always OUT unless we're doing IORD */
+H8OUT = !H8IOR;                                      /* H8 direction - always OUT unless we're doing IORD */
 
 /* simulated SR flip-flop made up of cross-connected NAND gates.
  * the flip-flop is set when the reset signal from the DS1233 goes low
