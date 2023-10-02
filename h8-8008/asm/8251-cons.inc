@@ -17,6 +17,20 @@ cons_cmd:  equ cons_mode
 cons_rhr:  equ h8_in2
 cons_stat: equ h8_in3
 
+rts_on      macro
+            ifndef no_rts_flow
+            mvi a,035H              ; RX enable, TX enable, error reset, RTS-on
+            out cons_cmd           
+            endif
+            endm
+
+rts_off     macro
+            ifndef no_rts_flow
+            mvi a,015H              ; RX enable, TX enable, error reset, RTS-off
+            out cons_cmd     
+            endif
+            endm
+
 ;-----------------------------------------------------------------------------------------       
 ; INITTAPE: initialize tape
 ;-----------------------------------------------------------------------------------------
@@ -42,6 +56,10 @@ SINIT8251:  mvi a,h8_cons_d         ; configure IO mapper
 
             mvi a,035H              ; RX enable, TX enable, error reset, RTS
             out cons_cmd
+
+            mvi b,00H               ; reset will sometimes cause framing errors and gibberish
+sinit8251w: dcr b                   ; on my ftdi cable. Wait a while before we send out 
+            jnz sinit8251w          ; data, to ensure a re-frame.
             ret
 
 ;-----------------------------------------------------------------------------------------       
@@ -62,10 +80,12 @@ TXWCONS:    in cons_stat
 ; CINP8251: Read Console and Echo
 ;-----------------------------------------------------------------------------------------
 
+RXWCONS_RTS: rts_on
 CINP8251:  
 RXWCONS:    in cons_stat
             ani 2
-            jz RXWCONS              ; loop while rx empty
+            jz RXWCONS_RTS          ; loop while rx empty
+            rts_off
             in cons_rhr             ; read character
             mov b,a                 ; save character in B
 TXWCONS1:   in cons_stat
@@ -83,10 +103,12 @@ TXWCONS1:   in cons_stat
 ; CINP8251: Read Console but do not echo
 ;-----------------------------------------------------------------------------------------
         
-CINP8251NE:  
+CINP8251NE:
+RXWCONS1_RTS: rts_on
 RXWCONS1:   in cons_stat
             ani 2
-            jz RXWCONS1             ; loop while rx empty
+            jz RXWCONS1_RTS         ; loop while rx empty
+            rts_off
             in cons_rhr             ; read character
 
             ifndef nocinp80
