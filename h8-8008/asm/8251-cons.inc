@@ -80,11 +80,15 @@ TXWCONS:    in cons_stat
 ; CINP8251: Read Console and Echo
 ;-----------------------------------------------------------------------------------------
 
-RXWCONS_RTS: rts_on
 CINP8251:  
+            in cons_stat
+            ani 2
+            jnz CPIN8251_HAVE_CHAR
+            rts_on
 RXWCONS:    in cons_stat
             ani 2
-            jz RXWCONS_RTS          ; loop while rx empty
+            jz RXWCONS             ; loop while rx empty
+CPIN8251_HAVE_CHAR:
             rts_off
             in cons_rhr             ; read character
             mov b,a                 ; save character in B
@@ -104,10 +108,14 @@ TXWCONS1:   in cons_stat
 ;-----------------------------------------------------------------------------------------
         
 CINP8251NE:
-RXWCONS1_RTS: rts_on
+            in cons_stat
+            ani 2
+            jnz CPIN8251NE_HAVE_CHAR
+            rts_on
 RXWCONS1:   in cons_stat
             ani 2
-            jz RXWCONS1_RTS         ; loop while rx empty
+            jz RXWCONS1             ; loop while rx empty
+CPIN8251NE_HAVE_CHAR:
             rts_off
             in cons_rhr             ; read character
 
