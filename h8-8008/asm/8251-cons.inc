@@ -91,6 +91,9 @@ RXWCONS:    in cons_stat
 CPIN8251_HAVE_CHAR:
             rts_off
             in cons_rhr             ; read character
+            ifndef nostriphigh
+            ani 07FH                ; strip high bit, for H9, otherwise we'll echo it
+            endif            
             mov b,a                 ; save character in B
 TXWCONS1:   in cons_stat
             ani 1
@@ -117,7 +120,7 @@ RXWCONS1:   in cons_stat
             jz RXWCONS1             ; loop while rx empty
 CPIN8251NE_HAVE_CHAR:
             rts_off
-            in cons_rhr             ; read character
+            in cons_rhr             ; read character     
 
             ifndef nocinp80
             ori 80h                 ; SCELBAL needs to have the most significant bit set

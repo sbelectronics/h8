@@ -58,6 +58,7 @@ RXPOLL1:   mvi h,hi(msave_H)      ; Point HL at register storage location
            rts_off
 
            in ser_rhr             ; read the character from the 16450
+           do_forceupper
            ifndef nocinp80
            ori 80h                ; SCELBAL needs to have the most significant bit set
            endif

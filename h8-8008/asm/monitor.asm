@@ -352,7 +352,7 @@ bindl:      mvi h,hi(binloadtxt)
             mov h,d                     ; get the start address high byte into H
             mov l,e                     ; get the start address low byte into L
 
-            call getch                  ; get the first byte of the file from the serial port
+            call getch_bin              ; get the first byte of the file from the serial port
             mov m,a                     ; write the first byte to memory
             inr l                       ; increment the low byte of the address pointer
             jnz bindl0                  ; go get next byte
@@ -368,7 +368,7 @@ bindl1:     call CRDY                   ; wait for character
             jnz bindl1
             jmp bfinished               ; the "idle" counter has reached zero (no characters for 3 seconds)
 
-bindl2:     call getch                  ; start bit has been detected, get the byte from the serial port
+bindl2:     call getch_bin              ; start bit has been detected, get the byte from the serial port
             mov m,a                     ; write the byte to memory
             inr l                       ; increment the low byte of the address pointer
             jnz bindl0                  ; go back for the next byte
@@ -1226,9 +1226,16 @@ getche:     mov e,b            ; save B
             CALL CINP          ; bitbang does not take kindly to calling CPRINT separately
             else
             call CINPNE
+            ani 07FH           ; strip high bit, for H9, otherwise we'll echo it
+
+            ifdef nocr
+            cpi 00DH
+            jz getche_so
+            endif
+
             call CPRINT
             endif
-            mov b,e
+getche_so:  mov b,e
             ret
 
 ;-----------------------------------------------------------------------------------------
@@ -1238,10 +1245,16 @@ getche:     mov e,b            ; save B
 ; for 2400 bps, each bit should be 104 cycles
 ;-----------------------------------------------------------------------------------------
 
-getch:      mov e,b             ; save B
+getch:      mov e,b            ; save B
             call CINPNE
+            ani 07FH           ; strip high bit, for H9, otherwise we'll echo it
             mov b,e
-            ret        
+            ret
+
+getch_bin:  mov e,b            ; save B
+            call CINPNE        ; do not strip the high bit here
+            mov b,e
+            ret
             
 titletxt:   db  "\r\n\r\n"
             db  "Serial Monitor for Intel 8008 H8 CPU Board V2.0\r\n"
