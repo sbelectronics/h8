@@ -15,8 +15,8 @@
 #define PIN_D7 11
 #define PIN_RXF 12
 #define PIN_TXE 13
-#define PIN_RCLR 16
-#define PIN_WCLR 17
+#define PIN_RCLR 24
+#define PIN_WCLR 25
 #define PIN_WRPI 18
 #define PIN_RDPI 19
 #define PIN_RXFD 20

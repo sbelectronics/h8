@@ -11,7 +11,7 @@ partno x;
 date 1/1/1980;
 designer smbaker;
 company sbsoftware;
-revision 1;
+revision 2;
 assembly x;
 location x;
 
@@ -30,8 +30,8 @@ PIN 12 = GND;
 PIN 13 = !SEREN;
 PIN 14 = !SER350;
 PIN 15 = !SERCS;
-PIN 16 = !DEBUG1;
-PIN 17 = NC2;
+PIN 16 = !CONCS;
+PIN 17 = !CONEN;
 PIN 18 = VDIP_WR2;
 PIN 19 = !VDIP_STATUS;
 PIN 20 = DBTX;
@@ -41,6 +41,7 @@ PIN 23 = !VDIP_WR1;
 
 FIELD ALO = [A7..A0];
 
+$DEFINE ADDR372_373   'b'1111101X
 $DEFINE ADDR350   'b'11101XXX
 $DEFINE ADDR340   'b'11100XXX
 
@@ -58,10 +59,11 @@ VDIP_WR2 = VDIP_WR;
 VDIP_RD1 = VDIP_RD;
 VDIP_STATUS = VDIP_RDSTAT;
 
-DEBUG1 = IOW & SEREN & (((ALO:ADDR350) & SER350) # ((ALO:ADDR340) & !SER350));
+CONADDR = CONEN & (ALO:ADDR372_373);
+CONCS = CONADDR;
 
 /* DBDIR should be low on a write, high on a read */
 
 DBEN = 'b'1;
-DBTX = (IOR & SERADDR) # VDIP_RD # VDIP_RDSTAT;
+DBTX = (IOR & SERADDR) # (IOR & CONADDR) # VDIP_RD # VDIP_RDSTAT;
 
