@@ -9,6 +9,7 @@ all: scelbal-16450.bin monitor-16450.bin calc-16450.bin shooter-16450.bin galaxy
 	 scelbal-8251.bin monitor-8251.bin calc-8251.bin shooter-8251.bin galaxy-8251.bin pi-100-digits-8251.bin pi-1000-digits-8251.bin \
 	 scelbal-16450-isr.bin monitor-16450-isr.bin \
 	 scelbal-16450-h9term.bin monitor-16450-h9term.bin galaxy-16450-h9term.bin \
+	 monitor-8251-sbcfp.bin \
 	 load-trek.bin load-40h.bin
 
 #------- 16450 ----------
@@ -62,9 +63,19 @@ monitor-16450-h9term.bin: $(INCDEPS) monitor.asm
 	$(P2BIN) monitor-16450-h9term.p monitor-16450-h9term.bin
 
 galaxy-16450-h9term.bin: $(INCDEPTS) galaxy.asm
-	$(ASL) -i $(INC) -cpu 8008 -L galaxy.asm -o galaxy-16450-h9term.p -D ser16450 -D forcecupper -D baud600
+	$(ASL) -i $(INC) -cpu 8008 -L galaxy.asm -o galaxy-16450-h9term.p -D ser16450 -D forceupper -D baud600
 	$(P2BIN) galaxy-16450-h9term.p galaxy-16450-h9term.bin
 	$(P2HEX) galaxy-16450-h9term.p galaxy-16450-h9term.hex
+
+#------- 16450 - sbcfp ----------
+
+#monitor-16450-sbcfp.bin: $(INCDEPS) monitor.asm
+#	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-16450-sbcfp.p -D nocinp80 -D sbcfp -D frontpanel
+#	$(P2BIN) monitor-16450-sbcfp.p monitor-16450-sbcfp.bin
+
+monitor-8251-sbcfp.bin: $(INCDEPS) monitor.asm
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp.p -D nocinp80 -D sbcfp -D fp8251
+	$(P2BIN) monitor-8251-sbcfp.p monitor-8251-sbcfp.bin
 
 #------- 16450-fp-isr ----------
 

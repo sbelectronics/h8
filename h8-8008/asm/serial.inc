@@ -27,7 +27,11 @@ EMPTYFUNC:  ret
             include "fpanelvar.inc"
             include "16450.inc"
             include "fpanpoll-16450.inc"
+            ifdef sbcfp
+            include "fpanel-sbc.inc"
+            else
             include "fpanel.inc"
+            endif
 SINIT:      equ SINIT450
             ifndef nocinp
 CINP:       equ CINP450
@@ -123,4 +127,26 @@ CRDY:       equ CRDY8251
 FPANINIT:   equ EMPTYFUNC
 FPDISABLE:  equ EMPTYFUNC
 FPENABLE:   equ EMPTYFUNC
+            endif
+
+;; front panel with 8251 console
+
+            ifdef fp8251
+            include "fpanelvar.inc"
+            include "8251-cons.inc"
+            include "fpanpoll-8251.inc"
+            ifdef sbcfp
+            include "fpanel-sbc.inc"
+            else
+            include "fpanel.inc"
+            endif
+SINIT:      equ SINIT8251
+            ifndef nocinp
+CINP:       equ CINP8251
+            endif
+            ifndef nocinpne
+CINPNE:     equ FCINP8251
+            endif
+CPRINT:     equ CPRINT8251
+CRDY:       equ CRDY8251
             endif
