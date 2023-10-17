@@ -18,8 +18,10 @@ stack_pop:  equ h8_in7
 ; INITTAPE: initialize tape
 ;-----------------------------------------------------------------------------------------
 
-STACKINIT:  mvi a,h8_stack          ; configure IO mapper
+STACKINIT:  ifndef noiomap
+            mvi a,h8_stack          ; configure IO mapper
             out mm_io7
+            endif
             ret
 
             endif                ; incstack
