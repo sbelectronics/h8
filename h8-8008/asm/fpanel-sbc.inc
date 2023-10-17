@@ -69,6 +69,10 @@ stateAlt3  equ 022H
 stateAltO  equ 023H
 maskAlt    equ 020H
 
+bitDig8Enable equ 010H
+bitDig9Enable equ 020H
+bitFpEnable equ 080H
+
 FPANINIT:
            mvi h,hi(maddr)      ; Put the address of mcounter into maddr
            mvi l,lo(maddr)
@@ -96,18 +100,20 @@ FPANINIT:
            mvi l,lo(m_state)
            mvi m,stateDisp
 
-           mvi a,0F7H
+           jmp FPENABLE
+
+FPDISABLE: mvi a, 000H
            out fpblank0
-
-           mvi a,030H
+           mvi a, 000H
+           out fpdot0
+           mvi a, 000H
            out fpdotblk8
-
            ret
 
-FPDISABLE:
-           ret
-
-FPENABLE:
+FPENABLE:  mvi a,0F7H
+           out fpblank0 
+           mvi a, bitDig8Enable | bitDig9Enable | bitFpEnable
+           out fpdotblk8
            ret
 
 ;--------------------------------------------------------------------------------
@@ -116,7 +122,8 @@ FPENABLE:
 ; We fall through from the serial input function above.
 ;--------------------------------------------------------------------------------
         
-FPANSVC:
+FPANSVC:   in fp_kbd              ; this will reset the interrupt
+
            ;; update mcounter and do heavy lifting at the tail
            ;; this may cause us to take longer than refresh interval
            ;; ... and would cause display artifacts if done earlier
@@ -216,7 +223,7 @@ FPANUPR:   ;; update the value octal group
            rlc                    ; rotate around circular
            rlc
            ani 003H               ; A has bits 7,6 shifted into lower nibble
-           out dig67              ; output 0 0 0 0 0 0 l7 l6
+           out dig23              ; output 0 0 0 0 0 0 l7 l6
 
            mov a,b
            rlc
@@ -226,7 +233,7 @@ FPANUPR:   ;; update the value octal group
            mov a,b
            ani 07H               ; A has bits 2,1,0 in lower nibble
            ora c
-           out dig45             ; output 0 l5 l4 l3 0 l2 l1 l0
+           out dig01             ; output 0 l5 l4 l3 0 l2 l1 l0
 
            jmp FPANRET
 

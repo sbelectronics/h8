@@ -496,6 +496,7 @@ hexbyte:    call getche             ; get the first character and echo it
 rombasic:   mvi h,hi(rombastxt)
             mvi l,lo(rombastxt)
             call puts
+            call FPDISABLE
             jmp go_rom1
 
 ;------------------------------------------------------------------------
@@ -511,6 +512,7 @@ switch:     mvi h,hi(switchtxt)
             mvi h,hi(loadingtxt)
             mvi l,lo(loadingtxt)
             call puts
+            call FPDISABLE
             mov a,b                     ; restore character
             call ascii2hex              ; convert character to number
             cpi 00H
@@ -524,6 +526,7 @@ switch:     mvi h,hi(switchtxt)
             mvi h,hi(badbanktxt)
             mvi l,lo(badbanktxt)
             call puts
+            call FPENABLE
             jmp prompt
             
 ;------------------------------------------------------------------------

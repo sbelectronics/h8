@@ -74,7 +74,7 @@ galaxy-16450-h9term.bin: $(INCDEPTS) galaxy.asm
 #	$(P2BIN) monitor-16450-sbcfp.p monitor-16450-sbcfp.bin
 
 monitor-8251-sbcfp.bin: $(INCDEPS) monitor.asm
-	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp.p -D nocinp80 -D sbcfp -D fp8251
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap
 	$(P2BIN) monitor-8251-sbcfp.p monitor-8251-sbcfp.bin
 
 #------- 16450-fp-isr ----------
