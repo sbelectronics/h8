@@ -83,24 +83,21 @@ TXWCONS:    in cons_stat
 ;-----------------------------------------------------------------------------------------
 
 CINP8251:  
-            in cons_stat
+TXWCONS0:   in cons_stat
+            ani 1
+            jz TXWCONS0             ; don't receive while the TXH is busy
             ani 2
             jnz CPIN8251_HAVE_CHAR
             rts_on
 RXWCONS:    in cons_stat
             ani 2
-            jz RXWCONS             ; loop while rx empty
+            jz RXWCONS              ; loop while rx empty
 CPIN8251_HAVE_CHAR:
             rts_off
             in cons_rhr             ; read character
             ifndef nostriphigh
             ani 07FH                ; strip high bit, for H9, otherwise we'll echo it
             endif            
-            mov b,a                 ; save character in B
-TXWCONS1:   in cons_stat
-            ani 1
-            jz TXWCONS1             ; loop while tx busy
-            mov a,b                 ; restore character from B
             out cons_thr            ; echo it
 
             ifndef nocinp80
@@ -113,7 +110,9 @@ TXWCONS1:   in cons_stat
 ;-----------------------------------------------------------------------------------------
         
 CINP8251NE:
-            in cons_stat
+TXWCONS2:   in cons_stat
+            ani 1
+            jz TXWCONS2             ; don't receive while the TXH is busy
             ani 2
             jnz CPIN8251NE_HAVE_CHAR
             rts_on
