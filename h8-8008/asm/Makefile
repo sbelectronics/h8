@@ -4,9 +4,9 @@ P2HEX=/usr/local/bin/p2hex
 INC=/home/smbaker/projects/pi/h8/h8-8008/as/include
 INCDEPS=16450.inc 8251-cons.inc 8251-tape.inc bbser.inc fpanel.inc fpanelvar.inc go-rom.inc h8.inc serial.inc fpanisr.inc
 
-all: scelbal-16450.bin monitor-16450.bin calc-16450.bin shooter-16450.bin galaxy-16450.bin pi-100-digits-16450.bin pi-1000-digits-16450.bin \
-     scelbal-bitbang.bin monitor-bitbang.bin calc-bitbang.bin shooter-bitbang.bin galaxy-bitbang.bin pi-100-digits-bitbang.bin pi-1000-digits-bitbang.bin \
-	 scelbal-8251.bin monitor-8251.bin calc-8251.bin shooter-8251.bin galaxy-8251.bin pi-100-digits-8251.bin pi-1000-digits-8251.bin \
+all: scelbal-16450.bin monitor-16450.bin calc-16450.bin shooter-16450.bin galaxy-16450.bin pi-100-digits-16450.bin pi-1000-digits-16450.bin hangman-16450.bin \
+     scelbal-bitbang.bin monitor-bitbang.bin calc-bitbang.bin shooter-bitbang.bin galaxy-bitbang.bin pi-100-digits-bitbang.bin pi-1000-digits-bitbang.bin hangman-bitbang.bin \
+	 scelbal-8251.bin monitor-8251.bin calc-8251.bin shooter-8251.bin galaxy-8251.bin pi-100-digits-8251.bin pi-1000-digits-8251.bin hangman-8251.bin \
 	 scelbal-16450-isr.bin monitor-16450-isr.bin \
 	 scelbal-16450-h9term.bin monitor-16450-h9term.bin galaxy-16450-h9term.bin \
 	 monitor-8251-sbcfp.bin \
@@ -74,7 +74,7 @@ galaxy-16450-h9term.bin: $(INCDEPTS) galaxy.asm
 #	$(P2BIN) monitor-16450-sbcfp.p monitor-16450-sbcfp.bin
 
 monitor-8251-sbcfp.bin: $(INCDEPS) monitor.asm
-	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap -D sound
 	$(P2BIN) monitor-8251-sbcfp.p monitor-8251-sbcfp.bin
 
 #------- 16450-fp-isr ----------

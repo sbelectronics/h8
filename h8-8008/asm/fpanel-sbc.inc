@@ -26,7 +26,7 @@ fpdot0     equ 01DH
 fpblank0   equ 01EH
 fpdotblk8  equ 01FH
 
-sc0        equ 0FEH ; 11111110 ! 0
+_sc0       equ 0FEH ; 11111110 ! 0
 sc1        equ 0FCH ; 11111100 ! 1
 sc2        equ 0FAH ; 11111010 ! 2
 sc3        equ 0F8H ; 11111000 ! 3
@@ -39,10 +39,16 @@ sc9        equ 0CFH ; 11001111 ! 9
 scA        equ 0AFH ; 10101111 ! A, minus
 scB        equ 08FH ; 10001111 ! B, plus
 scC        equ 06FH ; 01101111 ! C
-scD        equ 04FH ; 01001111 ! D
-scE        equ 02FH ; 00101111 ! E
-scF        equ 00FH ; 00001111 ! F
+_scD       equ 04FH ; 01001111 ! D
+_scE       equ 02FH ; 00101111 ! E
+_scF       equ 00FH ; 00001111 ! F
 scG        equ 02EH ; 00101110 ! 0 + E
+
+; I messed up the placement on the frontpanel boards
+sc0        equ _scD
+scD        equ _scE
+scE        equ _scF
+scF        equ _sc0
 
 scPlus     equ scA
 scMinus    equ scB
@@ -167,7 +173,7 @@ FPANUPL:   ;; update the address octal group
            mov a,b
            rrc
            rrc
-           ani 060H
+           ani 030H
            mov c,a                ; C has bits 7,6 shifted into upper nibble
 
            mov a,b                ; value into a

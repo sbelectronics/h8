@@ -42,10 +42,15 @@ RETURN      equ 0DH
 
             include "go-rom.inc"
             
-rom_start:  call SINIT
+rom_start:  
+            ifdef SOUND
+            call SNDINIT
+            endif
+
+            call SINIT
             call FPANINIT
             call STACKINIT
-
+            
             xra a
             out 09H                     ; turn off orange LEDs
             
@@ -497,7 +502,8 @@ rombasic:   mvi h,hi(rombastxt)
             mvi l,lo(rombastxt)
             call puts
             call FPDISABLE
-            jmp go_rom1
+            mvi a, 1H
+            jmp go_rom
 
 ;------------------------------------------------------------------------
 ; switch banks to arbitrary bank number and jump to rom
@@ -515,19 +521,7 @@ switch:     mvi h,hi(switchtxt)
             call FPDISABLE
             mov a,b                     ; restore character
             call ascii2hex              ; convert character to number
-            cpi 00H
-            jz go_rom0
-            cpi 01H
-            jz go_rom1
-            cpi 02H
-            jz go_rom2
-            cpi 03H
-            jz go_rom3
-            mvi h,hi(badbanktxt)
-            mvi l,lo(badbanktxt)
-            call puts
-            call FPENABLE
-            jmp prompt
+            jmp go_rom
             
 ;------------------------------------------------------------------------
 ; go to a memory address
@@ -1207,6 +1201,14 @@ puts:       mov a,m
 
             include "serial.inc"
             include "stack.inc"
+
+;------------------------------------------------------------------------        
+; For SBC, include the sound library
+;------------------------------------------------------------------------
+
+            ifdef sound
+            include "sound.inc"
+            endif
 
 ;------------------------------------------------------------------------        
 ; sends the character in A out from the serial port at 2400 bps.

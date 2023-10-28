@@ -3786,9 +3786,6 @@ DIMERR:    LAI 304                ;On error condition, load ASCII code for lette
 
 ; user defined functions:
 ; UDF is a math function like: INT, SGN, ABS, SQR, TAB, RND or CHR;
-; therefore, the syntax is:
-; A=UDF(1) turns the red LED on
-; A=UDF(0) turns the red LED off
 
            cpu 8008new             ; use "new" 8008 mnemonics
            radix 10
@@ -3798,7 +3795,7 @@ UDEFX:	   ret
 LEDX:      call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
            mvi l,lo(pg0FPACC_LSB) ; load L with the address of the LSW of the fixed point value  
            mov a,m                ; fetch the byte into the accumulator
-           out 09h                ; odd arguments for UDF turn the red LED on, even arguments turn the red LED off
+           out 08h                ; send value to LED port
            ret
 
 PEEKX:     call FPFIX             ; convert the contents of FPACC from floating point to fixed point  
