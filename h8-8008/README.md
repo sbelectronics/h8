@@ -120,10 +120,8 @@ using a TL866II+ or similar programmer.
 
 * pld/io. required. goes in the IO socket.
 
-* pld/intpoll. required. goes in the INTREG socket.
+* pld/intreg. required if using front panel or interrupts.
 
-* pld/intreg. not used.
+* pld/intcon. required if using front panel or interrupts.
 
-* pld/intcon. not used.
-
-Make sure to place the INTPOLL PLD into the INTREG socket on the board. Do not use the INTREG PLD. Leave the INTCON socket empty.
+Using INTCON empty was supported in older versions of the board, but is not supported in current versions, as INTCON generates the polling signal for INTREG.
