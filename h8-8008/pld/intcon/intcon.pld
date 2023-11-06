@@ -9,30 +9,49 @@ Assembly 8008 H8 CPU BOARD;
 Device G22V10;
 
 /* Inputs: */
-Pin 1 = SYNC;
+Pin 1 = !IOWR;
 Pin 2 = !INTREQ;
 Pin 3 = !INTACK;
 Pin 4 = NC2;
 Pin 5 = POR;
 Pin 6 = !RESET;
 Pin 7 = !CMEMRD;
-Pin 8 = NC3;       /* OUTEI on the 0.22 schematic */
-Pin 9 = NC4;       /* OUTDI on the 0.22 schematic */
-Pin 10 = !OUTEI;   /* OUTFPEI on the 0.22 schematic */
-Pin 11 = !OUTDI;   /* OUTFPDI on the 0.22 schematic */
-Pin 13 = !M1;
+Pin 8 = A9;
+Pin 9 = A10;
+Pin 10 = A11;
+Pin 11 = A12;
+Pin 13 = A13;
 
 /* Outputs:   */
 Pin 23 = CPUINT;
 Pin 22 = !MEMRD;
 Pin 21 = !INTJAM;
-Pin 20 = !FPIE;
-Pin 19 = NC10;
-Pin 18 = NC11;
+Pin 20 = !INTREAD;
+Pin 19 = !IORD;
+Pin 18 = !FPIE;
 Pin 17 = NC12;
 Pin 16 = WAITMEM;  /* temporary */
 Pin 15 = ISERV;    /* temporary */
 Pin 14 = IES;      /* temporary */
+
+/* Input/Output logic: */
+in0  = !A13 & !A12;
+out0 = !A13 &  A12;
+out1 =  A13 & !A12;
+out2 =  A13 &  A12;
+
+device0 = !A11 & !A10 & !A9;
+device1 = !A11 & !A10 &  A9;
+device2 = !A11 &  A10 & !A9;
+device3 = !A11 &  A10 &  A9;
+device4 =  A11 & !A10 & !A9;
+device5 =  A11 & !A10 &  A9;
+device6 =  A11 &  A10 & !A9;
+device7 =  A11 &  A10 &  A9;
+
+OUTEI = (IOWR & out0 & device2);
+
+OUTDI = (IOWR & out0 & device3);
 
 IES = (IES & !RESET & !OUTDI & !INTACK) # (OUTEI & !RESET);     /* interrupts are disabled on reset, during intack, and on OUTDI. interrupts are enabled on OUTEI. */
 
@@ -45,5 +64,7 @@ CPUINT = POR # (IES & INTREQ);                                  /* interrupt CPU
 MEMRD = CMEMRD & !ISERV;                                        /* MEMRD when commanded and not servicing */
 
 INTJAM = CMEMRD & ISERV;                                        /* INTJAM when commanded and servicing */
+
+INTREAD = IORD & in0 & device1;
 
 FPIE = IES;

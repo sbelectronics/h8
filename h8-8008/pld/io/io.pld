@@ -26,12 +26,12 @@ Pin 13 = NC3;
 
 /* Outputs:  */
 Pin 23 = !H8IOW;
-Pin 22 = !INPMUX;
-Pin 21 = !OUTMUX;
+Pin 22 = !OUTP0;
+Pin 21 = !INP0;
 Pin 20 = !OUTMMAP;
 Pin 19 = START;
 Pin 18 = !OUTIOMMMUX;
-Pin 17 = !ROMCS_OUT;
+Pin 17 = NC4;
 Pin 16 = !RAMCS;
 Pin 15 = !H8OUT;
 Pin 14 = !H8IOR;
@@ -51,8 +51,11 @@ device5 =  A11 & !A10 &  A9;
 device6 =  A11 &  A10 & !A9;
 device7 =  A11 &  A10 &  A9;
 
-INPMUX = in0 & (device0 # device1) & IORD;           /* Input ports 0-1            */
-OUTMUX = out0 & IOWR;                                /* Output ports 8-15 (group0) */
+OUTP0 = out0 & device0 & IOWR;
+INP0 = in0 & device0 & IORD;
+
+INP1 = in0 & device1 & IORD; /* not assigned to any pin -- computed separately in intcon */
+
 OUTMMAP = out0 & 
           (device4 # device5 # device6 # device7) &
           IOWR;                                      /* these overlap with outmux ports 4-7 */
@@ -61,7 +64,7 @@ OUTIOMMMUX = out2 & IOWR;                            /* all of Output ports 24-3
 H8IOR = in0 & (!device0) & (!device1) & IORD;        /* IORD to H8 bus: all ports except 0 and 1 */
 H8IOW = out1 & IOWR;                                 /* IOW to H8 bus: ports 16-23 (group 1) */
 
-H8OUT = !H8IOR;                                      /* H8 direction - always OUT unless we're doing IORD */
+H8OUT = !H8IOR;                                      /* H8 direction - always OUT unless we're doing H8IOR */
 
 /* simulated SR flip-flop made up of cross-connected NAND gates.
  * the flip-flop is set when the reset signal from the DS1233 goes low
@@ -76,8 +79,7 @@ H8OUT = !H8IOR;                                      /* H8 direction - always OU
  * bank switcher until you've set the bank registers.
  */
 
-START = RESET # (START & !INPMUX);
+START = RESET # (START & !INP1);
 
 /* Memory   */
-ROMCS_OUT =  A13 #  START;  /* 2000-3FFFH. In case memory mapper is not used  */
 RAMCS = !ROMCS_IN;          /* allow the memory mapper to determine ROM/RAM   */

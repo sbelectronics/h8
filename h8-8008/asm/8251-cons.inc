@@ -31,6 +31,17 @@ rts_off     macro
             endif
             endm
 
+do_forceupper macro
+            ifdef forceupper
+            cpi 61H
+            jm notupper
+            cpi 7CH
+            jp notupper
+            ani 0DFH                ; remove uppercase bit
+notupper:
+            endif
+            endm
+
 ;-----------------------------------------------------------------------------------------       
 ; INITTAPE: initialize tape
 ;-----------------------------------------------------------------------------------------
@@ -69,6 +80,14 @@ sinit8251w: dcr b                   ; on my ftdi cable. Wait a while before we s
 ;-----------------------------------------------------------------------------------------
 
 CPRINT8251: ani 7fh                 ; mask off the most significant bit of the character
+
+            ifdef nocr
+            cpi 00DH
+            rz
+            endif
+
+            do_forceupper
+
             mov b,a                 ; save character to write
 TXWCONS:    in cons_stat
             ani 1
@@ -95,11 +114,24 @@ RXWCONS:    in cons_stat
 CPIN8251_HAVE_CHAR:
             rts_off
             in cons_rhr             ; read character
+       
+            ; ----- most of this is for the H9
+            
             ifndef nostriphigh
             ani 07FH                ; strip high bit, for H9, otherwise we'll echo it
-            endif            
-            out cons_thr            ; echo it
+            endif
 
+            ifdef nocr
+            cpi 00DH
+            jz CINP8251SO
+            endif
+
+            do_forceupper
+
+            ; ------ end of H9 stuff
+
+            out cons_thr            ; echo it
+CINP8251SO:
             ifndef nocinp80
             ori 80h                 ; SCELBAL needs to have the most significant bit set
             endif
@@ -122,7 +154,7 @@ RXWCONS1:   in cons_stat
 CPIN8251NE_HAVE_CHAR:
             rts_off
             in cons_rhr             ; read character     
-
+            do_forceupper
             ifndef nocinp80
             ori 80h                 ; SCELBAL needs to have the most significant bit set
             endif

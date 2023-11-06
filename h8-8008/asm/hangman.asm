@@ -26,6 +26,9 @@
         CPU 8008
         RADIX 8
 
+        org 0h
+        db 0            ; SMBAKER put something at address 0h so .BIN file starts at 0
+
         ORG (2*400)+000        
 START:  CAL SINIT
         LHI 003

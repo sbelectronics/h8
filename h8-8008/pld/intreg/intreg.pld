@@ -34,7 +34,7 @@ Pin 18 = D5;
 Pin 17 = D6;
 Pin 16 = D7;
 Pin 15 = !INTREQ;
-Pin 14 = OUTEN;
+Pin 14 = OUTEN;  /* temporary */
 
 FIELD DATA = [D7..D0];
 
