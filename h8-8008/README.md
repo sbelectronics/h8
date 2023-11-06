@@ -124,4 +124,4 @@ using a TL866II+ or similar programmer.
 
 * pld/intcon. required if using front panel or interrupts.
 
-Using INTCON empty was supported in older versions of the board, but is not supported in current versions, as INTCON generates the polling signal for INTREG.
+Leaving INTCON empty was supported in older versions of the board, but is not supported in current versions, as INTCON generates the polling signal for INTREG.
