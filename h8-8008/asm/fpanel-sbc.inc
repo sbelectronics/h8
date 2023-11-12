@@ -79,6 +79,31 @@ bitDig8Enable equ 010H
 bitDig9Enable equ 020H
 bitFpEnable equ 080H
 
+                ifndef TIL311
+
+BL0_DISABLE     equ 000H
+DOT0_DISABLE    equ 000H
+DOTBL8_DISABLE  equ 000H
+
+BL0_ENABLE      equ 0F7H
+DOT0_ALLOFF     equ 000H
+DOTBL8_ENABLE   equ bitDig8Enable | bitDig9Enable | bitFpEnable
+
+                else
+
+                ;; the TIL blanking and dot logic is inverted from the DM9368
+                ;; blanking and dot logic. Bah!
+
+BL0_DISABLE     equ 0FFH
+DOT0_DISABLE    equ 0FFH
+DOTBL8_DISABLE  equ 0FFH
+
+BL0_ENABLE      equ lo(~0F7H)
+DOT0_ALLOFF     equ 0FFH
+DOTBL8_ENABLE   equ lo(~(bitDig8Enable | bitDig9Enable)) | bitFpEnable
+
+                endif
+
 FPANINIT:
            mvi h,hi(maddr)      ; Put the address of mcounter into maddr
            mvi l,lo(maddr)
@@ -108,17 +133,19 @@ FPANINIT:
 
            jmp FPENABLE
 
-FPDISABLE: mvi a, 000H
+FPDISABLE: mvi a, BL0_DISABLE
            out fpblank0
-           mvi a, 000H
+           mvi a, DOT0_DISABLE
            out fpdot0
-           mvi a, 000H
+           mvi a, DOTBL8_DISABLE
            out fpdotblk8
            ret
 
-FPENABLE:  mvi a,0F7H
+FPENABLE:  mvi a, BL0_ENABLE
            out fpblank0 
-           mvi a, bitDig8Enable | bitDig9Enable | bitFpEnable
+           mvi a, DOT0_ALLOFF
+           out fpdot0
+           mvi a, DOTBL8_ENABLE
            out fpdotblk8
            ret
 
