@@ -10,8 +10,8 @@ all: scelbal-16450.bin monitor-16450.bin calc-16450.bin shooter-16450.bin galaxy
 	 scelbal-8251-h9term.bin monitor-8251-h9term.bin calc-8251-h9term.bin shooter-8251-h9term.bin galaxy-8251-h9term.bin pi-100-digits-8251-h9term.bin pi-1000-digits-8251-h9term.bin hangman-8251-h9term.bin \
 	 scelbal-16450-isr.bin monitor-16450-isr.bin \
 	 scelbal-16450-h9term.bin monitor-16450-h9term.bin galaxy-16450-h9term.bin \
-	 monitor-8251-sbcfp.bin \
-	 monitor-8251-sbcfp-h9term.bin \
+	 monitor-8251-sbcfp.bin monitor-8251-sbcfp-til311.bin \
+	 monitor-8251-sbcfp-h9term.bin monitor-8251-sbcfp-til311-h9term.bin \
 	 load-trek.bin load-40h.bin load-200h.bin
 
 #------- 16450 ----------
@@ -79,9 +79,17 @@ monitor-8251-sbcfp.bin: $(INCDEPS) monitor.asm
 	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap -D sound
 	$(P2BIN) monitor-8251-sbcfp.p monitor-8251-sbcfp.bin
 
+monitor-8251-sbcfp-til311.bin: $(INCDEPS) monitor.asm
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp-til311.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap -D sound -D TIL311
+	$(P2BIN) monitor-8251-sbcfp-til311.p monitor-8251-sbcfp-til311.bin
+
 monitor-8251-sbcfp-h9term.bin: $(INCDEPS) monitor.asm
 	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp-h9term.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap -D sound -D forceupper
-	$(P2BIN) monitor-8251-sbcfp-h9term.p monitor-8251-sbcfp-h9term.bin	
+	$(P2BIN) monitor-8251-sbcfp-h9term.p monitor-8251-sbcfp-h9term.bin
+
+monitor-8251-sbcfp-til311-h9term.bin: $(INCDEPS) monitor.asm
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp-til311-h9term.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap -D sound -D forceupper -D TIL311
+	$(P2BIN) monitor-8251-sbcfp-til311-h9term.p monitor-8251-sbcfp-til311-h9term.bin	
 
 #------- 16450-fp-isr ----------
 

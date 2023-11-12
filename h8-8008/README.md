@@ -28,8 +28,8 @@ This project was heavily influenced by the following:
 |   JP4  |          | Present | Enables power to DC/DC converter. Do not use if using 7909 regulator! |
 |   JP5  |    1-2   |     X   | MEMRD controlled by INTCON PLD |
 |        |    2-3   |         | MEMRD directly controlled via bus PLD |
-|   JP10 |    1-2   |     X   | RC2014-A8 is A12 |
-|        |    2-3   |         | RC2014-A8 is GND |
+|   JP10 |    1-2   |     X   | Use 2MHz Oscillator as H8 bus clock |
+|        |    2-3   |         | Use CPU clock as H8 bus clock |
 |   JP11 |    1-2   |     X   | Power-on CPUINT controlled by INTCON PLD |
 |        |    2-3   |         | INTCON PLD bypassed, CPUINT directly controlled by POR |
 |   JP12 |    1-2   |         | Clock to H8 bus is not inverted |
