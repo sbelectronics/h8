@@ -43,7 +43,7 @@ void _short_delay(void)
     //   400 nops = 1332ns
     //   gpioDelay(1) == 2189ns
 
-    for (j=0; j<20; j++) { 
+    for (j=0; j<100; j++) { 
         asm("nop");
     }
 }

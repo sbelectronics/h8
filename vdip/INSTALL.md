@@ -19,5 +19,12 @@ sudo apt install python3-dev
 sudo apt-get install python3-pip
 sudo pip3 install RPi.GPIO
 
+# install pigpio
+wget https://github.com/joan2937/pigpio/archive/master.zip -O pigpio.zip
+unzip pigpio.zip
+cd pigpio-master
+make
+sudo make install
+
 # make the library and extension
 make smbvdip
