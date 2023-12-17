@@ -105,11 +105,18 @@ mon_keydown:
 	ret
 
 mon_init:
+	push	ds
+	mov	ax, h8_data_seg
+	mov	ds, ax
+
 	mov	ax, ds
 	mov	[mon_seg], ax
 	mov	word [mon_addr], h8_count
 	mov	byte [mon_reg_index], 0
-	jmp	go_state_mem_display			; this will set mon_state
+	call	go_state_mem_display			; this will set mon_state
+
+	pop	ds
+	ret
 
 go_state_mem_display:
     	mov	byte [h8_dots], 0

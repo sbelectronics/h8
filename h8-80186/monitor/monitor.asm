@@ -24,25 +24,17 @@ start:
 	call	h8_display_init
 	call	mon_init
 
-	;; load some test data
-	mov	al, 0o012
-	call	h8_set_octal_l
-	mov	al, 0o343
-	call	h8_set_octal_m
-	mov	al, 0o210
-	call	h8_set_octal_r
-
 	call 	install_int
-	call	enable_int
-	call	enable_fp
+	call	h8_enable_int
+	call	h8_enable_fp
 
 	;;jmp	test_tf
 
 	mov	dx, exit
 	call	writeStr
 	call	readKey
-	call	disable_fp
-	call	disable_int
+	call	h8_disable_fp
+	call	h8_disable_int
 	call	restore_int
 	int	20h
 
@@ -61,7 +53,7 @@ install_int:
 	mov	word [old_int_ofs], ax
 	mov 	bl,0Ch			; vector for INT0
 	mov	dx,cs			; segment of handler is our code seg
-	mov	ax,fpanint		; offset of handler
+	mov	ax,h8_fpanint		; offset of handler
 	call	set_vector		; set vector to DX:AX
 	ret
 
@@ -71,53 +63,6 @@ restore_int:
 	mov	ax, word [old_int_ofs]
 	call 	set_vector
 	ret
-
-enable_int:
-	mov	dx,PIC_I0CON	; Int 1 control register
-	in	ax,dx
-	and	ax,~08h		; clear the mask bit
-	out	dx,ax
-	ret
-
-disable_int:
-	mov	dx,PIC_I0CON	; Int 1 control register
-	in	ax,dx
-	or	ax,08h		; set the mask bit
-	out	dx,ax
-	ret
-
-enable_fp:
-	mov	dx,DIGSEL
-	mov	al,0b11100000
-	out	dx,al
-	ret
-
-disable_fp:
-	mov	DX,DIGSEL
-	mov	al,0b10000000
-	out	dx,al
-	ret
-
-fpanint:
-        pushm   ax,bx,cx,dx,ds
-	mov	ax,cs
-	mov	ds,ax
-	mov	ax,sp
-	mov	[mon_tf_addr], ax
-	call	h8_display_hook
-	popm	ax,bx,cx,dx,ds
-	jmp	end_of_interrupt
-
-;------------------------------------------------------------------------------
-; end_of_interrupt
-
-end_of_interrupt:
-        pushm   ax,dx
-        mov     dx,PIC_EOI              ; EOI register
-        mov     ax,EOI_NSPEC            ; non-specific end of interrupt
-        out     dx,ax                   ; signal it
-        popm    ax,dx
-	iret
 
 	; read a key and return in AL. Destroys AX.
 readKey:
@@ -141,7 +86,7 @@ exit    db	'Press any key to exit', 0x0d, 0x0a, '$'
 old_int_seg	dw	0
 old_int_ofs	dw	0
 
-
+%include	"h8int.asm"
 %include        "h8display.asm"
 %include 	"h8mon.asm"
 %include	"h8data.asm"

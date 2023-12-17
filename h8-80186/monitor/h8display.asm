@@ -10,6 +10,10 @@ DIGVAL  equ 0x4F1
 section .text
 
 h8_display_init:
+	push	ds
+	mov	ax, h8_data_seg
+	mov	ds, ax
+
 	mov	byte [digindex], 1
 	mov	byte [h8_break], 0
 	mov	byte [h8_radix], 0
@@ -18,6 +22,15 @@ h8_display_init:
 	mov	byte [h8_digsel_or], 0b11010000
 	mov	byte [key_last], 0xFF
 	mov	byte [key_same_count], 0
+
+	mov	al, 0o012
+	call	h8_set_octal_l
+	mov	al, 0o343
+	call	h8_set_octal_m
+	mov	al, 0o210
+	call	h8_set_octal_r	
+
+	pop	ds
 	ret
 
 ;------------------------------------------------------------------------------

@@ -1,4 +1,7 @@
-	section .bss
+;;	section .bss
+	absolute 0xD0
+
+h8_data_seg	equ	0x40	; put it in the BIOS Data Area (BDA)
 
 h8_count:	
 	resb	2
@@ -63,4 +66,5 @@ mon_addr_hi:
 
 mon_tf_addr:
 	resb	2
+
 
