@@ -1,6 +1,6 @@
 h8_install_int_forever:
 	mov 	bl,0Ch			; vector for INT0
-	mov	dx,cs			; segment of handler is our code seg
+	mov	dx,seg h8_fpanint	; segment of handler is our code seg
 	mov	ax,h8_fpanint		; offset of handler
 	call	set_vector		; set vector to DX:AX
 	ret
@@ -9,6 +9,8 @@ h8_enable_int:
 	mov	dx,PIC_I0CON	; Int 1 control register
 	in	ax,dx
 	and	ax,~08h		; clear the mask bit
+;;	or	ax,~10h		; set the LTM bit
+
 	out	dx,ax
 	ret
 

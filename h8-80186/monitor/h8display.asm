@@ -28,7 +28,7 @@ h8_display_init:
 	mov	al, 0o343
 	call	h8_set_octal_m
 	mov	al, 0o210
-	call	h8_set_octal_r	
+	call	h8_set_octal_r
 
 	pop	ds
 	ret
