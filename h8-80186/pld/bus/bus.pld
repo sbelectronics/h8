@@ -1,0 +1,60 @@
+/* Original by JRCoffman. Modified by smbaker for H8 project */
+
+Name bus;
+Partno G22V10#1;
+Revision;
+Date 09/1/2023;
+Designer Scott Baker;
+Company ;
+Location ;
+Assembly 80198 H8 CPU BOARD;
+Device G22V10;
+
+/* Inputs: */
+Pin 1 = ALE;
+Pin 2 = ST2;
+Pin 3 = ST1;
+Pin 4 = ST0;
+Pin 5 = !DEN;
+Pin 6 = !UCS;
+Pin 7 = !MCS0;
+Pin 8 = !MCS1;
+Pin 9 = !MCS2;
+Pin 10 = !MCS3;
+Pin 11 = !BHE;
+Pin 13 = !BLE;   /* BLE, same as A0 */
+
+/* Outputs:   */
+Pin 23 = NC1;
+Pin 22 = !DHI;
+Pin 21 = !DLO;
+Pin 20 = INTA;
+Pin 19 = !HALT;
+Pin 18 = !M1;
+Pin 17 = !ROMCSH;
+Pin 16 = !ROMCSL;
+Pin 15 = !RAMCSH;
+Pin 14 = !RAMCSL;
+
+MEMOP	=	ST2 & (!ST1 # !ST0) ;
+IDLE	=	ST2 &  ST1  &  ST0  ;
+HALT	=      !ST2 &  ST1  &  ST0  ; 
+IO_OP	=	!ST2 & (!ST1 # !ST0) ;	/* INCLUDES -INTA- */
+INTA	=	!ST2 & !ST1 & !ST0 ;
+
+MCS	=	MCS0 # MCS1 # MCS2 # MCS3 ;
+LCLMREQ =	!ALE & MEMOP ;
+
+CSMEM	=	LCLMREQ;
+
+DHI     =       !ALE & DEN & IO_OP & BHE;
+DLO     =       !ALE & DEN & IO_OP & BLE;
+M1	=	!ST1 & !ST0 ;		/* INTA AND INSTR. FETCH */ 
+
+/* SBC-188 was just ROMCS = UCS */
+
+ROMCSH  =       CSMEM & UCS & BHE;
+ROMCSL  =       CSMEM & UCS & BLE;
+
+RAMCSH  =       CSMEM & (!MCS) & (!UCS) & BHE;
+RAMCSL  =       CSMEM & (!MCS) & (!UCS) & BLE;

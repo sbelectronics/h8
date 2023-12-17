@@ -1,0 +1,65 @@
+/* Original by JRCoffman. Modified by smbaker for H8 project */
+
+Name io;
+Partno G22V10#1;
+Revision;
+Date 09/1/2023;
+Designer Scott Baker;
+Company ;
+Location ;
+Assembly 80186 H8 CPU BOARD;
+Device G22V10;
+
+/* Inputs: */
+Pin 1 = ALE;
+Pin 2 = !PCS4;
+Pin 3 = !PCS5;
+Pin 4 = !PCS6;
+Pin 5 = A6;
+Pin 6 = A5;
+Pin 7 = A4;
+Pin 8 = !WR;
+Pin 9 = !RD;
+Pin 10 = INTA;
+Pin 11 = !PCS0;
+Pin 13 = !PCS1;
+
+/* Outputs:   */
+Pin 23 = !IOREQ_TS;
+Pin 22 = !FIDE_CS;
+Pin 21 = !H8IOW;
+Pin 20 = !H8IOR;
+Pin 19 = !FDC_MCS;
+Pin 18 = !PPORT_CS;
+Pin 17 = !UART_CS;
+Pin 16 = !FIDE_CS0;
+Pin 15 = !FIDE_CS1;
+Pin 14 = !WR_LS259;
+
+AD0	=	!A6 & !A5 & !A4 ; 
+AD1	=	!A6 & !A5 &  A4 ; 
+AD2	=	!A6 &  A5 & !A4 ; 
+AD3	=	!A6 &  A5 &  A4 ; 
+AD4	=	 A6 & !A5 & !A4 ; 
+AD5	=	 A6 & !A5 &  A4 ; 
+AD6	=	 A6 &  A5 & !A4 ; 
+AD7	=	 A6 &  A5 &  A4 ;
+
+FDC	=	PCS4 & !ALE ;
+FIDE	=	PCS5 & !ALE ;
+
+EXTIORQ =	!ALE & (PCS0 # PCS1);   /* Don't think we need this -  # (!ALE & INTA); */
+
+IOREQ_TS =      EXTIORQ;
+H8IOW    =      EXTIORQ & WR;
+H8IOR    =      EXTIORQ & RD;
+
+UART_CS  = FIDE & AD0;
+FIDE_CS  = FIDE & (AD4 # AD5);
+FIDE_CS0 = FIDE & AD4;
+FIDE_CS1 = FIDE & AD5;
+
+FDC_MCS  = FDC & (AD0 # AD1 # AD2 # AD3 # AD4 # AD5);
+PPORT_CS = FDC & AD6;
+WR_LS259  = FDC & AD7 & WR;
+

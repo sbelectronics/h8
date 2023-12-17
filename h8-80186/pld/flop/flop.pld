@@ -1,0 +1,50 @@
+/* Original by JRCoffman. Modified by smbaker for H8 project */
+
+Name flop;
+device g16v8;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+/* Inputs: */
+Pin 1 = !FDC;
+Pin 2 = A6;
+Pin 3 = A5;
+Pin 4 = A4;
+Pin 5 = NC0;
+Pin 6 = NC1;
+Pin 7 = NC2;
+Pin 8 = NC3;
+Pin 9 = NC4;
+Pin 11 = NC5;
+
+/* Outputs:   */
+Pin 19 = FDC_TC;
+Pin 18 = !FDC_CS;
+Pin 17 = !FDC_DACK;
+Pin 16 = !FDC_LDOR;
+Pin 15 = !FDC_LDCR;
+Pin 14 = NCO0;
+Pin 13 = NCO1;
+Pin 12 = NCO2;
+
+AD0	=	!A6 & !A5 & !A4 ; 
+AD1	=	!A6 & !A5 &  A4 ; 
+AD2	=	!A6 &  A5 & !A4 ; 
+AD3	=	!A6 &  A5 &  A4 ; 
+AD4	=	 A6 & !A5 & !A4 ; 
+AD5	=	 A6 & !A5 &  A4 ; 
+AD6	=	 A6 &  A5 & !A4 ; 
+AD7	=	 A6 &  A5 &  A4 ;
+
+FDC_CS	=	FDC & AD0 ;	/* FURTHER QUALIFIED BY A0 */
+FDC_DACK =	FDC & (AD1 # AD5) ;
+FDC_LDOR =	FDC & AD2 ; 
+FDC_LDCR =	FDC & AD3 ;
+FDC_TC	=	FDC & (AD4 # AD5) ; 
+
+NCO2 = NC5;                    /* just to make sure we don't pick some wonky mode for Pin 11 is actually OE */
