@@ -20,11 +20,10 @@ h8_display_hook:
 
 	and	ax, 0x1F
 	jnz	h8_not_upd
-	;; call mon_update
+	call	mon_update
 h8_not_upd:
 	call	h8_multiplex_digit
-	;;jmp	h8_scankey
-	ret
+	jmp	h8_scankey
 
 ;------------------------------------------------------------------------------
 ; h8_multiplex_digit
@@ -74,7 +73,7 @@ next_scancode:
 	jnz	not_this_scancode
 	mov	al, ah
 	dec	al
-	jp	mon_keydown
+	jmp	mon_keydown
 not_this_scancode:
 	dec	bx			; next address
 	dec	ah			; one less to do
@@ -259,6 +258,33 @@ h8_set_octal_r_ret:
 	ret
 
 ;------------------------------------------------------------------------------
+; h8_set_reg_r
+;
+; input:
+;   al = register number
+
+h8_set_reg_r:
+	pushm	ax, bx
+
+	xor 	bh, bh
+	mov	bl, al
+	shl	bx, 2
+
+	mov	ah, [bx + reg_7seg]
+	mov	[h8_digits_r], ah
+
+	inc	bx
+	mov	ah, [bx + reg_7seg]
+	mov	[h8_digits_r+1], ah
+
+	inc 	bx
+	mov	ah, [bx + reg_7seg]
+	mov	[h8_digits_r+2], ah
+
+	popm	ax,bx
+	ret
+
+;------------------------------------------------------------------------------
 ; h8_set_octal_addr
 ;
 ; input:
@@ -336,44 +362,19 @@ digit_7seg:
 reg_7seg:
 reg_7seg_sg:
 	db  0b11111111,  0b10100100, 0b10000101, 0b00000000
-reg_7seg_pc:
-	db  0b11111111,  0b10011000, 0b11001110, 0b00000000
-reg_7seg_ps:
-	db  0b11111111,  0b10011000, 0b10100100, 0b00000000
-reg_7seg_fc:
-	db  0b11111111,  0b10011100, 0b11001110, 0b00000000
-reg_7seg_r0:
-	db  0b11111111,  0b11011110, 0b10000001, 0b00000000
-reg_7seg_r1:
-	db  0b11111111,  0b11011110, 0b11110011, 0b00000000
-reg_7seg_r2:
-	db  0b11111111,  0b11011110, 0b11001000, 0b00000000
-reg_7seg_r3:
-	db  0b11111111,  0b11011110, 0b11100000, 0b00000000
-reg_7seg_r4:
-	db  0b11111111,  0b11011110, 0b10110010, 0b00000000
-reg_7seg_r5:
-	db  0b11111111,  0b11011110, 0b10100100, 0b00000000
-reg_7seg_r6:
-	db  0b11111111,  0b11011110, 0b10000100, 0b00000000
-reg_7seg_r7:
-	db  0b11111111,  0b11011110, 0b11110001, 0b00000000
-reg_7seg_r8:
-	db  0b11111111,  0b11011110, 0b10000000, 0b00000000
-reg_7seg_r9:
-	db  0b11111111,  0b11011110, 0b10100000, 0b00000000
-reg_7seg_r10:
-	db  0b11011110,  0b11110011, 0b10000001, 0b00000000
-reg_7seg_r11:
-	db  0b11011110,  0b11110011, 0b11110011, 0b00000000
-reg_7seg_r12:
-	db  0b11011110,  0b11110011, 0b11001000, 0b00000000
-reg_7seg_r13:
-	db  0b11011110,  0b11110011, 0b11100000, 0b00000000
-reg_7seg_r14:
-	db  0b11011110,  0b11110011, 0b10110010, 0b00000000
-reg_7seg_r15:
-	db  0b11011110,  0b11110011, 0b10100100, 0b00000000
+reg_7seg_cs:
+	db  0b11111111,  0b11001110, 0b10100100, 0b00000000
+reg_7seg_ip:
+	db  0b11111111,  0b11110011, 0b10011000, 0b00000000
+reg_7seg_ax:
+	db  0b11111111,  0b11111111, 0b10010000, 0b00000000
+reg_7seg_bx:
+	db  0b11111111,  0b11111111, 0b10000110, 0b00000000
+reg_7seg_cx:
+	db  0b11111111,  0b11111111, 0b10001101, 0b00000000
+reg_7seg_dx:
+	db  0b11111111,  0b11111111, 0b11000010, 0b00000000
+
 
 scancodes:
 	db 0b11111110 ; 0

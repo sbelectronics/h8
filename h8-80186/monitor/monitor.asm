@@ -31,6 +31,10 @@ start:
 	mov	al, 0o210
 	call	h8_set_octal_r
 
+	call    mon_start
+
+	jmp	test_tf
+
 	mov	dx, exit
 	call	writeStr
 	call	readKey
@@ -38,6 +42,14 @@ start:
 	call	disable_int
 	call	restore_int
 	int	20h
+
+test_tf:
+	mov	ax,1101h
+	mov	bx,2202h
+	mov	cx,3303h
+	mov	dx,4404h
+test_tf_loop:
+	jmp	test_tf_loop
 
 install_int:
 	mov  	bl,0Ch			; vector for INT0
@@ -84,11 +96,13 @@ disable_fp:
 	ret
 
 fpanint:
-        pushm   ax,bx,dx,ds
+        pushm   ax,bx,cx,dx,ds
 	mov	ax,cs
 	mov	ds,ax
+	mov	ax,sp
+	mov	[mon_tf_addr], ax
 	call	h8_display_hook
-	popm	ax,bx,dx,ds
+	popm	ax,bx,cx,dx,ds
 	jmp	end_of_interrupt
 
 ;------------------------------------------------------------------------------
@@ -126,4 +140,5 @@ old_int_ofs	dw	0
 
 
 %include        "h8display.asm"
+%include 	"h8mon.asm"
 %include	"set_vector.asm"

@@ -1,5 +1,5 @@
 monitor.com: monitor.asm
-	nasm monitor.asm -fbin -o monitor.com
+	nasm monitor.asm -fbin -o monitor.com -l monitor.lst
 
 copy:
 	sudo umount /mnt/dos || true
