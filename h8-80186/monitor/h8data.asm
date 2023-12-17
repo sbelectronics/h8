@@ -1,67 +1,66 @@
-	section .data
+	section .bss
 
-h8_count:
-h8_count_lo:	dw	0
-h8_count_hi:	dw	0
+h8_count:	
+	resb	2
 
-digindex:
-	db 	1
+digindex:	
+	resb	1
 h8_digits0:
-	db 	0x00           		; dummy placeholder since first digit starts at 1
-h8_digits:                           	; some non-random gibberish pattern for now
+	resb	1      		; dummy placeholder since first digit starts at 1
+h8_digits:
 h8_digits_l:
-	db 	0x1
-	db 	0x2
-	db 	0x4
+	resb	1
+	resb	1
+	resb	1
 h8_digits_m:
-	db 	0x8
-	db 	0x10
-	db 	0x20
+	resb	1
+	resb	1
+	resb	1
 h8_digits_r:
-	db 	0x40
-	db 	0x80
-	db 	0x1F
+	resb	1
+	resb	1
+	resb	1
 
 h8_break:
-	db	0x00
+	resb	1
 
 h8_radix:
-	db	0x00
+	resb	1
 
 h8_dots:
-	db	0x00
+	resb	1
 
 h8_dotpos:
-	db	0x01
+	resb	1
 
 h8_digsel_or:
-	db	0b11010000		; refresh and speaker bits on, int 20 single step off, monitor off
+	resb	1		; refresh and speaker bits on, int 20 single step off, monitor off
 
 key_last:
-    	db	0xFF
+    	resb	1
 key_same_count:
-	db	0x00
+	resb	1
 
 mon_regs:            			; place to hold pseudo-registers
 mon_seg:
 mon_seg_l:
-	db 	0x00
+	resb	1
 mon_seg_h:
-	db	0x00
+	resb	1
 
 
 mon_reg_index:
-	db	0x00, 0x00
+	resb	1
 
 mon_state:
-	db	STATE_MEM_DISPLAY
+	resb	1
 
 mon_addr:
 mon_addr_lo:
-	db 	0o321
+	resb	1
 mon_addr_hi:
-	db 	0o123
+	resb	1
 
 mon_tf_addr:
-	dw	0x00
-	
+	resb	2
+

@@ -20,10 +20,11 @@ section .text
 start:
 	mov	dx, banner
 	call	writeStr
-	call 	install_int
-	call	enable_int
-	call	enable_fp
 
+	call	h8_display_init
+	call	mon_init
+
+	;; load some test data
 	mov	al, 0o012
 	call	h8_set_octal_l
 	mov	al, 0o343
@@ -31,7 +32,9 @@ start:
 	mov	al, 0o210
 	call	h8_set_octal_r
 
-	call    mon_start
+	call 	install_int
+	call	enable_int
+	call	enable_fp
 
 	;;jmp	test_tf
 

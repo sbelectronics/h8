@@ -104,12 +104,12 @@ mon_keydown:
 	jz	mon_state_reg_display
 	ret
 
-mon_start:
+mon_init:
 	mov	ax, ds
 	mov	[mon_seg], ax
-	mov	ax, h8_count
-	mov	[mon_addr], ax
-	jmp	go_state_mem_display
+	mov	word [mon_addr], h8_count
+	mov	byte [mon_reg_index], 0
+	jmp	go_state_mem_display			; this will set mon_state
 
 go_state_mem_display:
     	mov	byte [h8_dots], 0
@@ -576,11 +576,12 @@ mon_state_reg_display_not_alter:
 ;    BX: address of register in frame
 
 mon_get_reg_addr:
-	cmp	word [mon_reg_index], 0
+	cmp	byte [mon_reg_index], 0
 	jnz	not_sg
-	mov	bx, mon_regs			; point to where the pseudo-regs are
-	add	bx, [mon_reg_index]		; add index*2 to the address
-	add	bx, [mon_reg_index]
+	xor	bh, bh
+	mov  	bl, byte [mon_reg_index]	; get the index into BX
+	shl	bl, 1				; multiple by 2
+	add	bx, mon_regs			; add the base address
 	ret
 not_sg:
 	mov	bx, [mon_tf_addr]
@@ -647,7 +648,7 @@ mon_update_reg_display:
 	call	mon_get_reg_addr
 	mov	ax, [bx]
 	call	h8_set_octal_addr
-	mov	al, [mon_reg_index]
+	mov	al, byte [mon_reg_index]
 	call	h8_set_reg_r
 	jmp	mon_update_dots
 

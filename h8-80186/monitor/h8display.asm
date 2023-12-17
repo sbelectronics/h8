@@ -7,16 +7,27 @@ DIGVAL  equ 0x4F1
 ;   D5 is music and refresh monitor LED
 ;   D4 is something to do with int20
  
-section .text 
+section .text
+
+h8_display_init:
+	mov	byte [digindex], 1
+	mov	byte [h8_break], 0
+	mov	byte [h8_radix], 0
+	mov	byte [h8_dots], 0
+	mov	byte [h8_dotpos], 1
+	mov	byte [h8_digsel_or], 0b11010000
+	mov	byte [key_last], 0xFF
+	mov	byte [key_same_count], 0
+	ret
 
 ;------------------------------------------------------------------------------
 ; h8_display_hook
 ;  
 
 h8_display_hook:
-	mov	ax, word [h8_count_lo]		; increment the cycle counter
+	mov	ax, word [h8_count]		; increment the cycle counter
 	inc	ax
-	mov	word [h8_count_lo], ax
+	mov	word [h8_count], ax
 
 	and	ax, 0x1F
 	jnz	h8_not_upd
@@ -69,7 +80,7 @@ key_same_enough:
 	mov	bx, scancodes+10H	; start with the last scancode
 	mov	ah, 11H			; check 17 scancodes
 next_scancode:
-	cmp	al, [bx]
+	cmp	al, [cs:bx]
 	jnz	not_this_scancode
 	mov	al, ah
 	dec	al
@@ -105,20 +116,20 @@ h8_set_octal_l:
 	mov 	bl, ah
 	shr	bl, 6
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_l], al
 
 	xor	bh, bh
 	mov 	bl, ah
 	shr	bl, 3
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_l+1], al
 
 	xor	bh, bh
 	mov 	bl, ah
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_l+2], al
 	jmp	h8_set_octal_l_ret
 
@@ -127,13 +138,13 @@ h8_set_hex_l:
 	mov	bl, ah
 	shr	bl, 4
 	and     bl, 0x0F
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_l], al
 
 	xor	bh, bh
 	mov	bl, ah
 	and     bl, 0x0F
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_l+1], al
 
 	mov	al, 0b11111111
@@ -162,20 +173,20 @@ h8_set_octal_m:
 	mov 	bl, ah
 	shr	bl, 6
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_m], al
 
 	xor	bh, bh
 	mov 	bl, ah
 	shr	bl, 3
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_m+1], al
 
 	xor	bh, bh
 	mov 	bl, ah
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_m+2], al
 	jmp	h8_set_octal_m_ret
 
@@ -184,13 +195,13 @@ h8_set_hex_m:
 	mov	bl, ah
 	shr	bl, 4
 	and     bl, 0x0F
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_m], al
 
 	xor	bh, bh
 	mov	bl, ah
 	and     bl, 0x0F
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_m+1], al
 
 	mov	al, 0b11111111
@@ -219,20 +230,20 @@ h8_set_octal_r:
 	mov 	bl, ah
 	shr	bl, 6
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_r], al
 
 	xor	bh, bh
 	mov 	bl, ah
 	shr	bl, 3
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_r+1], al
 
 	xor	bh, bh
 	mov 	bl, ah
 	and	bl, 0x07
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_r+2], al
 	jmp	h8_set_octal_r_ret
 
@@ -241,13 +252,13 @@ h8_set_hex_r:
 	mov	bl, ah
 	shr	bl, 4
 	and     bl, 0x0F
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_r], al
 
 	xor	bh, bh
 	mov	bl, ah
 	and     bl, 0x0F
-	mov	al, [bx + digit_7seg]
+	mov	al, [cs:bx + digit_7seg]
 	mov	[h8_digits_r+1], al
 
 	mov	al, 0b11111111
@@ -270,15 +281,15 @@ h8_set_reg_r:
 	mov	bl, al
 	shl	bx, 2
 
-	mov	ah, [bx + reg_7seg]
+	mov	ah, [cs:bx + reg_7seg]
 	mov	[h8_digits_r], ah
 
 	inc	bx
-	mov	ah, [bx + reg_7seg]
+	mov	ah, [cs:bx + reg_7seg]
 	mov	[h8_digits_r+1], ah
 
 	inc 	bx
-	mov	ah, [bx + reg_7seg]
+	mov	ah, [cs:bx + reg_7seg]
 	mov	[h8_digits_r+2], ah
 
 	popm	ax,bx
