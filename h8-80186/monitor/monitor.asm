@@ -136,38 +136,38 @@ digindex_nowrap:
 ; h8_scankey
 
 h8_scankey:
-	mov	dx, DIGSEL
+	mov	dx, DIGSEL		; read the keyboard from DIGSEL
 	in	al, dx
+	cmp	al, [key_last]		; same as last key?
+	jnz	h8_scankey_different	; no, different
 
-%if 0
-    inb    rl0, #DIGSEL
-    cpb    rl0, key_last
-    jr     nz, h8_scankey_different
-
-    incb   key_same_count, #1
-    cpb    key_same_count, #10
-    jr     z, key_same_enough
-    ret                              ! not long enough debounce -- keep waiting
+	mov	ah, [key_same_count]	; increment same_count
+	inc 	ah
+	mov	[key_same_count], ah
+	cmp	ah, 0AH			; do we have 10 hits on the key?
+	jz	key_same_enough		; yes, process it
+	ret
 
 key_same_enough:
-    lda    r1, scancodes+16
-    ldb    rh0, #17                  ! check 17 scancodes
+	mov	bx, scancodes+10H	; start with the last scancode
+	mov	ah, 11H			; check 17 scancodes
 next_scancode:
-    cpb    rl0, @r1
-    jr     nz, not_this_scancode
-    ldb    rl0, rh0                  ! put scancode in rl2
-    decb   rl0, #1
-    jp     mon_keydown
+	cmp	al, [bx]
+	jnz	not_this_scancode
+	mov	al, ah
+	dec	al
+	jp	mon_keydown
 not_this_scancode:
-    dec    r1, #1
-    dbjnz  rh0, next_scancode
-    ret                              ! no match
+	dec	bx			; next address
+	dec	ah			; one less to do
+	jnz	next_scancode		; keep going if nonzero
+	ret
 
 h8_scankey_different:
-    clrb   key_same_count
-    ldb    key_last, rl0
-    ret
-%endif
+	mov	[key_last], al		; save the new key_last
+	mov 	al, 0
+	mov	[key_same_count], al	; reset same_count
+	ret
 
 ;------------------------------------------------------------------------------
 ; h8_set_octal_l
@@ -423,6 +423,11 @@ h8_dotpos:
 h8_digsel_or:
 	db	0b11010000		; refresh and speaker bits on, int 20 single step off, monitor off
 
+key_last:
+    	db	0xFF
+key_same_count:
+	db	0x00
+
 digit_7seg:
 	db	0b10000001	; 0
 	db	0b11110011	; 1
@@ -482,6 +487,25 @@ reg_7seg_r14:
 	db  0b11011110,  0b11110011, 0b10110010, 0b00000000
 reg_7seg_r15:
 	db  0b11011110,  0b11110011, 0b10100100, 0b00000000
+
+scancodes:
+	db 0b11111110 ; 0
+	db 0b11111100 ; 1
+	db 0b11111010 ; 2
+	db 0b11111000 ; 3
+	db 0b11110110 ; 4
+	db 0b11110100 ; 5
+	db 0b11110010 ; 6
+	db 0b11110000 ; 7
+	db 0b11101111 ; 8
+	db 0b11001111 ; 9
+	db 0b10101111 ; A
+	db 0b10001111 ; B
+	db 0b01101111 ; C
+	db 0b01001111 ; D
+	db 0b00101111 ; E
+	db 0b00001111 ; F
+	db 0b00101110 ; 0 + E
  
 section .bss
 
