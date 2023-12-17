@@ -33,7 +33,7 @@ start:
 
 	call    mon_start
 
-	jmp	test_tf
+	;;jmp	test_tf
 
 	mov	dx, exit
 	call	writeStr
