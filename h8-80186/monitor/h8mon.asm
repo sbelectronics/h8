@@ -699,8 +699,6 @@ mon_seg_h:
 mon_reg_index:
 	db	0x00, 0x00
 
-marker:
-	db	0xFE,0xED,0xFA,0xCE
 mon_state:
 	db	STATE_MEM_DISPLAY
 
