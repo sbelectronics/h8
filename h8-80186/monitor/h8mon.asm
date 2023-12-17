@@ -685,33 +685,3 @@ mon_update_dots_at_pos:
 	and	byte [bx], 0x7F		; set the dot on the digit
 	ret
 
-;------------------------------------------------------------------------------
-	section .data
-
-mon_regs:            ; place to hold pseudo-registers
-mon_seg:
-mon_seg_l:
-	db 	0x00
-mon_seg_h:
-	db	0x00
-
-
-mon_reg_index:
-	db	0x00, 0x00
-
-mon_state:
-	db	STATE_MEM_DISPLAY
-
-mon_addr:
-mon_addr_lo:
-	db 	0o321
-mon_addr_hi:
-	db 	0o123
-
-mon_tf_addr:
-	dw	0x00
-
-	section .bss
-
-;;mon_saved_trap_frame:
-;;	resb	46  ;  SAVED_TRAP_FRAME_SIZE

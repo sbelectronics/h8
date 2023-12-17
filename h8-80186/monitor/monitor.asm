@@ -141,4 +141,5 @@ old_int_ofs	dw	0
 
 %include        "h8display.asm"
 %include 	"h8mon.asm"
+%include	"h8data.asm"
 %include	"set_vector.asm"

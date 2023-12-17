@@ -297,49 +297,8 @@ h8_set_octal_addr:
 	xchg	al,ah
 	ret
  
-section .data
-
-h8_count:
-h8_count_lo:	dw	0
-h8_count_hi:	dw	0
-
-digindex:
-	db 	1
-h8_digits0:
-	db 	0x00           		; dummy placeholder since first digit starts at 1
-h8_digits:                           	; some non-random gibberish pattern for now
-h8_digits_l:
-	db 	0x1
-	db 	0x2
-	db 	0x4
-h8_digits_m:
-	db 	0x8
-	db 	0x10
-	db 	0x20
-h8_digits_r:
-	db 	0x40
-	db 	0x80
-	db 	0x1F
-
-h8_break:
-	db	0x00
-
-h8_radix:
-	db	0x00
-
-h8_dots:
-	db	0x00
-
-h8_dotpos:
-	db	0x01
-
-h8_digsel_or:
-	db	0b11010000		; refresh and speaker bits on, int 20 single step off, monitor off
-
-key_last:
-    	db	0xFF
-key_same_count:
-	db	0x00
+;------------------------------------------------------------------------------
+; constants that can go in the text area
 
 digit_7seg:
 	db	0b10000001	; 0
@@ -394,5 +353,3 @@ scancodes:
 	db 0b00101111 ; E
 	db 0b00001111 ; F
 	db 0b00101110 ; 0 + E
- 
-section .bss
