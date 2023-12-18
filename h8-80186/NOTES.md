@@ -8,3 +8,5 @@ Interrupt Vector 0F = INT2 FDC
   when it is not. Edit the setup.inf file to set the third character to "N".
 
 * The reason galways failed on creating the playernews file. Need to increase the "files=" setting in config.sys. GW uses a lot of files.
+
+* GWBasic doesn't work. This is the same as on the SBC188.
