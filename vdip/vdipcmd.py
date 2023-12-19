@@ -42,6 +42,8 @@ class VDIPServer:
         self.verbosity = verbosity
         self.openFile = None
         self.openFileWrite = None
+        self.tStart = None
+        self.total = 0
 
     def error(self,s):
         print(s)
@@ -128,6 +130,9 @@ class VDIPServer:
 
         self.openFile = open(fullName, "rb")
 
+        self.tStart = time.time()
+        self.total = 0
+
         self.prompt()
 
     def openWrite(self, line):
@@ -137,6 +142,9 @@ class VDIPServer:
         self.info("<opw %s>" % fullName)
 
         self.openFileWrite = open(fullName, "wb")
+        self.total = 0
+
+        self.tStart = time.time()
 
         self.prompt()
 
@@ -149,10 +157,11 @@ class VDIPServer:
 
         bytes = self.openFile.read(amount)
         self.vdip.waitWriteBuffer(bytes)
-#        for b in bytes:
-#            self.vdip.waitWrite(b)
         for i in range(0, amount-len(bytes)):
             self.vdip.write(0xFF)
+
+        self.total += amount
+
         self.prompt()
 
     def seekFile(self, line):
@@ -185,6 +194,8 @@ class VDIPServer:
             bytes.append(self.vdip.read())
 
         self.openFileWrite.write(bytes)
+
+        self.total += amount
  
         self.prompt()
 
@@ -219,6 +230,12 @@ class VDIPServer:
         if self.openFileWrite:
             self.openFileWrite.close()
             self.openFileWrite = None
+
+        if self.tStart is not None:
+            tElap = time.time()-self.tStart
+            print("elapsed: %0.1f Bytes/Sec: %d" % (tElap, int(float(self.total)/tElap)))
+            self.tStart = None
+
         self.prompt()
 
         
@@ -276,7 +293,7 @@ class VDIPServer:
                     line=""
                 else:
                     line=line+chr(v)
-            time.sleep(0.01)
+            time.sleep(0)
 
 
 
@@ -309,13 +326,9 @@ def writeaz(vdip):
         time.sleep(0.02)
 
 def main():
-    parser = OptionParser(usage="supervisor [options] command",
-            description="Commands: ...")
+    parser = OptionParser(usage="vdipcmd.py [options] command",
+            description="Commands: serve | talk | writeaz")
 
-    parser.add_option("-P", "--ascii", dest="ascii",
-         help="print ascii value", action="store_true", default=False)
-    parser.add_option("-O", "--octal", dest="octal",
-         help="print octal value", action="store_true", default=False)         
     parser.add_option("-v", "--verbose", dest="verbose",
          help="verbose", action="store_true", default=False)
     parser.add_option("-q", "--quiet", dest="quiet",
@@ -328,7 +341,9 @@ def main():
     (options, args) = parser.parse_args(sys.argv[1:])
 
     if len(args)==0:
-        print("missing command")
+        parser.print_help()
+        print();
+        print("Error: missing command")
         sys.exit(-1)
 
     cmd = args[0]
@@ -358,7 +373,10 @@ def main():
         elif (cmd=="writeaz"):
             writeaz(vdip);
         else:
-            raise Exception("Unknown command %s" % cmd)
+            parser.print_help()
+            print();
+            print("Error: unknown command: %s" % cmd)
+            sys.exit(-1)            
     finally:
         vdip.cleanup()
 
