@@ -28,6 +28,8 @@ start:
 	call	h8_enable_int
 	call	h8_enable_fp
 
+	call    check_tsr
+
 	;;jmp	test_tf
 
 	mov	dx, exit
@@ -37,6 +39,35 @@ start:
 	call	h8_disable_int
 	call	restore_int
 	int	20h
+
+	; Length of command line is at 80h
+	; Command line starts at 81h
+	; It always ends with 0x0D
+check_tsr:
+	mov	bx,81h
+again:	mov	al,[bx]			; skip any leading spaces
+	cmp	al,' '
+	jnz	notspace
+	inc	bx
+	jmp 	again
+notspace:
+	cmp	al,'/'
+	jnz	not_tsr			; doesn't start with slash
+	inc	bx
+	mov	al,[bx]
+	cmp	al,'R'
+	jz	yes_tsr			; second character isn't 'R'
+	cmp	al,'r'
+	jz	yes_tsr
+	jmp	not_tsr
+yes_tsr:
+	mov	dx, tsr
+	call 	writeStr
+	mov	ax,3100h
+	mov	dx, (end_of_resident - start + 256 + 15) >> 4
+	int	21h
+not_tsr:
+	ret
 
 test_tf:
 	mov	ax,1101h
@@ -82,6 +113,7 @@ section .data
  
 banner	db	'H8-80186 monitor', 0x0d, 0x0a, '$'
 exit    db	'Press any key to exit', 0x0d, 0x0a, '$'
+tsr	db 	'Terminating and staying resident', 0x0d, 0x0a, '$'
 
 old_int_seg	dw	0
 old_int_ofs	dw	0
@@ -91,3 +123,5 @@ old_int_ofs	dw	0
 %include 	"h8mon.asm"
 %include	"h8data.asm"
 %include	"set_vector.asm"
+
+end_of_resident:

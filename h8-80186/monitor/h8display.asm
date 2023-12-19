@@ -45,7 +45,7 @@ h8_display_hook:
 	and	ax, 0x1F
 	jnz	h8_not_upd
 	call	mon_update
-h8_not_upd:
+h8_not_upd:	
 	call	h8_multiplex_digit
 	jmp	h8_scankey
 
@@ -63,7 +63,7 @@ h8_multiplex_digit:
 	out	dx, al				; send digit number to DIGSEL
 	mov	dx, DIGVAL
 	mov	al, bh				; digit value into bh
-	out	dx, al				; send digit number to DIGVAL
+	out	dx, al				; send digit value to DIGVAL
 
 	mov	ah, [digindex]			; get the current digit index into ah
 	dec     ah
