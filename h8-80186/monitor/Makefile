@@ -1,4 +1,4 @@
-all: monitor.com fpon.com fpoff.com fpltm.com
+all: monitor.com fpon.com fpoff.com fpltm.com wreboot.com
 	cp *.com /home/smbaker/projects/pi/h8/h8-80186/commands/
 
 monitor.com: monitor.asm h8display.asm h8mon.asm h8int.asm
@@ -12,6 +12,9 @@ fpoff.com: fpoff.asm
 
 fpltm.com: fpltm.asm
 	nasm fpltm.asm -fbin -o fpltm.com -l fpltm.lst -dCOMFILE
+
+wreboot.com: wreboot.asm
+	nasm wreboot.asm -fbin -o wreboot.com -l wreboot.lst -dCOMFILE
 
 copy:
 	sudo umount /mnt/dos || true
