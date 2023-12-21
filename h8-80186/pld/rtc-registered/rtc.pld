@@ -1,0 +1,66 @@
+/* PLD for RTC */
+
+Name rtc;
+device G22V10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+/* Inputs: */
+Pin 1 = CLKIN;   /* XXX wire this to CLKOUT */
+Pin 2 = ID2;
+Pin 3 = ID3;
+Pin 4 = A0;
+Pin 5 = !RD;
+Pin 6 = !WR;
+Pin 7 = DS1;
+Pin 8 = DS2;
+Pin 9 = DS3;
+Pin 10 = DS4;
+Pin 11 = A1;
+Pin 13 = RTC_IO_FB;   /* XXX wire to pin 18 */ 
+
+/* Outputs:   */
+Pin 23 = CLKOUT;   /* XXX wire this to CLKIN */
+Pin 22 = ID0;
+Pin 21 = ID1;
+Pin 20 = RTC_WE;
+Pin 19 = !RTC_CE;
+Pin 18 = RTC_IO;
+Pin 17 = RTC_SCLK;
+Pin 16 = !RESET_OUT;
+Pin 15 = RESET;
+Pin 14 = !RTC_CS0;   /* XXX move RTC_CS from pin 1 to pin 14 */
+
+RTC_CS = RTC_CS0 & !A0;
+DIP_CS = RTC_CS0 & A0;
+
+CLKOUT = !(RTC_CS & WR);
+
+RTC_IO.D = ID0;
+RTC_IO.AR = RESET;
+RTC_IO.SP = 'b'0;
+
+RTC_WE.D = ID1;
+RTC_WE.AR = RESET;
+RTC_WE.SP = 'b'0;
+
+RTC_SCLK.D = ID2;
+RTC_SCLK.AR = RESET;
+RTC_SCLK.SP = 'b'0;
+
+RTC_CE.D = ID3;
+RTC_CE.AR = RESET;
+RTC_CE.SP = 'b'0;
+
+RTC_IO.OE = RTC_WE;
+
+ID0 = RTC_IO_FB;
+ID0.OE = RTC_CS0 & RD;
+ID1.OE = RTC_CS0 & RD;
+
+RESET_OUT = RESET;
