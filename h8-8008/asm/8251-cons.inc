@@ -73,6 +73,16 @@ SINIT8251:  ifndef noiomap
             mvi b,00H               ; reset will sometimes cause framing errors and gibberish
 sinit8251w: dcr b                   ; on my ftdi cable. Wait a while before we send out 
             jnz sinit8251w          ; data, to ensure a re-frame.
+
+            ifdef fp8251
+
+            mvi a,h8_digsel
+            out mm_io4
+            mvi a,h8_digval
+            out mm_io5
+
+            endif
+
             ret
 
 ;-----------------------------------------------------------------------------------------       

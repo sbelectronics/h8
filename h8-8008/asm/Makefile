@@ -149,7 +149,7 @@ scelbal-8251.bin: $(INCDEPTS) scelbal.asm
 	$(P2BIN) scelbal-8251.p scelbal-8251.bin
 
 monitor-8251.bin: $(INCDEPS) monitor.asm
-	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251.p -D nocinp80 -D ser8251
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251.p -D nocinp80 -D fp8251
 	$(P2BIN) monitor-8251.p monitor-8251.bin
 
 calc-8251.bin: $(INCDEPTS) calc.asm
@@ -181,6 +181,12 @@ pi-1000-digits-8251.bin: $(INCDEPTS) pi-1000-digits.asm
 	$(ASL) -i $(INC) -cpu 8008 -L pi-1000-digits.asm -o pi-1000-digits-8251.p -D ser8251
 	$(P2BIN) pi-1000-digits-8251.p pi-1000-digits-8251.bin
 	$(P2HEX) pi-1000-digits-8251.p pi-1000-digits-8251.hex
+
+#------- 8251 without frontpanel ----------
+
+monitor-8251-nofp.bin: $(INCDEPS) monitor.asm
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-nofp.p -D nocinp80 -D ser8251
+	$(P2BIN) monitor-8251.p monitor-8251-nofp.bin
 
 #------- 8251-uppercase ----------
 
