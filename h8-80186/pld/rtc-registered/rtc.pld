@@ -11,8 +11,8 @@ assembly x;
 location x;
 
 /* Inputs: */
-Pin 1 = CLKIN;   /* XXX wire this to CLKOUT */
-Pin 2 = ID2;
+Pin 1 = CLKIN;      /* XXX wire this to CLKOUT */
+Pin 2 = !RTC_CS0;   /* master CS for this PLD */
 Pin 3 = ID3;
 Pin 4 = A0;
 Pin 5 = !RD;
@@ -34,7 +34,7 @@ Pin 18 = RTC_IO;
 Pin 17 = RTC_SCLK;
 Pin 16 = !RESET_OUT;
 Pin 15 = RESET;
-Pin 14 = !RTC_CS0;   /* XXX move RTC_CS from pin 1 to pin 14 */
+Pin 14 = ID2;
 
 RTC_CS = RTC_CS0 & !A0;
 DIP_CS = RTC_CS0 & A0;
@@ -62,5 +62,6 @@ RTC_IO.OE = RTC_WE;
 ID0 = RTC_IO_FB;
 ID0.OE = RTC_CS0 & RD;
 ID1.OE = RTC_CS0 & RD;
+ID2.OE = RTC_CS0 & RD;
 
 RESET_OUT = RESET;
