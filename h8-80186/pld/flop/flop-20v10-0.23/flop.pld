@@ -1,0 +1,57 @@
+/* PLD for floppy and interrupts */
+
+Name flop;
+device G22V10;
+partno x;
+date 1/1/1980;
+designer smbaker;
+company sbsoftware;
+revision 1;
+assembly x;
+location x;
+
+/* Inputs: */
+Pin 1 = !FDC;
+Pin 2 = A6;
+Pin 3 = A5;
+Pin 4 = A4;
+Pin 5 = NC0;
+Pin 6 = INT1_AH;
+Pin 7 = INT0_AL;
+Pin 8 = INT1_AL;
+Pin 9 = INT2_AL;
+Pin 10 = NC5;
+Pin 11 = NC1;
+Pin 13 = NC2;
+
+/* Outputs:   */
+Pin 23 = FDC_TC;
+Pin 22 = !FDC_CS;
+Pin 21 = !FDC_DACK;
+Pin 20 = !FDC_LDOR;
+Pin 19 = !FDC_LDCR;
+Pin 18 = INT0;
+Pin 17 = INT1;
+Pin 16 = INT2;
+Pin 15 = NC3;
+Pin 14 = NC4;
+
+
+AD0	=	!A6 & !A5 & !A4 ; 
+AD1	=	!A6 & !A5 &  A4 ; 
+AD2	=	!A6 &  A5 & !A4 ; 
+AD3	=	!A6 &  A5 &  A4 ; 
+AD4	=	 A6 & !A5 & !A4 ; 
+AD5	=	 A6 & !A5 &  A4 ; 
+AD6	=	 A6 &  A5 & !A4 ; 
+AD7	=	 A6 &  A5 &  A4 ;
+
+FDC_CS	=	FDC & AD0 ;	/* FURTHER QUALIFIED BY A0 */
+FDC_DACK =	FDC & (AD1 # AD5) ;
+FDC_LDOR =	FDC & AD2 ; 
+FDC_LDCR =	FDC & AD3 ;
+FDC_TC	=	FDC & (AD4 # AD5) ; 
+
+INT0    =       !INT0_AL;
+INT1    =       INT1_AH # (!INT1_AL);
+INT2    =       !INT2_AL;
