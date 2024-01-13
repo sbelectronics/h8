@@ -21,3 +21,10 @@ CLS sends the following
 [25S		  - scroll 25 lines
 [r		  - set window?
 [01;01H		  - move to row, column
+
+# Front Panel Glitches
+
+Make sure to jumper JP10:1-2 and JP12:2-3
+
+Normal (non-inverted) puts the HCMOS oscillator on the bus and it tends to beat up the
+nearby IOW signal.
