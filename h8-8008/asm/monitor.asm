@@ -30,6 +30,8 @@ jmp_addr:   equ 1FFCH
 ESCAPE      equ 1BH
 RETURN      equ 0DH
 
+LEDPORT     equ 08H                     ; Port where the 8 LEDs are at
+
 ; when the reset pushbutton is pressed, the flip-flop is set which generates an interrupt
 ; and clears the address latches thus, the first instruction is thus always fetched from 
 ; address 0. the instruction at address 0 must be a single byte transfer instruction in 
@@ -43,6 +45,14 @@ RETURN      equ 0DH
             include "go-rom.inc"
             
 rom_start:  
+            ifdef debugled
+            mvi  a,1H
+            out  LEDPORT
+            else
+            xra  a
+            out  LEDPORT                ; turn off LEDs
+            endif
+
             ifdef SOUND
             call SNDINIT
             endif
@@ -50,9 +60,14 @@ rom_start:
             call SINIT
             call FPANINIT
             call STACKINIT
+
+            ifdef debugled
+            mvi  a,3H
+            out  08H
+            endif
             
-            xra a
-            out 09H                     ; turn off orange LEDs
+;;            xra a                       ; XXX smbaker - last tests H8-8008 had this code
+;;            out 09H                     ; turn off orange LEDs
             
             mvi h,hi(esccount)          ; clear the escape key counter
             mvi l,lo(esccount) 
@@ -60,7 +75,12 @@ rom_start:
             
             mvi h,hi(titletxt)          ; display the title
             mvi l,lo(titletxt) 
-            call puts     
+            call puts
+
+            ifdef debugled
+            mvi  a,7H
+            out  LEDPORT
+            endif
             
 menu:       mvi h,hi(menutxt)           ; display the menu
             mvi l,lo(menutxt) 
@@ -68,8 +88,16 @@ menu:       mvi h,hi(menutxt)           ; display the menu
             
 prompt:     mvi h,hi(prompttxt)         ; prompt for input
             mvi l,lo(prompttxt) 
-            call puts            
+            call puts
 prompt0:    call getch                  ; get input command from user
+
+            ifdef debugled
+            mov  l,a
+            mvi  a,0FH
+            out  LEDPORT
+            mov  a,l
+            endif
+
             cpi ':'
             jz hexdl1a                  ; hex file download started
             cpi ESCAPE                  ; is the input the escape key?

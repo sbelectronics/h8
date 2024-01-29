@@ -1,4 +1,4 @@
-all: asm h8-bb.rom h8-16450.rom h8-16450-isr.rom h8-8251.rom h8-16450-h9term.rom sbc-8251.rom sbc-8251-h9term.rom sbc-8251-til311.rom sbc-8251-til311-h9term.rom
+all: asm h8-bb.rom h8-16450.rom h8-16450-isr.rom h8-8251.rom h8-16450-h9term.rom sbc-8251.rom sbc-8251-h9term.rom sbc-8251-til311.rom sbc-8251-til311-h9term.rom master-8251.rom
 
 forth:
 	cd ../../../8008-forth && make
@@ -67,6 +67,11 @@ sbc-8251.rom: ../asm/scelbal-8251.bin ../asm/monitor-8251-sbcfp.bin ../asm/galax
 	cat ../asm/load-40h.bin ../asm/pi-1000-digits-8251.bin | dd of=sbc-8251.rom bs=1 seek=40960 conv=notrunc
 	cat ../asm/load-200h.bin ../asm/hangman-8251.bin | dd of=sbc-8251.rom bs=1 seek=49152 conv=notrunc
 
+master-8251.rom: ../asm/monitor-8251-master.bin
+	dd if=/dev/zero of=master-8251.rom bs=1 count=65536
+	dd if=../asm/monitor-8251-master.bin of=master-8251.rom bs=1 conv=notrunc
+	dd if=../asm/monitor-8251-master.bin of=master-8251.rom bs=1 seek=16384 conv=notrunc
+
 sbc-8251-til311.rom: ../asm/scelbal-8251.bin ../asm/monitor-8251-sbcfp-til311.bin ../asm/galaxy-8251.bin ../../../8008-forth/out/forth-8251.bin
 	dd if=/dev/zero of=sbc-8251-til311.rom bs=1 count=65536
 	dd if=../asm/monitor-8251-sbcfp-til311.bin of=sbc-8251-til311.rom bs=1 conv=notrunc      
@@ -99,6 +104,9 @@ sbc-8251-til311-h9term.rom: ../asm/scelbal-8251.bin ../asm/monitor-8251-sbcfp-ti
 
 emusbc:
 	eprom-emulator -mem 27256 sbc-8251.rom /dev/ttyUSB0
+
+emumaster:
+	eprom-emulator -mem 27256 master-8251.rom /dev/ttyUSB0
 
 clean:
 	cd ../asm && make clean

@@ -57,7 +57,7 @@ gsave3:    out stack_push       ; push flags
            mov a,m              ; ... this will be a good indicator the ISR works
            adi 1
            mov m,a
-           out ledport
+           out LEDPORT
 
            ;; now do our front panel digit refresh. This is copied from
            ;; fpanel.inc

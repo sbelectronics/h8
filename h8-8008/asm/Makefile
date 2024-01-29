@@ -12,6 +12,7 @@ all: scelbal-16450.bin monitor-16450.bin calc-16450.bin shooter-16450.bin galaxy
 	 scelbal-16450-h9term.bin monitor-16450-h9term.bin galaxy-16450-h9term.bin \
 	 monitor-8251-sbcfp.bin monitor-8251-sbcfp-til311.bin \
 	 monitor-8251-sbcfp-h9term.bin monitor-8251-sbcfp-til311-h9term.bin \
+     monitor-8251-master.bin \
 	 load-trek.bin load-40h.bin load-200h.bin
 
 #------- 16450 ----------
@@ -69,11 +70,7 @@ galaxy-16450-h9term.bin: $(INCDEPTS) galaxy.asm
 	$(P2BIN) galaxy-16450-h9term.p galaxy-16450-h9term.bin
 	$(P2HEX) galaxy-16450-h9term.p galaxy-16450-h9term.hex
 
-#------- 16450 - sbcfp ----------
-
-#monitor-16450-sbcfp.bin: $(INCDEPS) monitor.asm
-#	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-16450-sbcfp.p -D nocinp80 -D sbcfp -D frontpanel
-#	$(P2BIN) monitor-16450-sbcfp.p monitor-16450-sbcfp.bin
+#------- 8251 - sbcfp ----------
 
 monitor-8251-sbcfp.bin: $(INCDEPS) monitor.asm
 	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap -D sound
@@ -90,6 +87,12 @@ monitor-8251-sbcfp-h9term.bin: $(INCDEPS) monitor.asm
 monitor-8251-sbcfp-til311-h9term.bin: $(INCDEPS) monitor.asm
 	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-sbcfp-til311-h9term.p -D nocinp80 -D sbcfp -D fp8251 -D noiomap -D sound -D forceupper -D TIL311
 	$(P2BIN) monitor-8251-sbcfp-til311-h9term.p monitor-8251-sbcfp-til311-h9term.bin	
+
+#------- 8251 - master ----------
+
+monitor-8251-master.bin: $(INCDEPS) monitor.asm
+	$(ASL) -i $(INC) -cpu 8008 -L monitor.asm -o monitor-8251-master.p -D ser8251 -D nocinp80 -D noiomap -D master -D debugled
+	$(P2BIN) monitor-8251-master.p monitor-8251-master.bin
 
 #------- 16450-fp-isr ----------
 

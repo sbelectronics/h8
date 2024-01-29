@@ -5,7 +5,6 @@ inch8     equ      1
 ;; Scott Baker, https://www.smbaker.com/
 
 ipoll:      equ 01H
-ledport:    equ 09H
 
 h8_in2:     equ 02H
 h8_in3:     equ 03H
