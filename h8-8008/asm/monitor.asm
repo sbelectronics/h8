@@ -155,6 +155,11 @@ prompt2:    mvi h,hi(esccount)
             cpi 'U'
             jz push                     ; push to stack
 
+            ifdef master
+            cpi 'M'
+            jz mas_menu
+            endif
+
             ifdef frontpanel_isr
             cpi 'Y'
             jz enableint               ; disable interrupts
@@ -1231,6 +1236,14 @@ puts:       mov a,m
             include "stack.inc"
 
 ;------------------------------------------------------------------------        
+; For MasterBlaster, include the master menu
+;------------------------------------------------------------------------
+
+            ifdef master
+            include "master.inc"
+            endif
+
+;------------------------------------------------------------------------        
 ; For SBC, include the sound library
 ;------------------------------------------------------------------------
 
@@ -1303,6 +1316,11 @@ menutxt:    db  "\r\n"
             db  "H - Hex file download\r\n"
             db  "G - Go to address\r\n"
             db  "I - Input byte from port\r\n"
+
+            ifdef master
+            db  "M - Master\r\n"
+            endif
+
             db  "O - Output byte to port\r\n"
             db  "R - Raw binary file download\r\n"
             db  "S - Switch bank and load rom\r\n"
