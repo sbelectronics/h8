@@ -43,6 +43,16 @@ LEDPORT     equ 08H                     ; Port where the 8 LEDs are at
             jmp go_rom0
 
             include "go-rom.inc"
+
+; some variables for MasterBlaster so we put them at a consistent place
+; see master.inc
+
+mas_board:  db 0FFH
+mas_cmd:    db 00H
+mas_arg:    db 00H
+
+; The entrypoint for the monitor. go-rom jumps here after setting the
+; bank.
             
 rom_start:  
             ifdef debugled
