@@ -60,6 +60,9 @@ mas_prompt2:
             cpi 'U'
             jz mas_untake
 
+            cpi 'W'
+            jz mas_takew
+
             cpi 'Q'
             jz menu                     ; back to main menu
 
@@ -142,8 +145,25 @@ mas_take1:
            out MAS_TAKE_PORT
 mas_take_exit:
            call crlf
-
            jmp mas_prompt
+
+mas_takew:
+           mvi h,hi(mas_taketxt)
+           mvi l,lo(mas_taketxt)
+           call puts
+           mvi h,hi(mas_takebanktxt)
+           mvi l,lo(mas_takebanktxt)
+           call puts
+           call get_hex
+           jc mas_takew_exit
+           adi EXTRAM0
+           out MMAP0
+           mvi a,07FH
+           out MAS_TAKE_PORT
+mas_takew_exit:
+           call crlf
+           jmp mas_prompt           
+
 
 mas_untake:
            mvi h,hi(mas_untaketxt)
@@ -218,6 +238,21 @@ mas_conway_copy:
            mvi a,05FH                           ; take D7,D5 low -- read from 5 write to all
            out MAS_TAKE_PORT
            call conway_copy_block
+
+           ;; XXX TEMPORARY - clear the first line of unused blaster block, until we have 6 blasters
+           mvi h,(PAGE1 | 02H)
+           mvi l, 40H
+ctmplp:    dcr l
+           mvi m,0
+           jnz ctmplp
+
+           ;; XXX TEMPORARY - clear the last line of unused blaster block, until we have 6 blasters
+           mvi h,(PAGE1 | 05H)
+           mvi l, 0C0H
+ctmplp2:   mvi m,0
+           inr l
+           jnz ctmplp2
+
            mvi a,0FFH                           ; take nobody
            out MAS_TAKE_PORT
            mvi a,RAM1
@@ -378,6 +413,7 @@ mas_go_id:
            hlt
            nop
            nop
+           nop
            jmp mas_go_id
 
 mas_go_single:
@@ -388,6 +424,7 @@ mas_go_single:
            mov m,a
            out LEDPORT
            hlt
+           nop
            nop
            nop
            jmp mas_go_single
@@ -455,6 +492,7 @@ mas_menutxt:
             db  "S - Status\r\n"
             db  "T - Take\r\n"
             db  "U - Untake\r\n"
+            db  "W - TakeW\r\n"
             db  "Q - Quit\r\n"
             db  0
 
@@ -484,6 +522,9 @@ mas_taketxt:
 
 mas_takebanktxt:
             db "\r\nBank (1 digit): ",0
+
+mas_takewtxt:
+            db "ake write\r\n",0
 
 mas_untaketxt:
             db "ntake\r\n",0
