@@ -7,6 +7,11 @@ MMAP1       equ 0DH
 MMAP2       equ 0EH
 MMAP3       equ 0FH
 
+PAGE0       equ 000H
+PAGE1       equ 010H
+PAGE2       equ 020H
+PAGE3       equ 030H
+
             ifdef master
 
 RAM0        equ 0CH             ; 0x08 enables RAM, 0x04 disables EXT
@@ -19,6 +24,9 @@ EXTRAM0     equ 08H
 EXTRAM1     equ 09H
 EXTRAM2     equ 0AH
 EXTRAM3     equ 0BH
+
+ROM0        equ ROMOR | 00H
+ROM1        equ ROMOR | 01H
 
             else
 
