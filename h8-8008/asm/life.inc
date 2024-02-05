@@ -137,6 +137,37 @@ conway_copy_nowrap:
         ret
 
 ; -----------------------------------------------------------
+; conway_fcopy - copy new to old, but no screen output
+; -----------------------------------------------------------
+
+conway_fcopy:
+        mvi h, (CONWAY_HI | 008H)
+        mvi l,0
+        call conway_fcopy_block
+        call conway_fcopy_block
+        call conway_fcopy_block
+        call conway_fcopy_block
+        call conway_fcopy_block
+        call conway_fcopy_block
+        ret
+
+conway_fcopy_block:
+        mvi c,0H                                ; 256 bytes
+        mov d,h                                 ; D holds src page (new)
+        mov a,h
+        ani 0F7H
+        mov e,h                                 ; E holds dest page (old)
+conway_fcopy_loop:
+        mov h,d
+        mov b,m
+        mov h,e
+        mov m,b
+        inr l
+        jnz conway_fcopy_loop
+        inr h
+        ret
+
+; -----------------------------------------------------------
 ; conway_full - update the full conway grid
 ; -----------------------------------------------------------
 
