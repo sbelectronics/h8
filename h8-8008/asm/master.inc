@@ -240,7 +240,7 @@ mas_conway_copy:
            call conway_copy_block
 
            ;; XXX TEMPORARY - clear the first line of unused blaster block, until we have 6 blasters
-           mvi h,(PAGE1 | 02H)
+           mvi h,(PAGE1 | 03H)
            mvi l, 40H
 ctmplp:    dcr l
            mvi m,0
@@ -441,6 +441,13 @@ mas_freerun_l1:
            jmp mas_freerun_l
 
 mas_go_conway:
+           mvi a,0AAH
+           out LEDPORT                          ; something on the LEDs to show we're waiting
+mas_go_conway_lp:
+           hlt
+           nop
+           nop
+           nop
            mvi h,PAGE2
            mvi l,lo(mas_board)
            mov a,m                              ; compute our conway_page from the blaster id
@@ -448,11 +455,7 @@ mas_go_conway:
            mov d,a
            mvi e,0
            call conway_block
-           hlt
-           nop
-           nop
-           nop
-           jmp mas_go_conway
+           jmp mas_go_conway_lp
 
            include "life.inc" 
 
