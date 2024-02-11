@@ -45,6 +45,9 @@ mas_prompt2:
             cpi 'I'
             jz mas_interrupt
 
+            cpi 'J'
+            jz mas_interrupt2
+
             cpi 'L'
             jz mas_load_program
 
@@ -104,7 +107,32 @@ mas_interrupt:
            mvi l,lo(mas_inttxt)
            call puts
            mvi a, 000H
+           out MAS_INT_PORT     
+
+           jmp mas_prompt
+
+mas_interrupt2:
+           mvi h,hi(mas_inttxt)
+           mvi l,lo(mas_inttxt)
+           call puts
+mas_interrupt2l:
+           in MAS_STAT_PORT
+           ani 07FH
+           cpi 07FH
+           jnz mas_interrupt2l
+
+           mvi a, 000H
            out MAS_INT_PORT
+
+           nop
+           nop
+
+           in MAS_STAT_PORT
+           ani 040H
+           jz mas_interrupt2l
+           mvi h,hi(mas_stucktxt)
+           mvi l,lo(mas_stucktxt)
+           call puts
            jmp mas_prompt
 
 mas_load_program:
@@ -259,19 +287,19 @@ mas_conway_copy:
            out MAS_TAKE_PORT
            call conway_fcopy_block
 
-           ;; XXX TEMPORARY - clear the first line of unused blaster block, until we have 6 blasters
-           mvi h,(PAGE1 | 04H)
-           mvi l, 40H
-ctmplp:    dcr l
-           mvi m,0
-           jnz ctmplp
+;           ;; XXX TEMPORARY - clear the first line of unused blaster block, until we have 6 blasters
+;           mvi h,(PAGE1 | 04H)
+;           mvi l, 40H
+;ctmplp:    dcr l
+;           mvi m,0
+;           jnz ctmplp
 
-           ;; XXX TEMPORARY - clear the last line of unused blaster block, until we have 6 blasters
-           mvi h,(PAGE1 | 05H)
-           mvi l, 0C0H
-ctmplp2:   mvi m,0
-           inr l
-           jnz ctmplp2
+;           ;; XXX TEMPORARY - clear the last line of unused blaster block, until we have 6 blasters
+;           mvi h,(PAGE1 | 05H)
+;           mvi l, 0C0H
+;ctmplp2:   mvi m,0
+;           inr l
+;           jnz ctmplp2
 
            mvi a,0FFH                           ; take nobody
            out MAS_TAKE_PORT
@@ -471,10 +499,16 @@ mas_go_conway_lp:
            mvi h,PAGE2
            mvi l,lo(mas_board)
            mov a,m                              ; compute our conway_page from the blaster id
+           cpi 07H                              ; board 7 has nothing to do   XXX smbaker this should be 8
+           jz mas_go_conway_nope
            adi PAGE1                            ; ... starting at PAGE1
            mov d,a
            mvi e,0
            call conway_block
+           jmp mas_go_conway_lp
+mas_go_conway_nope:
+           mvi a,000H
+           out LEDPORT
            jmp mas_go_conway_lp
 
            include "life.inc" 
@@ -560,4 +594,7 @@ mas_takewtxt:
 
 mas_untaketxt:
             db "ntake\r\n",0
+
+mas_stucktxt:
+            db "stuck\r\n",0
 
