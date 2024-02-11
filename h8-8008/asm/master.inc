@@ -48,6 +48,9 @@ mas_prompt2:
             cpi 'L'
             jz mas_load_program
 
+            cpi 'P'
+            jz mas_set_program
+
             cpi 'R'
             jz mas_reset
 
@@ -85,6 +88,7 @@ mas_reset:
            mvi h,hi(mas_resettxt)
            mvi l,lo(mas_resettxt)
            call puts
+mas_reset_inner:
            mvi a, 000H
            out MAS_TAKE_PORT            ; if it's running, this will make it halt
            mvi a, 0FFH
@@ -109,26 +113,35 @@ mas_load_program:
            call puts
            call mas_copy_rom
            call mas_set_id
+           jmp mas_set_program_inner                    ; Now go set the program
+
+mas_set_program:
+           mvi h,hi(mas_setpgmtxt)
+           mvi l,lo(mas_setpgmtxt)
+           call puts
+mas_set_program_inner:
            mvi h,hi(mas_pgmtxt)
            mvi l,lo(mas_pgmtxt)
            call puts
-           call get_two
+           call get_one
+           jc mas_set_program_exit
            call mas_set_cmd
+mas_set_program_exit:
            call crlf
-           jmp mas_prompt
+           jmp mas_reset_inner                          ; Now reset it
 
 mas_take:
            mvi h,hi(mas_taketxt)
            mvi l,lo(mas_taketxt)
            call puts
-           call get_hex
+           call get_one
            jc mas_take_exit
            mov c,a
 
            mvi h,hi(mas_takebanktxt)
            mvi l,lo(mas_takebanktxt)
            call puts
-           call get_hex
+           call get_one
            jc mas_take_exit
 
            adi EXTRAM0
@@ -154,7 +167,7 @@ mas_takew:
            mvi h,hi(mas_takebanktxt)
            mvi l,lo(mas_takebanktxt)
            call puts
-           call get_hex
+           call get_one
            jc mas_takew_exit
            adi EXTRAM0
            out MMAP0
@@ -206,7 +219,9 @@ mas_conway_update_super:
 
            mvi a,000H
            out MAS_INT_PORT
-           nop
+           ;;nop
+           call conway_print
+
 conway_wait:
            in MAS_STAT_PORT
            ani 01H
@@ -215,6 +230,11 @@ conway_wait:
            call mas_conway_copy
            jmp mas_prompt
 
+; --------------------------------------------
+; mas_conway_copy
+;   copy new to old
+; --------------------------------------------
+
 mas_conway_copy:
            mvi h, (PAGE1  | 008H)               ; beginning of conway_new
            mvi l, 0
@@ -222,25 +242,25 @@ mas_conway_copy:
            out MMAP1
            mvi a,07EH                           ; take D7,D0 low -- read from 0 write to all
            out MAS_TAKE_PORT
-           call conway_copy_block
+           call conway_fcopy_block
            mvi a,07DH                           ; take D7,D1 low -- read from 1 write to all
            out MAS_TAKE_PORT
-           call conway_copy_block
+           call conway_fcopy_block
            mvi a,07BH                           ; take D7,D2 low -- read from 2 write to all
            out MAS_TAKE_PORT
-           call conway_copy_block
+           call conway_fcopy_block
            mvi a,077H                           ; take D7,D3 low -- read from 3 write to all
            out MAS_TAKE_PORT
-           call conway_copy_block
+           call conway_fcopy_block
            mvi a,06FH                           ; take D7,D4 low -- read from 4 write to all
            out MAS_TAKE_PORT
-           call conway_copy_block
+           call conway_fcopy_block
            mvi a,05FH                           ; take D7,D5 low -- read from 5 write to all
            out MAS_TAKE_PORT
-           call conway_copy_block
+           call conway_fcopy_block
 
            ;; XXX TEMPORARY - clear the first line of unused blaster block, until we have 6 blasters
-           mvi h,(PAGE1 | 03H)
+           mvi h,(PAGE1 | 04H)
            mvi l, 40H
 ctmplp:    dcr l
            mvi m,0
@@ -490,7 +510,8 @@ mas_menutxt:
             db  "X - Master Conway Reset\r\n"
             db  "Y - Master Conway Iteration\r\n"
             db  "I - Interrupt\r\n"
-            db  "L - Load program\r\n"
+            db  "L - Load Program\r\n"
+            db  "P - Set Program\r\n"
             db  "R - Reset\r\n"
             db  "S - Status\r\n"
             db  "T - Take\r\n"
@@ -498,6 +519,7 @@ mas_menutxt:
             db  "W - TakeW\r\n"
             db  "Q - Quit\r\n"
             db  0
+
 
 mas_prompttxt:
             db  "\r\n>>",0
@@ -517,8 +539,15 @@ mas_intreltxt:
 mas_loadtxt:
             db "oad\r\n",0
 
+mas_setpgmtxt:
+            db "rogram Set\r\n",0
+
 mas_pgmtxt:
-            db "program (2 digits): ",0
+            db "0 - ID\r\n"
+            db "1 - Free Run Counter\r\n"
+            db "2 - Count and Halt\r\n"
+            db "3 - Conway\r\n"
+            db ">> program (1 digit): ",0
 
 mas_taketxt:
             db "ake blaster (1 digit): ",0

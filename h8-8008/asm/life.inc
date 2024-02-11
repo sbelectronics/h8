@@ -152,11 +152,10 @@ conway_fcopy:
         ret
 
 conway_fcopy_block:
-        mvi c,0H                                ; 256 bytes
         mov d,h                                 ; D holds src page (new)
         mov a,h
         ani 0F7H
-        mov e,h                                 ; E holds dest page (old)
+        mov e,a                                 ; E holds dest page (old)
 conway_fcopy_loop:
         mov h,d
         mov b,m
@@ -164,7 +163,58 @@ conway_fcopy_loop:
         mov m,b
         inr l
         jnz conway_fcopy_loop
+        mov h,d
         inr h
+        ret
+
+; -----------------------------------------------------------
+; conway_print - just the screen output
+; -----------------------------------------------------------
+
+conway_print:
+        mvi h, CONWAY_HI
+        mvi l, 0
+        call conway_print_block
+        call conway_print_block
+        call conway_print_block
+        call conway_print_block
+        call conway_print_block
+        call conway_print_block
+        ret
+
+; -----------------------------------------------------------
+; conway_print_block - just the screen output
+; -----------------------------------------------------------
+
+conway_print_Block:
+        mvi d,04H                               ; 4 rows
+conway_print_loopr:
+        mvi c,040H                              ; 64 columns
+conway_print_loopc:
+        mov a,m
+        ora a
+        jnz conway_print_alive
+        mvi a,' '
+        call CPRINT
+        mvi b,0
+        jmp conway_print_next
+conway_print_alive:
+        mvi a,'*'
+        call CPRINT
+        mvi b,1
+conway_print_next:
+        inr l
+        jnz conway_print_nowrap
+        inr h
+conway_print_nowrap:
+        dcr c
+        jnz conway_print_loopc
+        mvi a,'\r'
+        call CPRINT
+        mvi a,'\n'
+        call CPRINT
+        dcr d
+        jnz conway_print_loopr
         ret
 
 ; -----------------------------------------------------------

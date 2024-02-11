@@ -555,7 +555,7 @@ rombasic:   mvi h,hi(rombastxt)
 switch:     mvi h,hi(switchtxt)
             mvi l,lo(switchtxt)
             call puts
-            call get_hex
+            call get_one
             jc prompt                   ; exit if escape  
             mov b,a                     ; save character in B
             mvi h,hi(loadingtxt)
@@ -1123,6 +1123,21 @@ get_two5:   mov b,a
             rrc                     ; set the carry flag
             mov a,b
             ret
+
+get_one:    call get_hex
+            jc get_one_err
+            call ascii2hex
+            mov b,a
+            sub a                   ; clear the carry flag
+            mov a,b
+            ret
+get_one_err: 
+            mov b,a
+            mvi a,1
+            rrc                     ; set the carry flag
+            mov a,b
+            ret
+            
             
 ;------------------------------------------------------------------
 ; get an ASCII hex character 0-F in A from the serial port.
