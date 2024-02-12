@@ -5,13 +5,69 @@ MAS_INT_PORT:  equ 15H
 MAS_REQ_PORT:  equ 16H
 MAS_RST_PORT:  equ 17H
 
+MAS_CMD_ID     equ 000H
 MAS_CMD_FREERUN equ 001H
 MAS_CMD_SINGLE equ 002H
-MAS_CMD_LIFE equ 003H
+MAS_CMD_LIFE   equ 003H
+
+; ----------------------------------------------------------------------------
+; mas_init - process the dipswitch and autostart as necessary
+;            jump back to mas_init_return if no autostart
+; ----------------------------------------------------------------------------
+
+mas_init:   in DIPPORT
+            ani 0F0H
+            cpi 070H                         ; off off off on -> autostart id
+            jz mas_auto_id
+            cpi 0B0H                         ; off off on off  -> autostart freerun
+            jz mas_auto_freerun
+            cpi 030H
+            jz mas_auto_conway               ; off off on on   -> autostart conway
+            jmp mas_init_return              ; no autostart - go back to main menu
+mas_auto_id:
+            mvi h,hi(mas_auto_id_txt)
+            mvi l,lo(mas_auto_id_txt)
+            call puts
+            call mas_copy_rom
+            call mas_set_id
+            mvi a, MAS_CMD_ID
+            call mas_set_cmd
+            call mas_reset
+            jmp mas_prompt
+mas_auto_freerun:
+            mvi h,hi(mas_auto_free_txt)
+            mvi l,lo(mas_auto_free_txt)
+            call puts
+            call mas_copy_rom
+            call mas_set_id
+            mvi a, MAS_CMD_FREERUN
+            call mas_set_cmd
+            call mas_reset
+            jmp mas_prompt
+mas_auto_conway:
+            mvi h,hi(mas_auto_conway_txt)
+            mvi l,lo(mas_auto_conway_txt)
+            call puts
+            call mas_copy_rom
+            call mas_set_id
+            mvi a, MAS_CMD_LIFE
+            call mas_set_cmd
+            call mas_reset
+            call mas_conway_reset_super
+            jmp mas_conway_run_super
+
+; ----------------------------------------------------------------------------
+; mas_menu - display master's menu
+; ----------------------------------------------------------------------------
 
 mas_menu:   mvi h,hi(mas_menutxt)           ; display the menu
             mvi l,lo(mas_menutxt) 
             call puts
+            ; fall through to mas_prompt
+
+; ----------------------------------------------------------------------------
+; mas_prompt - display master's prompt
+; ----------------------------------------------------------------------------
             
 mas_prompt: mvi h,hi(mas_prompttxt)         ; prompt for input
             mvi l,lo(mas_prompttxt) 
@@ -49,31 +105,31 @@ mas_prompt2:
             jz mas_conway_run
 
             cpi 'I'
-            jz mas_interrupt
+            jz mas_interrupt_cmd
 
             cpi 'J'
-            jz mas_interrupt2
+            jz mas_interrupt_cmd2
 
             cpi 'L'
-            jz mas_load_program
+            jz mas_load_program_cmd
 
             cpi 'P'
-            jz mas_set_program
+            jz mas_set_program_cmd
 
             cpi 'R'
-            jz mas_reset
+            jz mas_reset_cmd
 
             cpi 'S'
-            jz mas_status               ; print status
+            jz mas_status_cmd               ; print status
 
             cpi 'T'
-            jz mas_take
+            jz mas_take_cmd
 
             cpi 'U'
-            jz mas_untake
+            jz mas_untake_cmd
 
             cpi 'W'
-            jz mas_takew
+            jz mas_takew_cmd
 
             cpi 'Q'
             jz menu                     ; back to main menu
@@ -84,7 +140,11 @@ mas_prompt2:
             call putch                  ; whaaat??
             jmp mas_prompt
 
-mas_status:
+; ----------------------------------------------------------------------------
+; mas_status_cmd - show status byte
+; ----------------------------------------------------------------------------
+
+mas_status_cmd:
            mvi h,hi(mas_statustxt)
            mvi l,lo(mas_statustxt)
            call puts
@@ -93,11 +153,19 @@ mas_status:
            call crlf
            jmp mas_prompt
 
-mas_reset:
+; ----------------------------------------------------------------------------
+; mas_reset_cmd - reset all blasters
+; ----------------------------------------------------------------------------
+
+mas_reset_cmd:
            mvi h,hi(mas_resettxt)
            mvi l,lo(mas_resettxt)
            call puts
 mas_reset_inner:
+           call mas_reset
+           jmp mas_prompt
+
+mas_reset:
            mvi a, 000H
            out MAS_TAKE_PORT            ; if it's running, this will make it halt
            mvi a, 0FFH
@@ -106,9 +174,13 @@ mas_reset_inner:
            out MAS_TAKE_PORT            ; release any TAKEs
            mvi a, 00H         
            out MAS_RST_PORT             ; toggle the reset
-           jmp mas_prompt
+           ret
 
-mas_interrupt:
+; ----------------------------------------------------------------------------
+; mas_interrupt_cmd - send interrupt
+; ----------------------------------------------------------------------------
+
+mas_interrupt_cmd:
            mvi h,hi(mas_inttxt)
            mvi l,lo(mas_inttxt)
            call puts
@@ -117,15 +189,19 @@ mas_interrupt:
 
            jmp mas_prompt
 
-mas_interrupt2:
+; ----------------------------------------------------------------------------
+; mas_interrupt_cmd2 - this was one of my test cases for testing interrupts
+; ----------------------------------------------------------------------------
+
+mas_interrupt_cmd2:
            mvi h,hi(mas_inttxt)
            mvi l,lo(mas_inttxt)
            call puts
-mas_interrupt2l:
+mas_interrupt_cmd2l:
            in MAS_STAT_PORT
            ani 07FH
            cpi 07FH
-           jnz mas_interrupt2l
+           jnz mas_interrupt_cmd2l
 
            mvi a, 000H
            out MAS_INT_PORT
@@ -135,13 +211,17 @@ mas_interrupt2l:
 
            in MAS_STAT_PORT
            ani 040H
-           jz mas_interrupt2l
+           jz mas_interrupt_cmd2l
            mvi h,hi(mas_stucktxt)
            mvi l,lo(mas_stucktxt)
            call puts
            jmp mas_prompt
 
-mas_load_program:
+; ----------------------------------------------------------------------------
+; mas_load_program_cmd - load a program
+; ----------------------------------------------------------------------------
+
+mas_load_program_cmd:
            mvi h,hi(mas_loadtxt)
            mvi l,lo(mas_loadtxt)
            call puts
@@ -149,7 +229,11 @@ mas_load_program:
            call mas_set_id
            jmp mas_set_program_inner                    ; Now go set the program
 
-mas_set_program:
+; ----------------------------------------------------------------------------
+; mas_set_program_cmd - set program number
+; ----------------------------------------------------------------------------
+
+mas_set_program_cmd:
            mvi h,hi(mas_setpgmtxt)
            mvi l,lo(mas_setpgmtxt)
            call puts
@@ -164,7 +248,11 @@ mas_set_program_exit:
            call crlf
            jmp mas_reset_inner                          ; Now reset it
 
-mas_take:
+; ----------------------------------------------------------------------------
+; mas_take_cmd - take control of blaster
+; ----------------------------------------------------------------------------
+
+mas_take_cmd:
            mvi h,hi(mas_taketxt)
            mvi l,lo(mas_taketxt)
            call puts
@@ -194,7 +282,11 @@ mas_take_exit:
            call crlf
            jmp mas_prompt
 
-mas_takew:
+; ----------------------------------------------------------------------------
+; mas_takew_cmd - take control of blaster for write only
+; ----------------------------------------------------------------------------
+
+mas_takew_cmd:
            mvi h,hi(mas_taketxt)
            mvi l,lo(mas_taketxt)
            call puts
@@ -209,10 +301,13 @@ mas_takew:
            out MAS_TAKE_PORT
 mas_takew_exit:
            call crlf
-           jmp mas_prompt           
+           jmp mas_prompt
 
+; ----------------------------------------------------------------------------
+; mas_untake_cmd - go back to main ram
+; ----------------------------------------------------------------------------
 
-mas_untake:
+mas_untake_cmd:
            mvi h,hi(mas_untaketxt)
            mvi l,lo(mas_untaketxt)
            call puts
@@ -250,6 +345,10 @@ mas_conway_run_loop:
 
 mas_conway_super:
            call crlf
+           call mas_conway_reset_super
+           jmp mas_prompt
+
+mas_conway_reset_super:
            call mas_conway_init_iter
            mvi a,EXTRAM1
            out MMAP1
@@ -261,7 +360,7 @@ mas_conway_super:
            mvi a,RAM1
            out MMAP1
            call mas_conway_copy
-           jmp mas_prompt
+           ret
 
 ; ----------------------------------------------------------------------------
 ; mas_conway_update_super - do one update and print cycle
@@ -703,4 +802,13 @@ mas_untaketxt:
 
 mas_stucktxt:
             db "stuck\r\n",0
+
+mas_auto_id_txt:
+            db "autostart id\r\n",0
+
+mas_auto_free_txt:
+            db "autostart freerun\r\n",0
+
+mas_auto_conway_txt:
+            db "autostart conway\r\n",0
 

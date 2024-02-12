@@ -31,6 +31,7 @@ ESCAPE      equ 1BH
 RETURN      equ 0DH
 
 LEDPORT     equ 08H                     ; Port where the 8 LEDs are at
+DIPPORT     equ 00H
 
 ; when the reset pushbutton is pressed, the flip-flop is set which generates an interrupt
 ; and clears the address latches thus, the first instruction is thus always fetched from 
@@ -76,7 +77,7 @@ rom_start:
             out  08H
             endif
             
-;;            xra a                       ; XXX smbaker - last tests H8-8008 had this code
+;;            xra a                       ; XXX smbaker - last tested H8-8008 had this code
 ;;            out 09H                     ; turn off orange LEDs
             
             mvi h,hi(esccount)          ; clear the escape key counter
@@ -90,6 +91,11 @@ rom_start:
             ifdef debugled
             mvi  a,7H
             out  LEDPORT
+            endif
+
+            ifdef master
+            jmp mas_init
+mas_init_return:
             endif
             
 menu:       mvi h,hi(menutxt)           ; display the menu
