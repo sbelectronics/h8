@@ -1,4 +1,4 @@
-MAS_STAT_PORT: equ 04H
+MAS_STAT_PORT: equ 01H
 
 MAS_TAKE_PORT: equ 14H
 MAS_INT_PORT:  equ 15H
@@ -36,11 +36,17 @@ mas_prompt2:
             cpi 'D'
             jz mas_conway_update_super
 
+            cpi 'E'
+            jz mas_conway_run_super
+
             cpi 'X'
             jz mas_conway
 
             cpi 'Y'
             jz mas_conway_update
+
+            cpi 'Z'
+            jz mas_conway_run
 
             cpi 'I'
             jz mas_interrupt
@@ -218,6 +224,7 @@ mas_untake:
 
 mas_conway:
            call crlf
+           call mas_conway_init_iter
            call conway_reset
            call conway_copy
            jmp mas_prompt
@@ -228,8 +235,22 @@ mas_conway_update:
            call conway_copy
            jmp mas_prompt
 
+mas_conway_run:
+           call cls
+mas_conway_run_loop:
+           call conway_full
+           call home
+           call conway_copy
+           call mas_conway_show_iter
+           jmp mas_conway_run_loop
+
+; ----------------------------------------------------------------------------
+; mas_conway_super - setup conway
+; ----------------------------------------------------------------------------
+
 mas_conway_super:
            call crlf
+           call mas_conway_init_iter
            mvi a,EXTRAM1
            out MMAP1
            mvi a,080H                           ; take everyone
@@ -242,21 +263,103 @@ mas_conway_super:
            call mas_conway_copy
            jmp mas_prompt
 
+; ----------------------------------------------------------------------------
+; mas_conway_update_super - do one update and print cycle
+; ----------------------------------------------------------------------------
+
 mas_conway_update_super:
            call crlf
-
-           mvi a,000H
-           out MAS_INT_PORT
-           ;;nop
+           call mas_conway_trigger
            call conway_print
-
-conway_wait:
-           in MAS_STAT_PORT
-           ani 01H
-           jz conway_wait
-
+           call mas_conway_wait
            call mas_conway_copy
            jmp mas_prompt
+
+mas_conway_wait:
+           in MAS_STAT_PORT
+           ani 01H                              ; just wait on the first one.
+           jz mas_conway_wait                   ; all the others will be similar.
+           ret
+
+mas_conway_trigger:
+           ; Original idea was to use an interrupt to wake the CPU from
+           ; halt, but this didn't work reliably. Instead just reset it.
+           ;mvi a,000H
+           ;out MAS_INT_PORT
+           out MAS_rst_PORT                     ; reset 
+           ret
+
+; ----------------------------------------------------------------------------
+; mas_conway_run_super - continuous conway run
+; ----------------------------------------------------------------------------
+
+mas_conway_run_super:
+           call cls
+mas_conway_run_super_loop:
+           call mas_conway_trigger
+           call home
+           call conway_print
+           call mas_conway_show_iter
+           call mas_conway_wait
+           call mas_conway_copy
+           jmp mas_conway_run_super_loop
+
+cls:       mvi a, 01BH          ; ESC [2J
+           call CPRINT
+           mvi a, '['
+           call CPRINT
+           mvi a, '2'
+           call CPRINT
+           mvi a,'J'
+           call CPRINT
+           ret
+
+home:      mvi a, 01BH          ; ESC [1;1H
+           call CPRINT
+           mvi a,'['
+           call CPRINT
+           mvi a,'1'
+           call CPRINT
+           mvi a,';'
+           call CPRINT
+           mvi a,'1'
+           call CPRINT
+           mvi a,'H'
+           call CPRINT
+           ret
+
+side:      mvi a, 01BH          ; ESC [1;70H
+           call CPRINT
+           mvi a,'['
+           call CPRINT
+           mvi a,'1'
+           call CPRINT
+           mvi a,';'
+           call CPRINT
+           mvi a,'7'
+           call CPRINT
+           mvi a,'0'
+           call CPRINT
+           mvi a,'H'
+           call CPRINT
+           ret
+
+mas_conway_init_iter:
+           mvi h,0
+           mvi l,0
+           jmp save_hl
+
+mas_conway_show_iter:
+           call side                            ; move to where we want to print the iter count
+           call restore_hl                      ; get the counter
+           inr l                                ; increment it
+           jnz mas_conway_show_iter_nowrap
+           inr h
+mas_conway_show_iter_nowrap:
+           call save_hl                         ; save the counter
+           mov h,d                              ; DE to HL
+           mov l,e
+           jmp prndec16                         ; print the counter
 
 ; --------------------------------------------
 ; mas_conway_copy
@@ -489,27 +592,28 @@ mas_freerun_l1:
            jmp mas_freerun_l
 
 mas_go_conway:
-           mvi a,0AAH
-           out LEDPORT                          ; something on the LEDs to show we're waiting
-mas_go_conway_lp:
-           hlt
-           nop
-           nop
-           nop
            mvi h,PAGE2
            mvi l,lo(mas_board)
            mov a,m                              ; compute our conway_page from the blaster id
-           cpi 07H                              ; board 7 has nothing to do   XXX smbaker this should be 8
+           cpi 06H                              ; board 6 has nothing to do
            jz mas_go_conway_nope
            adi PAGE1                            ; ... starting at PAGE1
            mov d,a
            mvi e,0
            call conway_block
-           jmp mas_go_conway_lp
+           hlt
+           nop
+           nop
+           nop
+           jmp mas_go_conway
 mas_go_conway_nope:
-           mvi a,000H
-           out LEDPORT
-           jmp mas_go_conway_lp
+           mvi a,000H                           ; blank the LEDS
+           out LEDPORT                          ; We're not using this board.
+           hlt
+           nop
+           nop
+           nop
+           jmp mas_go_conway
 
            include "life.inc" 
 
@@ -539,10 +643,12 @@ prn_bin_next:
             
 mas_menutxt:
             db  "\r\n"
-            db  "C - Conway Reset\r\n"
-            db  "D - Conway Iteration\r\n"            
+            db  "C - Conway Reset/Setup\r\n"
+            db  "D - Conway Iteration\r\n"
+            db  "E - Conway Continuous Run\r\n"
             db  "X - Master Conway Reset\r\n"
             db  "Y - Master Conway Iteration\r\n"
+            db  "Z - Master Conway Continuous Run\r\n"
             db  "I - Interrupt\r\n"
             db  "L - Load Program\r\n"
             db  "P - Set Program\r\n"
