@@ -9,6 +9,7 @@ MAS_CMD_ID     equ 000H
 MAS_CMD_FREERUN equ 001H
 MAS_CMD_SINGLE equ 002H
 MAS_CMD_LIFE   equ 003H
+MAS_CMD_BANNER equ 004H
 
 ; ----------------------------------------------------------------------------
 ; mas_init - process the dipswitch and autostart as necessary
@@ -199,8 +200,8 @@ mas_interrupt_cmd2:
            call puts
 mas_interrupt_cmd2l:
            in MAS_STAT_PORT
-           ani 07FH
-           cpi 07FH
+           ani 040H
+           cpi 040H
            jnz mas_interrupt_cmd2l
 
            mvi a, 000H
@@ -381,11 +382,8 @@ mas_conway_wait:
            ret
 
 mas_conway_trigger:
-           ; Original idea was to use an interrupt to wake the CPU from
-           ; halt, but this didn't work reliably. Instead just reset it.
-           ;mvi a,000H
-           ;out MAS_INT_PORT
-           out MAS_rst_PORT                     ; reset 
+           mvi a,000H
+           out MAS_INT_PORT
            ret
 
 ; ----------------------------------------------------------------------------
@@ -653,6 +651,9 @@ mas_exec:
            cpi MAS_CMD_LIFE
            jz mas_go_conway
 
+           cpi MAS_CMD_BANNER
+           jz mas_go_banner
+
            jmp mas_go_id
 
 mas_go_id:
@@ -690,7 +691,43 @@ mas_freerun_l1:
            jnz mas_freerun_l1
            jmp mas_freerun_l
 
+mas_go_banner:
+           mvi h,PAGE2
+           mvi l,lo(mas_board)
+           mov a,m                              ; get board number
+mas_go_banner_startover:
+           mvi h,hi(scottwashere)
+           mvi l,lo(scottwashere)
+           add l                                ; add offset of banner to board number
+           jnc mas_go_banner_nowrap
+           inr h
+mas_go_banner_nowrap:
+           mov l,a
+mas_go_banner_loop:
+           mov a,m
+           out LEDPORT
+           inr l
+           jnz mas_go_banner_nowrap2
+           inr h
+mas_go_banner_nowrap2:
+           mov a,l
+           cpi lo(scottwashere_end)             ; are we at the end?
+           mvi a,0                              ; prepare for it...
+           jz mas_go_banner_startover           ; yes, we're at the end so start over
+           hlt
+           nop
+           nop
+           nop
+           jmp mas_go_banner_loop
+
 mas_go_conway:
+           mvi a,0AAH
+           out LEDPORT
+mas_go_conway_lp:
+           hlt
+           nop
+           nop
+           nop
            mvi h,PAGE2
            mvi l,lo(mas_board)
            mov a,m                              ; compute our conway_page from the blaster id
@@ -700,11 +737,7 @@ mas_go_conway:
            mov d,a
            mvi e,0
            call conway_block
-           hlt
-           nop
-           nop
-           nop
-           jmp mas_go_conway
+           jmp mas_go_conway_lp
 mas_go_conway_nope:
            mvi a,000H                           ; blank the LEDS
            out LEDPORT                          ; We're not using this board.
@@ -712,9 +745,9 @@ mas_go_conway_nope:
            nop
            nop
            nop
-           jmp mas_go_conway
+           jmp mas_go_conway_lp
 
-           include "life.inc" 
+           include "life.inc"
 
 
 ; --------------------------------------------
@@ -812,3 +845,18 @@ mas_auto_free_txt:
 mas_auto_conway_txt:
             db "autostart conway\r\n",0
 
+scottwashere:
+            db 064H, 0F6H, 0B2H, 09AH, 0CEH, 04CH, 000H, 000H, 038H, 07CH
+            db 0C6H, 082H, 082H, 0C6H, 044H, 000H, 038H, 07CH, 0C6H, 082H
+            db 0C6H, 07CH, 038H, 000H, 0C0H, 082H, 0FEH, 0FEH, 082H, 0C0H
+            db 000H, 000H, 0C0H, 082H, 0FEH, 0FEH, 082H, 0C0H, 000H, 000H
+            db 000H, 000H, 000H, 000H, 000H, 000H, 000H, 000H, 0FEH, 0FEH
+            db 00CH, 018H, 00CH, 0FEH, 0FEH, 000H, 03EH, 07EH, 0C8H, 0C8H
+            db 07EH, 03EH, 000H, 000H, 064H, 0F6H, 0B2H, 09AH, 0CEH, 04CH
+            db 000H, 000H, 000H, 000H, 000H, 000H, 000H, 000H, 000H, 000H
+            db 0FEH, 0FEH, 010H, 010H, 0FEH, 0FEH, 000H, 000H, 082H, 0FEH
+            db 0FEH, 092H, 0BAH, 082H, 0C6H, 000H, 082H, 0FEH, 0FEH, 090H
+            db 098H, 0FEH, 066H, 000H, 082H, 0FEH, 0FEH, 092H, 0BAH, 082H
+            db 0C6H, 000H, 000H, 000H, 000H, 000H, 000H, 000H, 000H, 000H
+            db 000H, 000H
+scottwashere_end:
