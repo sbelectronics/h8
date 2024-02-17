@@ -1,8 +1,20 @@
-CONWAY_HI  equ PAGE1
+; ----------------------------------------------------------------------------
+; Conway's Game of Life
+; https://www.smbaker.com/
+; ----------------------------------------------------------------------------
+
+; Implemented as a 64 x 24 screen. The are two screens, the old screen and
+; the new screen. On each iteration, we calculate conway on the old and
+; we write the output to new. Then we copy new back to old, to setup for
+; the next evolution.
+
+; CONWAY_PAGE is the page where conway's buffer starts
+
+CONWAY_PAGE  equ PAGE1
 
 ;; coldec and colinc destroy C
 
-coldec     macro
+coldec     macro                                ; decrement column by 1
            mov a,l
            ani 0C0H
            mov c,a                              ; C has bits 7,6 of L
@@ -14,7 +26,7 @@ coldec     macro
            mov l,a
            endm
 
-colinc     macro
+colinc     macro                                ; increment column by 1
            mov a,l
            ani 0C0H
            mov c,a                              ; C has bits 7,6 of L
@@ -26,28 +38,28 @@ colinc     macro
            mov l,a
            endm
 
-rowdec     macro
+rowdec     macro                                ; decrement row by 1
            mov a,l
            sui 040H
            mov l,a
            mov a,h
            sbi 0H
-           cpi CONWAY_HI-1
+           cpi CONWAY_PAGE-1
            jnz nowrap
-           mvi a,CONWAY_HI+5
+           mvi a,CONWAY_PAGE+5
 nowrap:
            mov h,a
            endm
 
-rowinc     macro
+rowinc     macro                                ; increment row by 1
            mov a,l
            adi 040H
            mov l,a
            mov a,h
            aci 0H
-           cpi CONWAY_HI+6
+           cpi CONWAY_PAGE+6
            jnz nowrap
-           mvi a,CONWAY_HI
+           mvi a,CONWAY_PAGE
 nowrap:
            mov h,a
            endm
@@ -57,7 +69,7 @@ nowrap:
 ; -----------------------------------------------------------
 
 conway_reset:
-          mvi h,CONWAY_HI
+          mvi h,CONWAY_PAGE
           mvi l,0
           mvi c,00EH                           ; Clear 8 blocks on the first page and 6 on the second
 conway_reset_loop:
@@ -71,7 +83,7 @@ conway_reset_nowrap:
 
           ;; load a glider
 
-          mvi h,(CONWAY_HI | 08H)               ; put the glider in the new screen
+          mvi h,(CONWAY_PAGE | 08H)               ; put the glider in the new screen
           mvi l,001H
           mvi m,1
           mvi l,042H
@@ -89,7 +101,7 @@ conway_reset_nowrap:
 ; -----------------------------------------------------------
 
 conway_copy:
-        mvi h, (CONWAY_HI | 008H)
+        mvi h, (CONWAY_PAGE | 008H)
         mvi l,0
         call conway_copy_block
         call conway_copy_block
@@ -141,7 +153,7 @@ conway_copy_nowrap:
 ; -----------------------------------------------------------
 
 conway_fcopy:
-        mvi h, (CONWAY_HI | 008H)
+        mvi h, (CONWAY_PAGE | 008H)
         mvi l,0
         call conway_fcopy_block
         call conway_fcopy_block
@@ -172,7 +184,7 @@ conway_fcopy_loop:
 ; -----------------------------------------------------------
 
 conway_print:
-        mvi h, CONWAY_HI
+        mvi h, CONWAY_PAGE
         mvi l, 0
         call conway_print_block
         call conway_print_block
@@ -222,7 +234,7 @@ conway_print_nowrap:
 ; -----------------------------------------------------------
 
 conway_full:
-           mvi d, CONWAY_HI
+           mvi d, CONWAY_PAGE
            mvi e, 0
            call conway_block
            call conway_block

@@ -1,3 +1,8 @@
+; ----------------------------------------------------------------------------
+; MasterBlaster
+; https://www.smbaker.com/
+; ----------------------------------------------------------------------------
+
 MAS_STAT_PORT: equ 01H
 
 MAS_TAKE_PORT: equ 14H
@@ -318,6 +323,10 @@ mas_untake_cmd:
            out MAS_TAKE_PORT
            jmp mas_prompt
 
+; ----------------------------------------------------------------------------
+; mas_conway - setup conway, master only
+; ----------------------------------------------------------------------------
+
 mas_conway:
            call crlf
            call mas_conway_init_iter
@@ -325,11 +334,19 @@ mas_conway:
            call conway_copy
            jmp mas_prompt
 
+; ----------------------------------------------------------------------------
+; mas_conway_update - do one update and print cycle, master only
+; ----------------------------------------------------------------------------
+
 mas_conway_update:
            call crlf
            call conway_full
            call conway_copy
            jmp mas_prompt
+
+; ----------------------------------------------------------------------------
+; mas_conway_run - continuous conway run, master only
+; ----------------------------------------------------------------------------
 
 mas_conway_run:
            call cls
@@ -487,20 +504,6 @@ mas_conway_copy:
            out MAS_TAKE_PORT
            call conway_fcopy_block
 
-;           ;; XXX TEMPORARY - clear the first line of unused blaster block, until we have 6 blasters
-;           mvi h,(PAGE1 | 04H)
-;           mvi l, 40H
-;ctmplp:    dcr l
-;           mvi m,0
-;           jnz ctmplp
-
-;           ;; XXX TEMPORARY - clear the last line of unused blaster block, until we have 6 blasters
-;           mvi h,(PAGE1 | 05H)
-;           mvi l, 0C0H
-;ctmplp2:   mvi m,0
-;           inr l
-;           jnz ctmplp2
-
            mvi a,0FFH                           ; take nobody
            out MAS_TAKE_PORT
            mvi a,RAM1
@@ -656,6 +659,8 @@ mas_exec:
 
            jmp mas_go_id
 
+;; mas_go_id - display ID on LEDs
+
 mas_go_id:
            mvi h,PAGE2
            mvi l,lo(mas_board)
@@ -666,6 +671,8 @@ mas_go_id:
            nop
            nop
            jmp mas_go_id
+
+;; mas_go_single - display counter on LEDs, increment once, and halt
 
 mas_go_single:
            mvi h,PAGE2
@@ -680,6 +687,8 @@ mas_go_single:
            nop
            jmp mas_go_single
 
+;; mas_go_freerun - free running counter
+
 mas_go_freerun:
            xra a
 mas_freerun_l:
@@ -690,6 +699,8 @@ mas_freerun_l1:
            inr b
            jnz mas_freerun_l1
            jmp mas_freerun_l
+
+;; mas_go_banner - displays a banner on the LEDs, halts at each update
 
 mas_go_banner:
            mvi h,PAGE2
@@ -720,6 +731,8 @@ mas_go_banner_nowrap2:
            nop
            jmp mas_go_banner_loop
 
+;; mas_go_conway: conway's game of life
+
 mas_go_conway:
            mvi a,0AAH
            out LEDPORT
@@ -749,7 +762,6 @@ mas_go_conway_nope:
 
            include "life.inc"
 
-
 ; --------------------------------------------
 ; prn_bin
 ;   print 8 bit binary number
@@ -778,9 +790,6 @@ mas_menutxt:
             db  "C - Conway Reset/Setup\r\n"
             db  "D - Conway Iteration\r\n"
             db  "E - Conway Continuous Run\r\n"
-            db  "X - Master Conway Reset\r\n"
-            db  "Y - Master Conway Iteration\r\n"
-            db  "Z - Master Conway Continuous Run\r\n"
             db  "I - Interrupt\r\n"
             db  "L - Load Program\r\n"
             db  "P - Set Program\r\n"
@@ -789,6 +798,9 @@ mas_menutxt:
             db  "T - Take\r\n"
             db  "U - Untake\r\n"
             db  "W - TakeW\r\n"
+            db  "X - Master Conway Reset\r\n"
+            db  "Y - Master Conway Iteration\r\n"
+            db  "Z - Master Conway Continuous Run\r\n"
             db  "Q - Quit\r\n"
             db  0
 
@@ -819,6 +831,7 @@ mas_pgmtxt:
             db "1 - Free Run Counter\r\n"
             db "2 - Count and Halt\r\n"
             db "3 - Conway\r\n"
+            db "4 - Banner\r\n"
             db ">> program (1 digit): ",0
 
 mas_taketxt:
