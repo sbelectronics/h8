@@ -31,6 +31,8 @@
             
             include "bitfuncs.inc" 
 
+LEDPORT     equ 08H  
+
             cpu 8008new             ; use "new" 8008 mnemonics
             radix 10                ; use base 10 for numbers
 
@@ -54,7 +56,7 @@ rom_start:  call SINIT
             
 ; copy OLDPG1 constants and variables from EPROM at 3D00H to RAM at 0000H
             mvi l,00h               ; initialize L to start of page
-mv_oldpg1:  mvi h,hi(page1)         ; source: OLDPG1 constants in EPROM at page 3DH
+mv_oldpg1:  mvi h,hi(spage1)        ; source: OLDPG1 constants in EPROM at page 3DH
             mov a,m                 ; retrieve the byte from EPROM
             mvi h,hi(OLDPG1)        ; destination: RAM at page 00H
             mov m,a                 ; store the byte in RAM
@@ -4066,7 +4068,7 @@ titletxt:   db  "\r\nScelbi BASIC (SCELBAL) ",DATE," ",TIME,"\r\n"
 
  ;this page gets copied from EPROM to RAM at 0000H as OLDPG1           
             ORG 3D00H
-page1:      DB 000,000,000,000
+spage1:     DB 000,000,000,000
             DB 000,000,100,001	        ; STORES FLOATING POINT CONSTANT +1.0
             DB 000,000,000
             DB 000		                ; EXPONENT COUNTER
