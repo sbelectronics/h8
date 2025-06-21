@@ -43,10 +43,38 @@ void _short_delay(void)
     //   400 nops = 1332ns
     //   gpioDelay(1) == 2189ns
 
-    for (j=0; j<100; j++) { 
+    // on pi zero 2 w
+    //    50 nops = 120ns
+    //   100 nops = 220ns
+    //   200 nops = 420ns
+    //   400 nops = 820ns
+
+    // Intermittent errors seen on pi zero 2 w with 100 nops.
+
+
+    for (j=0; j<200; j++) { 
         asm("nop");
     }
 }
+
+/*
+void bench(void)
+{
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+
+    unsigned long t1 = 1000000 * tv.tv_sec + tv.tv_usec;
+
+    for (int i=0; i<1000000; i++) {
+        _short_delay();
+    }
+
+    gettimeofday(&tv,NULL);
+    unsigned long t2 = 1000000 * tv.tv_sec + tv.tv_usec;
+
+    printf("microseconds for 1000000 ops: %lu\n", t2-t1);
+}
+*/
 
 void _medium_delay(void)
 {
