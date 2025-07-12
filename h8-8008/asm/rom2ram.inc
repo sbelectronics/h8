@@ -16,7 +16,7 @@ r2rmore:
             jnz r2rmore              ; we didn't wrap L, so keep copying
             inr b                    ; wrapped, so increment MSB src
             inr c                    ; ... and MSB dest
-            mov a,c
+            mov a,b
             cpi 40H                  ; are we there yet?
             jnz r2rmore              ; nope
             jmp jumpprog             ; we're done. Jump to the jump to the program start.
