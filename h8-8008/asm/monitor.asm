@@ -51,6 +51,9 @@ DIPPORT     equ 00H
 mas_board:  db 0FFH
 mas_cmd:    db 00H
 mas_arg:    db 00H
+mas_arg2w:  db 00H, 00H
+mas_arg3w:  db 00H, 00H
+mas_resw:   db 00H, 00H
 
 ; The entrypoint for the monitor. go-rom jumps here after setting the
 ; bank.
@@ -247,7 +250,7 @@ dump2:      call crlf                   ; start on a new line
             call space
             
             ; write one line of 16 bytes in hex and then in ascii
-dump3:      in 0
+dump3:      in 0                        ; XXX SMBAKER - FIX THIS
             rar
             jnc prompt                  ; abort if start bit detected
             mov a,m                     ; retrieve the byte from memory
@@ -561,7 +564,7 @@ rombasic:   mvi h,hi(rombastxt)
 switch:     mvi h,hi(switchtxt)
             mvi l,lo(switchtxt)
             call puts
-            call get_one
+            call get_hex                ; XXX smbaker confusion on get_one vs get_hex
             jc prompt                   ; exit if escape  
             mov b,a                     ; save character in B
             mvi h,hi(loadingtxt)
@@ -1394,5 +1397,4 @@ progtxt     db  "rogram to RAM from bank (one digit): ",0
 loadingtxt  db  "\r\nSwitching banks and jumping...\r\n",0
 poptxt:     db  "op stack\r\n",0
 pushtxt:    db  "-pUsh stack: (in hex) ",0
-disabletxt: db  "-disable iterrupts\r\n",0
-enabletxt:  db  "-enable iterrupts\r\n",0
+disabletxt: db  "-disabl
