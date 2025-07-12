@@ -15,6 +15,7 @@ MAS_CMD_FREERUN equ 001H
 MAS_CMD_SINGLE equ 002H
 MAS_CMD_LIFE   equ 003H
 MAS_CMD_BANNER equ 004H
+MAS_CMD_COP    equ 005H
 
 ; ----------------------------------------------------------------------------
 ; mas_init - process the dipswitch and autostart as necessary
@@ -118,6 +119,9 @@ mas_prompt2:
 
             cpi 'L'
             jz mas_load_program_cmd
+
+            cpi 'N'
+            jz mas_cop_test
 
             cpi 'P'
             jz mas_set_program_cmd
@@ -510,6 +514,121 @@ mas_conway_copy:
            out MMAP1
            ret
 
+mas_cop_wait:
+           in MAS_STAT_PORT
+           ani 40H                              ; just wait on the last one.
+           jz mas_cop_wait                      ; all the others will be similar.
+           ret
+
+mas_cop_trigger:
+           mvi a,000H
+           out MAS_INT_PORT
+           ret
+
+mas_cop_prn:
+           mvi a, 0BFH
+           out MAS_TAKE_PORT
+
+           mvi h,PAGE0
+           mvi l,lo(mas_arg2w)
+           mov a,m
+           inr l
+           mov h,m
+           mov l,a
+           call prndec16
+           mvi h,hi(mas_cop1_txt)
+           mvi l,lo(mas_cop1_txt)
+           call puts
+
+           mvi h,PAGE0
+           mvi l,lo(mas_arg3w)
+           mov a,m
+           inr l
+           mov h,m
+           mov l,a
+           call prndec16
+           mvi h,hi(mas_cop2_txt)
+           mvi l,lo(mas_cop2_txt)
+           call puts
+
+           mvi h,PAGE0
+           mvi l,lo(mas_resw)
+           mov a,m
+           inr l
+           mov h,m
+           mov l,a
+           call prndec16
+           mvi h,hi(mas_cop3_txt)
+           mvi l,lo(mas_cop3_txt)
+           call puts
+
+           mvi a, 0FFH
+           out MAS_TAKE_PORT
+
+           ret          
+
+mas_cop_test:
+           mvi h,hi(mas_cop0_txt)
+           mvi l,lo(mas_cop0_txt)
+           call puts
+
+           mvi a,EXTRAM2
+           out MMAP0
+           
+           ; 7 * 3 = 21
+
+           mvi a,080H
+           out MAS_TAKE_PORT
+
+           mvi h,PAGE0
+           mvi l,lo(mas_arg)
+           mvi m, COP_SMUL
+           inr l
+           mvi m, 07H
+           inr l
+           mvi m, 00H
+           inr l
+           mvi m, 03H
+           inr l
+           mvi m, 00H
+
+           mvi a,0FFH
+           out MAS_TAKE_PORT
+
+           call mas_cop_trigger
+           call mas_cop_wait
+
+           call mas_cop_prn
+
+           ; 1305 * 17 = 22185
+
+           mvi a,080H
+           out MAS_TAKE_PORT
+
+           mvi h,PAGE0
+           mvi l,lo(mas_arg)
+           mvi m, COP_SMUL
+           inr l
+           mvi m, 19H
+           inr l
+           mvi m, 05H
+           inr l
+           mvi m, 11H
+           inr l
+           mvi m, 00H
+
+           mvi a,0FFH
+           out MAS_TAKE_PORT
+
+           call mas_cop_trigger
+           call mas_cop_wait
+
+           call mas_cop_prn
+
+           mvi a,RAM0
+           out MMAP0           
+           jmp mas_prompt
+
 ; --------------------------------------------
 ; mas_copy_rom
 ;   copy rom to ram on blaster
@@ -657,6 +776,9 @@ mas_exec:
            cpi MAS_CMD_BANNER
            jz mas_go_banner
 
+           cpi MAS_CMD_COP
+           jz mas_go_cop
+
            jmp mas_go_id
 
 ;; mas_go_id - display ID on LEDs
@@ -760,7 +882,26 @@ mas_go_conway_nope:
            nop
            jmp mas_go_conway_lp
 
+;mas_go_cop:
+;           mvi a,0AAH
+;           out LEDPORT
+;           call cop_test1
+;           hlt
+;           nop
+;           nop
+;           nop
+;           jmp mas_go_cop
+
+mas_go_cop:
+           call cop_test2
+           hlt
+           nop
+           nop
+           nop
+           jmp mas_go_cop
+
            include "life.inc"
+           include "cop.inc"
 
 ; --------------------------------------------
 ; prn_bin
@@ -857,6 +998,18 @@ mas_auto_free_txt:
 
 mas_auto_conway_txt:
             db "autostart conway\r\n",0
+
+mas_cop0_txt:
+            db "Numeric Coprocessor Test\r\n",0
+
+mas_cop1_txt:
+            db " * ",0
+
+mas_cop2_txt:
+            db " = ",0
+
+mas_cop3_txt:
+            db "\r\n",0
 
 scottwashere:
             db 064H, 0F6H, 0B2H, 09AH, 0CEH, 04CH, 000H, 000H, 038H, 07CH
